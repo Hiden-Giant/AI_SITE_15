@@ -1,0 +1,24 @@
+{
+    "name": "AI Curator Hub",
+    "short_name": "AIHub",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#1a1a1a",
+    "orientation": "portrait",
+    "lang": "ko-KR",
+    "scope": "/",
+    "icons": [
+      {
+        "src": "/icon/icon-192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "/icon/icon-512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
+  

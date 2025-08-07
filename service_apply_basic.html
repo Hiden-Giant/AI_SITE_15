@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서비스 신청 - AI Curator</title>
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="assets/css/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/optimized.css"> 
+  <script src="js/theme-manager.js"></script>
+  
+    <!-- 다국어 관련 스크립트 -->
+    <script src="lang/en.js"></script>
+    <script src="lang/ko.js"></script>
+    <script src="lang/ja.js"></script>
+    <script src="lang/zh.js"></script>
+    <script src="lang/ru.js"></script>
+    <script src="lang/es.js"></script>
+    <script src="lang/pt.js"></script>
+    <script src="lang/ar.js"></script>
+    <script src="lang/vi.js"></script>
+    <script src="lang/id.js"></script>
+    <script src="lang/fr.js"></script>
+    <script src="lang/hi.js"></script>
+    <script src="js/translate.js"></script>
+
+  <!-- 공통 인증 모듈 -->
+  <script type="module" src="js/auth-manager.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+    :root {
+        --bg-primary: #0F1217;
+        --bg-secondary: #1a1f2e;
+        --text-primary: #ffffff;
+        --text-secondary: #a0aec0;
+        --border-color: #2d3748;
+        --card-bg: #1a1f2e;
+        --hover-bg: #2d3748;
+        --input-bg: #2d3748;
+        --modal-bg: #1a1f2e;
+        --gradient-start: #7C3AED;
+        --gradient-end: #DB2777;
+    }
+    [data-theme="light"] {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f7fafc;
+        --text-primary: #1a202c;
+        --text-secondary: #4a5568;
+        --border-color: #e2e8f0;
+        --card-bg: #ffffff;
+        --hover-bg: #edf2f7;
+        --input-bg: #f7fafc;
+        --modal-bg: #ffffff;
+    }
+    body {
+        font-family: 'Noto Sans KR', sans-serif;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        transition: background-color 0.3s, color 0.3s;
+    }
+    .gradient-text {
+        background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    .gradient-bg {
+        background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+    }
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.3);
+        transition: all 0.3s ease;
+    }
+    .glass-effect {
+        background: #1a1f2e;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .theme-toggle {
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        cursor: pointer;
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: color 0.3s ease;
+    }
+    .theme-toggle:hover {
+        color: var(--gradient-start);
+    }
+    .theme-toggle i {
+        font-size: 1.25rem;
+    }
+    .btn-primary {
+        background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 9999px;
+        font-weight: 500;
+        transition: opacity 0.3s ease;
+    }
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+    .btn-secondary {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+        padding: 0.75rem 1.5rem;
+        border-radius: 9999px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    .btn-secondary:hover {
+        background: var(--border-color);
+    }
+    .input-field {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1.5px solid #2d3748;
+        border-radius: 0.75rem;
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    .input-field:focus {
+        outline: none;
+        border-color: #2d3748;
+        box-shadow: 0 0 0 2px rgba(45, 55, 72, 0.08);
+    }
+    .form-container {
+        background-color: var(--card-bg);
+        border-radius: 1.25rem;
+        padding: 2.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        border: 1.5px solid #2d3748;
+    }
+    .form-label {
+        color: var(--text-primary);
+        font-weight: 500;
+        margin-bottom: 1.3rem;
+    }
+    select.input-field {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 1.5em;
+        padding-right: 2.5rem;
+        border: 1.5px solid #2d3748;
+    }
+  </style>
+<!-- 공통 인증 모듈 -->
+<script type="module" src="js/auth-manager.js"></script>
+
+</head>
+<body>
+  <div id="header-container"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.body.setAttribute('data-theme', savedTheme);
+    });
+
+    fetch('header.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('header-container').innerHTML = data;
+        const script = document.createElement('script');
+        script.src = 'js/header-menu.js';
+        script.onload = function() {
+          if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
+          if (window.initMobileMenuToggle) window.initMobileMenuToggle();
+          if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
+
+          // === 폼 이벤트 연결 추가 ===
+          // 로그인 폼
+          const loginForm = document.getElementById('loginForm');
+          if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const email = document.getElementById('loginEmail').value;
+              const password = document.getElementById('loginPassword').value;
+              if (window.handleEmailLogin) {
+                await window.handleEmailLogin(email, password);
+              }
+            });
+          }
+          // 회원가입 폼
+          const signupForm = document.getElementById('signupForm');
+          if (signupForm) {
+            signupForm.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const fullName = document.getElementById('fullName').value;
+              const email = document.getElementById('signupEmail').value;
+              const password = document.getElementById('signupPassword').value;
+              if (window.handleEmailSignup) {
+                await window.handleEmailSignup(fullName, email, password);
+              }
+            });
+          }
+          // 소셜 로그인 버튼
+          const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
+          googleBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              if (window.handleSocialLogin) {
+                window.handleSocialLogin('google');
+              }
+            });
+          });
+          // === 폼 이벤트 연결 끝 ===
+        };
+        document.body.appendChild(script);
+      });
+  </script>
+
+
+  <div class="max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto p-6 pt-32">
+    <!-- 상단 타이틀 및 소개 카드 섹션 추가 -->
+    <h1 class="text-3xl font-bold mb-6" style="color:var(--text-primary);">Basic Listing Service 신청하기</h1>
+    <div style="height:4px;width:100%;background:linear-gradient(90deg,#22c55e 60%,#16a34a 100%);border-radius:2px;margin-bottom:1.2rem;"></div>
+    <div style="background:var(--bg-secondary);border:1.5px solid #2d3748;border-radius:1.25rem;padding:1.5rem 2rem;margin-bottom:2rem;">
+      <ul style="color:var(--text-primary);font-size:1.1rem;line-height:2;">
+        <li style="display:flex;align-items:center;gap:0.7em;">
+          <span style="display:inline-flex;align-items:center;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="14" fill="#23293a"/><path d="M8 15.5L12.2 19L20 10" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          검증 및 등록 5일
+        </li>
+        <li style="display:flex;align-items:center;gap:0.7em;">
+          <span style="display:inline-flex;align-items:center;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="14" fill="#23293a"/><path d="M8 15.5L12.2 19L20 10" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          AI 트렌드 섹션 7일 노출
+        </li>
+        <li style="display:flex;align-items:center;gap:0.7em;">
+          <span style="display:inline-flex;align-items:center;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="14" fill="#23293a"/><path d="M8 15.5L12.2 19L20 10" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          큐레이터 셀렉션 30일
+        </li>
+        <li style="display:flex;align-items:center;gap:0.7em;">
+          <span style="display:inline-flex;align-items:center;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="14" fill="#23293a"/><path d="M8 15.5L12.2 19L20 10" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          AI 기본 정보 + 이미지 등록
+        </li>
+        <li style="display:flex;align-items:center;gap:0.7em;">
+          <span style="display:inline-flex;align-items:center;">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="14" fill="#23293a"/><path d="M8 15.5L12.2 19L20 10" stroke="#22c55e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          구글 검색 색인 지원
+        </li>
+      </ul>
+    </div>
+    <form action="#" method="POST" class="form-container space-y-4 mt-10">
+      <div>
+        <label class="form-label">AI 도구 이름</label>
+        <input type="text" name="toolName" class="input-field mt-2" placeholder="등록 희망하는 AI 이름을 입력하세요" required>
+      </div>
+      <div>
+        <label class="form-label">AI URL</label>
+        <input type="url" name="toolUrl" class="input-field mt-2" placeholder="등록 희망하는 AI URL 입력하세요">
+      </div>
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <label class="form-label">Main Category</label>
+          <select name="mainCategory" class="input-field mt-2">
+            <option value="Image">Image</option>
+            <option value="Text">Text</option>
+            <option value="Video">Video</option>
+            <!-- 필요시 추가 -->
+          </select>
+        </div>
+        <div class="flex-1">
+          <label class="form-label">Subcategory 1</label>
+          <select name="subcategory1" class="input-field mt-2">
+            <option value="Art">Art</option>
+            <option value="Utility">Utility</option>
+            <!-- 필요시 추가 -->
+          </select>
+        </div>
+        <div class="flex-1">
+          <label class="form-label">Subcategory 2</label>
+          <select name="subcategory2" class="input-field mt-2">
+            <option value="Marketing">Marketing</option>
+            <option value="Education">Education</option>
+            <!-- 필요시 추가 -->
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Short & Core Description</label>
+        <input type="text" name="shortDesc" class="input-field mt-2" placeholder="한 문장으로 요약 및 소개">
+      </div>
+      <div>
+        <label class="form-label">Detail Description</label>
+        <textarea name="detailDesc" rows="3" class="input-field mt-2" placeholder="자세한 설명, 특징 등"></textarea>
+      </div>
+      <div>
+        <label class="form-label">Pros</label>
+        <input type="text" name="pros" class="input-field mt-2" placeholder="AI의 장점(예: 실사 이미지 생성, 무료, 3D 등)">
+      </div>
+      <div>
+        <label class="form-label">Cons</label>
+        <input type="text" name="cons" class="input-field mt-2" placeholder="AI의 단점(예: 이미지 품질, 수정 불가 등)">
+      </div>
+      <div>
+        <label class="form-label">Main Keyword</label>
+        <input type="text" name="mainKeyword" class="input-field mt-2" placeholder="AI 소개 키워드(예: 이미지, 마케팅, 아트)">
+      </div>
+      <div class="flex gap-2">
+        <div class="flex-1">
+          <label class="form-label">AI Launching Date</label>
+          <input type="date" name="launchDate" class="input-field mt-2 w-full" style="min-width:0;">
+        </div>
+        <div class="flex-1">
+          <label class="form-label">AI Monthly User</label>
+          <input type="text" name="monthlyUser" class="input-field mt-2 w-full" placeholder="월간 사용자 수" style="min-width:0;">
+        </div>
+      </div>
+      <div class="flex flex-col gap-2" id="price-condition-list">
+        <div class="flex gap-2 items-end price-condition-row">
+          <div class="flex-1">
+            <label class="form-label">AI Price Type & Condition</label>
+            <select name="priceType[]" class="input-field mt-2 w-full" style="min-width:0;">
+              <option value="Free">Free</option>
+              <option value="Paid">Paid</option>
+              <option value="Freemium">Freemium</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <input type="text" name="priceCondition[]" class="input-field mt-2 w-full" placeholder="조건, 단위, 요건 등" style="min-width:0;">
+          </div>
+          <button type="button" class="btn-secondary px-3 py-2 add-price-row">+</button>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">AI Image Logo</label>
+        <div class="grid grid-cols-2 gap-4 mb-2">
+          <input type="file" name="logo1" class="input-field mt-2" accept="image/*">
+          <input type="file" name="logo2" class="input-field mt-2" accept="image/*">
+        </div>
+      </div>
+      <div>
+        <label class="form-label">AI Screen shot</label>
+        <div class="grid grid-cols-2 gap-4 mb-2">
+          <input type="file" name="screenshot1" class="input-field mt-2" accept="image/*">
+          <input type="file" name="screenshot2" class="input-field mt-2" accept="image/*">
+          <input type="file" name="screenshot3" class="input-field mt-2" accept="image/*">
+          <input type="file" name="screenshot4" class="input-field mt-2" accept="image/*">
+        </div>
+        <div class="text-gray-400 text-sm ml-1 mb-4">** 스크린샷 사이즈 가로 * 세로 ( 400*500 )</div>
+      </div>
+      <div>
+        <label class="form-label">Youtube URL</label>
+        <input type="url" name="youtubeUrl" class="input-field mt-2" placeholder="Youtube URL">
+      </div>
+      <div>
+        <label class="form-label">Company name</label>
+        <input type="text" name="companyName" class="input-field mt-2" placeholder="회사명">
+      </div>
+      <div>
+        <label class="form-label">Company URL</label>
+        <input type="url" name="companyUrl" class="input-field mt-2" placeholder="회사 홈페이지 URL">
+      </div>
+      <div>
+        <button type="submit" class="btn-primary w-full">신청 제출</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Footer Container -->
+  <div id="footer-container"></div>
+  <script>
+    fetch('footer.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('footer-container').innerHTML = data;
+      });
+  </script>
+
+  <!-- Firebase SDK 및 소셜 로그인 스크립트 -->
+  <script type="module">
+    // 가격 조건 행 추가/삭제 기능
+    function createPriceRow() {
+      const row = document.createElement('div');
+      row.className = 'flex gap-2 items-end price-condition-row';
+      row.innerHTML = `
+        <div class="flex-1">
+          <select name="priceType[]" class="input-field mt-2">
+            <option value="Free">Free</option>
+            <option value="Paid">Paid</option>
+            <option value="Freemium">Freemium</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <input type="text" name="priceCondition[]" class="input-field mt-2" placeholder="조건, 단위, 요건 등">
+        </div>
+        <button type="button" class="btn-secondary px-3 py-2 remove-price-row">-</button>
+      `;
+      return row;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const priceList = document.getElementById('price-condition-list');
+      priceList.addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-price-row')) {
+          const newRow = createPriceRow();
+          priceList.appendChild(newRow);
+        }
+        if (e.target.classList.contains('remove-price-row')) {
+          const row = e.target.closest('.price-condition-row');
+          if (row) row.remove();
+        }
+      });
+    });
+
+    function updateFileName(inputId) {
+      const input = document.getElementById(inputId);
+      const label = document.getElementById(inputId + '-label');
+      if (input.files && input.files.length > 0) {
+        label.textContent = input.files[0].name;
+      } else {
+        label.textContent = '파일 선택';
+      }
+    }
+  </script>
+</body>
+</html>

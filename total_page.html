@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Curator - AI 도구 찾기</title>
+    <link href="assets/css/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/optimized.css">
+    
+    <script src="js/theme-manager.js"></script>
+    <!-- 폰트 및 파비콘 등 필요시 추가 -->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <script type="module">
+        import { firebaseConfig } from './js/config.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore, doc, getDoc, setDoc, collection } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
+        // === allTools 전역 변수 선언 ===
+        let allTools = {};
+        let currentFilters = {
+            category: 'all',
+            price: 'all',
+            rating: 'all',
+            sort: 'relevance'
+        };
+
+        // === 필터+정렬 함수: 항상 최상단에 위치 ===
+        function getFilteredAndSortedTools() {
+            let toolsArr = Object.entries(allTools);
+            // 필터링
+            toolsArr = toolsArr.filter(([id, tool]) => {
+                let shouldShow = true;
+                if (currentFilters.category !== 'all') {
+                    const rowCategory = tool.primaryCategory || (tool.categories ? tool.categories[0] : '');
+                    shouldShow = shouldShow && (
+                        rowCategory === currentFilters.category ||
+                        (rowCategory && rowCategory.split(',').includes(currentFilters.category))
+                    );
+                }
+                if (currentFilters.price !== 'all') {
+                    let priceText = '';
+                    if (Array.isArray(tool.pricing) && tool.pricing.length > 0) {
+                        priceText = tool.pricing.map(plan => (plan.price || '')).join(' ').toLowerCase();
+                    }
+                    switch(currentFilters.price) {
+                        case 'free':
+                            shouldShow = shouldShow && priceText.includes('무료');
+                            break;
+                        case 'freemium':
+                            shouldShow = shouldShow && (priceText.includes('무료') && priceText.includes('프리미엄'));
+                            break;
+                        case 'paid':
+                            shouldShow = shouldShow && !priceText.includes('무료');
+                            break;
+                    }
+                }
+                if (currentFilters.rating !== 'all') {
+                    const rating = parseFloat(tool.rating || 0);
+                    switch(currentFilters.rating) {
+                        case '4plus':
+                            shouldShow = shouldShow && rating >= 4.0;
+                            break;
+                        case '3plus':
+                            shouldShow = shouldShow && rating >= 3.0;
+                            break;
+                    }
+                }
+                return shouldShow;
+            });
+            // 정렬
+            switch(currentFilters.sort) {
+                case 'rating':
+                    toolsArr.sort((a, b) => (b[1].rating || 0) - (a[1].rating || 0));
+                    break;
+                case 'newest':
+                    toolsArr.sort((a, b) => (b[1].year || 0) - (a[1].year || 0));
+                    break;
+                case 'popular':
+                    toolsArr.sort((a, b) => (b[1].popularity || 0) - (a[1].popularity || 0));
+                    break;
+                default:
+                    break;
+            }
+            return Object.fromEntries(toolsArr);
+        }
+
+        // Firebase 초기화 (Firestore로 변경)
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // 전역 객체에 할당
+        window.app = app;
+        window.db = db;
+        window.auth = auth;
+
+     
+        // 도구 목록 업데이트 함수
+        function updateToolsList(tools) {
+            // 이미지 URL 유효성 체크 함수 (함수 내부에 선언)
+            function getValidImageUrl(tool) {
+                if (typeof tool.logoUrl === 'string' && tool.logoUrl.trim() !== '') return tool.logoUrl;
+                if (typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
+                    return getStorageUrl(tool.logoFileName);
+                }
+                if (typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') return tool.imageUrl;
+                if (typeof tool.image === 'string' && tool.image.trim() !== '') return tool.image;
+                return window.DEFAULT_IMAGE;
+            }
+            // getStorageUrl 함수 추가 (getValidImageUrl보다 위에 위치)
+            function getStorageUrl(fileName) {
+                return `https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebasestorage.app/o/ai_logos%2F${encodeURIComponent(fileName)}?alt=media&token=4b780bb4-d39d-4195-8c73-4766eda6ad6b`;
+            }
+            // tools가 배열이면 id 기반 객체로 변환
+            if (Array.isArray(tools)) {
+                tools = Object.fromEntries(tools.map(tool => [tool.id, tool]));
+            }
+            const tbody = document.getElementById('tools-body');
+            if (tbody) {
+                tbody.innerHTML = '';
+                const tagColors = [
+                    'bg-blue-600 text-blue-100',
+                    'bg-green-600 text-green-100',
+                    'bg-purple-600 text-purple-100',
+                    'bg-pink-600 text-pink-100',
+                    'bg-yellow-600 text-yellow-100',
+                    'bg-red-600 text-red-100',
+                    'bg-indigo-600 text-indigo-100',
+                    'bg-teal-600 text-teal-100',
+                    'bg-orange-600 text-orange-100'
+                ];
+
+                Object.entries(tools).forEach(([key, tool]) => {
+                    const row = document.createElement('tr');
+                    row.className = 'tool-row hover:bg-gray-700';
+                    row.dataset.category = tool.primaryCategory || (tool.categories ? tool.categories[0] : '');
+                    row.dataset.toolId = key;
+                    row.dataset.rating = tool.rating || 0;
+                    row.onclick = () => window.location.href = `detail_sp.html?id=${tool.id || key}`;
+
+                    let pricingHtml = '';
+                    if (Array.isArray(tool.pricing) && tool.pricing.length > 0) {
+                        // planName 기준으로 정렬 (Starter, Premium, Ultimate 순서 보장)
+                        const order = ['Starter', 'Premium', 'Ultimate'];
+                        const sortedPricing = [...tool.pricing].sort((a, b) => {
+                            const idxA = order.indexOf((a.planName||'').toString().toLowerCase().replace(/\s/g, '').replace('plan', '')) !== -1 ? order.indexOf((a.planName||'').toString().toLowerCase().replace(/\s/g, '').replace('plan', '')) : 99;
+                            const idxB = order.indexOf((b.planName||'').toString().toLowerCase().replace(/\s/g, '').replace('plan', '')) !== -1 ? order.indexOf((b.planName||'').toString().toLowerCase().replace(/\s/g, '').replace('plan', '')) : 99;
+                            return idxA - idxB;
+                        });
+                        pricingHtml = sortedPricing.map(plan => {
+                            return `<div>${plan.planName}: ${plan.price}</div>`;
+                        }).join('');
+                    } else {
+                        pricingHtml = '<div class="text-gray-400">정보 없음</div>';
+                    }
+
+                    const tagHtml = (tool.tags || []).map((tag, idx) => {
+                        const colorClass = tagColors[idx % tagColors.length];
+                        return `<span class="tag ${colorClass} mr-1 mb-1">${tag}</span>`;
+                    }).join('');
+
+                    row.innerHTML = `
+                        <td class="px-4 py-4 whitespace-nowrap w-36">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 bg-gray-700 rounded-md flex items-center justify-center">
+                                   <img src="${getValidImageUrl(tool)}" alt="${tool.name}" class="h-10 w-10 object-cover" onerror="window.handleImageError(this)">
+                            </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-white">${tool.name || ''}</div>
+                                    <div class="text-sm text-gray-400">${tool.developer || tool.company || ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 w-52">
+                            <div class="text-sm text-gray-200">${tool.description || ''}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-200">${pricingHtml}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-200">
+                                ${(Array.isArray(tool.featuresKr) && tool.featuresKr.length > 0)
+                                    ? tool.featuresKr.map(f => `<div><span style='font-size:0.3em;vertical-align:middle;'>●</span> ${f}</div>`).join('')
+                                    : ''}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap">
+                                ${(tool.tagsKr || []).map((tag, idx) => {
+                                    const colorClass = tagColors[idx % tagColors.length];
+                                    return `<span class="tag ${colorClass} mr-1 mb-1">${tag}</span>`;
+                                }).join('')}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="rating-stars text-yellow-400">
+                                    ${getStarRating(tool.rating || 0)}
+                                </div>
+                                <span class="text-gray-300 ml-2">${(tool.rating || 0).toFixed(1)}</span>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            // 모바일 카드 리스트 렌더링 추가
+            const cardList = document.getElementById('tools-card-list');
+            if (cardList) {
+                cardList.innerHTML = '';
+                Object.entries(tools).forEach(([key, tool]) => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-gray-800 rounded-lg p-4 mb-4 shadow hover:bg-gray-700 cursor-pointer';
+                    card.onclick = () => window.location.href = `detail_sp.html?id=${tool.id || key}`;
+                    card.innerHTML = `
+                        <div class="flex items-center mb-2">
+                            <img src="${getValidImageUrl(tool)}" alt="${tool.name}" class="h-10 w-10 object-cover rounded mr-3" onerror="window.handleImageError(this)">
+                            <div>
+                                <div class="font-bold text-white">${tool.name || ''}</div>
+                                <div class="text-xs text-gray-400">${tool.developer || tool.company || ''}</div>
+                            </div>
+                        </div>
+                        <div class="text-gray-200 text-sm mb-2">${tool.description || ''}</div>
+                        <div class="text-xs text-gray-400 mb-1">${(tool.pricing && tool.pricing[0]?.price) ? tool.pricing[0].price : '정보 없음'}</div>
+                        <div class="flex items-center">
+                            <span class="text-yellow-400">${getStarRating(tool.rating || 0)}</span>
+                            <span class="text-gray-300 ml-2">${(tool.rating || 0).toFixed(1)}</span>
+                        </div>
+                    `;
+                    cardList.appendChild(card);
+                });
+            }
+        }
+        function getStarRating(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            return `${'★'.repeat(fullStars)}${hasHalfStar ? '★' : ''}${'☆'.repeat(emptyStars)}`;
+        }
+        function applyFilters() {
+            const toolRows = document.querySelectorAll('.tool-row');
+            toolRows.forEach(row => {
+                let shouldShow = true;
+                if (currentFilters.category !== 'all') {
+                    const rowCategory = row.getAttribute('data-category');
+                    shouldShow = shouldShow && (
+                        rowCategory === currentFilters.category ||
+                        (rowCategory && rowCategory.split(',').includes(currentFilters.category))
+                    );
+                }
+                if (currentFilters.price !== 'all') {
+                    const priceText = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                    switch(currentFilters.price) {
+                        case 'free':
+                            shouldShow = shouldShow && priceText.includes('무료');
+                            break;
+                        case 'freemium':
+                            shouldShow = shouldShow && (priceText.includes('무료') && priceText.includes('프리미엄'));
+                            break;
+                        case 'paid':
+                            shouldShow = shouldShow && !priceText.includes('무료');
+                            break;
+                    }
+                }
+                if (currentFilters.rating !== 'all') {
+                    const rating = parseFloat(row.dataset.rating);
+                    switch(currentFilters.rating) {
+                        case '4plus':
+                            shouldShow = shouldShow && rating >= 4.0;
+                            break;
+                        case '3plus':
+                            shouldShow = shouldShow && rating >= 3.0;
+                            break;
+                    }
+                }
+                row.style.display = shouldShow ? '' : 'none';
+            });
+            updatePagination();
+        }
+        function updatePagination() {
+            const itemsPerPage = 10;
+            const visibleTools = Array.from(document.querySelectorAll('.tool-row')).filter(row => row.style.display !== 'none');
+            const pageCount = Math.ceil(visibleTools.length / itemsPerPage);
+            const paginationContainer = document.getElementById('pagination-container');
+            if (!paginationContainer) return;
+            paginationContainer.innerHTML = '';
+            for (let i = 1; i <= pageCount; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'pagination-btn px-3 py-1 mx-1 rounded-md bg-gray-700 text-white';
+                btn.textContent = i;
+                btn.onclick = () => {
+                    document.querySelectorAll('.pagination-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    showPage(i, visibleTools);
+                };
+                if (i === 1) btn.classList.add('active');
+                paginationContainer.appendChild(btn);
+            }
+            showPage(1, visibleTools);
+        }
+        function showPage(pageNumber, visibleTools) {
+            const itemsPerPage = 10;
+            const startIndex = (pageNumber - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, visibleTools.length);
+            visibleTools.forEach((row, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // dbManager 초기화 (app 객체 전달)
+                if (!window.dbManager.isInitialized) {
+                    await window.dbManager.init(app);
+                }
+                
+                let tools = await window.dbManager.loadAITools();
+                // tools가 배열이면 id 기반 객체로 변환
+                if (Array.isArray(tools)) {
+                    tools = Object.fromEntries(tools.map(tool => [tool.id, tool]));
+                }
+                if (tools) {
+                    allTools = tools;
+                    updateToolsList(getFilteredAndSortedTools());
+                    // 실시간 업데이트 설정
+                    window.dbManager.setupRealtimeUpdates((updatedTools) => {
+                        let t = updatedTools;
+                        if (Array.isArray(t)) {
+                            t = Object.fromEntries(t.map(tool => [tool.id, tool]));
+                        }
+                        allTools = t;
+                        updateToolsList(getFilteredAndSortedTools());
+                    });
+                }
+            } catch (error) {
+                console.error('데이터 로드 중 오류:', error);
+                document.getElementById('tools-body').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-red-400">데이터 로드 중 오류가 발생했습니다</td></tr>';
+            }
+            // 검색 기능
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+            function performSearch() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                currentFilters.search = searchTerm;
+                updateToolsList(getFilteredAndSortedTools());
+            }
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            document.querySelectorAll('select').forEach(select => {
+                select.addEventListener('change', function() {
+                    currentFilters[this.name] = this.value;
+                    updateToolsList(getFilteredAndSortedTools());
+                });
+            });
+            const categoryTabs = document.querySelectorAll('.category-tab');
+            categoryTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    categoryTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilters.category = this.getAttribute('data-category');
+                    updateToolsList(getFilteredAndSortedTools());
+                });
+            });
+            // 초기화: 첫 번째 카테고리 선택
+            document.querySelector('.category-tab').click();
+        });
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        [data-theme="dark"] body {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        [data-theme="light"] body {
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        [data-theme="light"] .category-tab {
+            background-color: #e2e8f0;
+            color: #1e293b;
+        }
+
+        [data-theme="light"] .category-tab.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        [data-theme="light"] .tool-row:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        [data-theme="light"] .pagination-btn {
+            background-color: #e2e8f0;
+            color: #1e293b;
+        }
+
+        [data-theme="light"] .pagination-btn:hover:not(.active) {
+            background-color: #94a3b8;
+        }
+
+        [data-theme="light"] .pagination-btn.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        [data-theme="light"] table {
+            background-color: #f1f5f9;
+        }
+
+        [data-theme="light"] thead {
+            background-color: #e2e8f0;
+        }
+
+        [data-theme="light"] th {
+            color: #1e293b;
+        }
+
+        [data-theme="light"] td {
+            color: #1e293b;
+        }
+
+        [data-theme="light"] .text-gray-200 {
+            color: #1e293b;
+        }
+
+        [data-theme="light"] .text-gray-400 {
+            color: #64748b;
+        }
+
+        [data-theme="light"] .bg-gray-700 {
+            background-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .bg-gray-800 {
+            background-color: #f1f5f9;
+        }
+
+        [data-theme="light"] .bg-gray-900 {
+            background-color: #f8fafc;
+        }
+
+        [data-theme="light"] .divide-gray-600 {
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .hover\:bg-gray-700:hover {
+            background-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .text-white {
+            color: #1e293b;
+        }
+
+        [data-theme="light"] .text-gray-300 {
+            color: #475569;
+        }
+
+        [data-theme="light"] .bg-gray-700 {
+            background-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .bg-gray-800 {
+            background-color: #f1f5f9;
+        }
+
+        [data-theme="light"] .bg-gray-900 {
+            background-color: #f8fafc;
+        }
+
+        [data-theme="light"] .border-gray-800 {
+            border-color: #e2e8f0;
+        }
+
+        [data-theme="light"] .text-gray-400 {
+            color: #64748b;
+        }
+
+        [data-theme="light"] .hover\:text-blue-400:hover {
+            color: #2563eb;
+        }
+
+        [data-theme="light"] .bg-blue-600 {
+            background-color: #3b82f6;
+        }
+
+        [data-theme="light"] .hover\:bg-blue-700:hover {
+            background-color: #2563eb;
+        }
+
+        [data-theme="light"] .text-blue-100 {
+            color: #dbeafe;
+        }
+
+        [data-theme="light"] .text-blue-200 {
+            color: #bfdbfe;
+        }
+
+        [data-theme="light"] .text-yellow-400 {
+            color: #fbbf24;
+        }
+
+        [data-theme="light"] .text-yellow-900 {
+            color: #78350f;
+        }
+
+        [data-theme="light"] .text-red-400 {
+            color: #f87171;
+        }
+
+        [data-theme="light"] .text-red-100 {
+            color: #fee2e2;
+        }
+
+        [data-theme="light"] .text-green-100 {
+            color: #dcfce7;
+        }
+
+        [data-theme="light"] .text-purple-100 {
+            color: #f3e8ff;
+        }
+
+        [data-theme="light"] .text-pink-100 {
+            color: #fce7f3;
+        }
+
+        [data-theme="light"] .text-indigo-100 {
+            color: #e0e7ff;
+        }
+
+        [data-theme="light"] .text-teal-100 {
+            color: #ccfbf1;
+        }
+
+        [data-theme="light"] .text-orange-100 {
+            color: #ffedd5;
+        }
+
+        [data-theme="light"] .text-lime-100 {
+            color: #ecfccb;
+        }
+
+        [data-theme="light"] .text-cyan-100 {
+            color: #cffafe;
+        }
+
+        [data-theme="light"] .text-fuchsia-100 {
+            color: #fae8ff;
+        }
+
+        [data-theme="light"] .text-rose-100 {
+            color: #ffe4e6;
+        }
+
+        [data-theme="light"] .text-emerald-100 {
+            color: #d1fae5;
+        }
+
+        [data-theme="light"] .text-violet-100 {
+            color: #ede9fe;
+        }
+
+        [data-theme="light"] .text-amber-100 {
+            color: #fef3c7;
+        }
+
+        [data-theme="light"] .bg-blue-600 {
+            background-color: #3b82f6;
+        }
+
+        [data-theme="light"] .bg-green-600 {
+            background-color: #16a34a;
+        }
+
+        [data-theme="light"] .bg-purple-600 {
+            background-color: #9333ea;
+        }
+
+        [data-theme="light"] .bg-pink-600 {
+            background-color: #db2777;
+        }
+
+        [data-theme="light"] .bg-yellow-600 {
+            background-color: #d97706;
+        }
+
+        [data-theme="light"] .bg-red-600 {
+            background-color: #dc2626;
+        }
+
+        [data-theme="light"] .bg-indigo-600 {
+            background-color: #4f46e5;
+        }
+
+        [data-theme="light"] .bg-teal-600 {
+            background-color: #0d9488;
+        }
+
+        [data-theme="light"] .bg-orange-600 {
+            background-color: #ea580c;
+        }
+
+        [data-theme="light"] .bg-lime-600 {
+            background-color: #65a30d;
+        }
+
+        [data-theme="light"] .bg-cyan-600 {
+            background-color: #0891b2;
+        }
+
+        [data-theme="light"] .bg-fuchsia-600 {
+            background-color: #c026d3;
+        }
+
+        [data-theme="light"] .bg-rose-600 {
+            background-color: #e11d48;
+        }
+
+        [data-theme="light"] .bg-emerald-600 {
+            background-color: #059669;
+        }
+
+        [data-theme="light"] .bg-violet-600 {
+            background-color: #7c3aed;
+        }
+
+        [data-theme="light"] .bg-amber-600 {
+            background-color: #d97706;
+        }
+
+        [data-theme="light"] .bg-blue-800 {
+            background-color: #1e40af;
+        }
+
+        [data-theme="light"] .bg-green-800 {
+            background-color: #166534;
+        }
+
+        [data-theme="light"] .bg-purple-800 {
+            background-color: #6b21a8;
+        }
+
+        [data-theme="light"] .bg-pink-800 {
+            background-color: #9d174d;
+        }
+
+        [data-theme="light"] .bg-yellow-800 {
+            background-color: #854d0e;
+        }
+
+        [data-theme="light"] .bg-red-800 {
+            background-color: #991b1b;
+        }
+
+        [data-theme="light"] .bg-indigo-800 {
+            background-color: #3730a3;
+        }
+
+        [data-theme="light"] .bg-teal-800 {
+            background-color: #115e59;
+        }
+
+        [data-theme="light"] .bg-orange-800 {
+            background-color: #9a3412;
+        }
+
+        [data-theme="light"] .bg-lime-800 {
+            background-color: #3f6212;
+        }
+
+        [data-theme="light"] .bg-cyan-800 {
+            background-color: #155e75;
+        }
+
+        [data-theme="light"] .bg-fuchsia-800 {
+            background-color: #86198f;
+        }
+
+        [data-theme="light"] .bg-rose-800 {
+            background-color: #9f1239;
+        }
+
+        [data-theme="light"] .bg-emerald-800 {
+            background-color: #065f46;
+        }
+
+        [data-theme="light"] .bg-violet-800 {
+            background-color: #5b21b6;
+        }
+
+        [data-theme="light"] .bg-amber-800 {
+            background-color: #92400e;
+        }
+
+        .category-tab {
+            transition: all 0.3s ease;
+        }
+        .category-tab.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .star-filled {
+            color: #fbbf24;
+        }
+        .star-empty {
+            color: #9ca3af;
+        }
+        .tool-row:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            cursor: pointer;
+        }
+        .pagination-btn {
+            transition: all 0.3s ease;
+        }
+        .pagination-btn:hover:not(.active) {
+            background-color: #1e40af;
+        }
+        .pagination-btn.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+            display: inline-block;
+        }
+        .tag.premium {
+            background-color: #7e22ce;
+            color: #e9d5ff;
+        }
+        .tag.recommended {
+            background-color: #b91c1c;
+            color: #fee2e2;
+        }
+        .tool-row {
+            transition: all 0.3s ease;
+        }
+        /* 모달 관련 스타일 추가 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background-color: #1e293b;
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #4b5563;
+            background-color: #374151;
+            color: white;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        td {
+            word-break: break-all;
+            white-space: normal;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+
+    <!-- 공통 모듈 -->
+    <script type="module" src="js/db-manager.js"></script>
+    <script type="module" src="js/auth-manager.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore, doc, getDoc, setDoc, collection } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { firebaseConfig } from './js/config.js';
+
+        // DOMContentLoaded 이벤트를 기다림
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Firebase 초기화
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+                const auth = getAuth(app);
+
+                // 전역 객체에 할당
+                window.app = app;
+                window.db = db;
+                window.auth = auth;
+
+                // Firestore에서는 dbRef, dbGet, dbSet 필요 없음
+
+                // 초기화 완료 이벤트 발생
+                window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
+                    detail: { app, db, auth } 
+                }));
+            } catch (error) {
+                console.error('Firebase 초기화 오류:', error);
+            }
+        });
+    </script>
+</head>
+<body>
+    <div id="header-container"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.body.setAttribute('data-theme', savedTheme);
+        });
+
+        fetch('header.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('header-container').innerHTML = data;
+                const script = document.createElement('script');
+                script.src = 'js/header-menu.js';
+                script.onload = function() {
+                    if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
+                    if (window.initMobileMenuToggle) window.initMobileMenuToggle();
+                    if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
+
+                    // === 폼 이벤트 연결 추가 ===
+                    // 로그인 폼
+                    const loginForm = document.getElementById('loginForm');
+                    if (loginForm) {
+                        loginForm.addEventListener('submit', async (e) => {
+                            e.preventDefault();
+                            const email = document.getElementById('loginEmail').value;
+                            const password = document.getElementById('loginPassword').value;
+                            if (window.handleEmailLogin) {
+                                await window.handleEmailLogin(email, password);
+                            }
+                        });
+                    }
+                    // 회원가입 폼
+                    const signupForm = document.getElementById('signupForm');
+                    if (signupForm) {
+                        signupForm.addEventListener('submit', async (e) => {
+                            e.preventDefault();
+                            const fullName = document.getElementById('fullName').value;
+                            const email = document.getElementById('signupEmail').value;
+                            const password = document.getElementById('signupPassword').value;
+                            if (window.handleEmailSignup) {
+                                await window.handleEmailSignup(fullName, email, password);
+                            }
+                        });
+                    }
+                    // 소셜 로그인 버튼
+                    const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
+                    googleBtns.forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            if (window.handleSocialLogin) {
+                                window.handleSocialLogin('google');
+                            }
+                        });
+                    });
+                    // === 폼 이벤트 연결 끝 ===
+                };
+                document.body.appendChild(script);
+            });
+    </script>
+
+    <script type="module">
+        // 전역 변수 초기화
+        let selectedCategories = new Set();
+        let currentSearchQuery = '';
+        
+        // 기본 이미지 URL 설정
+        window.DEFAULT_IMAGE = 'assets/icons/code-icon1.png';
+        
+        // 이미지 로드 실패 시 처리하는 함수
+        window.handleImageError = function(img) {
+            img.onerror = null; // 무한 루프 방지
+            img.src = window.DEFAULT_IMAGE;
+        };
+
+        // 별점 표시 함수
+        function getStarRating(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            return `${'★'.repeat(fullStars)}${hasHalfStar ? '★' : ''}${'☆'.repeat(emptyStars)}`;
+        }
+
+        // 페이지네이션 관련 변수
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        // 페이지네이션 버튼 렌더링 함수
+        function renderPagination(totalItems) {
+            const paginationContainer = document.getElementById('pagination-container');
+            if (!paginationContainer) return;
+            paginationContainer.innerHTML = '';
+            const pageCount = Math.ceil(totalItems / itemsPerPage);
+            for (let i = 1; i <= pageCount; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'pagination-btn px-3 py-1 mx-1 rounded-md bg-gray-700 text-white';
+                btn.textContent = i;
+                btn.onclick = () => {
+                    currentPage = i;
+                    updateToolsList(getFilteredAndSortedTools());
+                    document.querySelectorAll('.pagination-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                };
+                if (i === currentPage) btn.classList.add('active');
+                paginationContainer.appendChild(btn);
+            }
+        }
+
+        // 도구 목록 업데이트 함수 (페이징 적용, currentPage를 건드리지 않음)
+        function updateToolsList(tools) {
+            // 이미지 URL 유효성 체크 함수 (함수 내부에 선언)
+            function getValidImageUrl(tool) {
+                if (typeof tool.logoUrl === 'string' && tool.logoUrl.trim() !== '') return tool.logoUrl;
+                if (typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
+                    return getStorageUrl(tool.logoFileName);
+                }
+                if (typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') return tool.imageUrl;
+                if (typeof tool.image === 'string' && tool.image.trim() !== '') return tool.image;
+                return window.DEFAULT_IMAGE;
+            }
+            // getStorageUrl 함수 추가 (getValidImageUrl보다 위에 위치)
+            function getStorageUrl(fileName) {
+                return `https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebasestorage.app/o/ai_logos%2F${encodeURIComponent(fileName)}?alt=media&token=4b780bb4-d39d-4195-8c73-4766eda6ad6b`;
+            }
+            // tools가 배열이면 id 기반 객체로 변환
+            if (Array.isArray(tools)) {
+                tools = Object.fromEntries(tools.map(tool => [tool.id, tool]));
+            }
+            const tbody = document.getElementById('tools-body');
+            if (tbody) {
+                tbody.innerHTML = '';
+                const tagColors = [
+                    'bg-blue-600 text-blue-100',
+                    'bg-green-600 text-green-100',
+                    'bg-purple-600 text-purple-100',
+                    'bg-pink-600 text-pink-100',
+                    'bg-yellow-600 text-yellow-100',
+                    'bg-red-600 text-red-100',
+                    'bg-indigo-600 text-indigo-100',
+                    'bg-teal-600 text-teal-100',
+                    'bg-orange-600 text-orange-100'
+                ];
+                // 페이징 처리
+                const toolsArr = Object.entries(tools);
+                const startIdx = (currentPage - 1) * itemsPerPage;
+                const endIdx = Math.min(startIdx + itemsPerPage, toolsArr.length);
+                for (let idx = startIdx; idx < endIdx; idx++) {
+                    const [key, tool] = toolsArr[idx];
+                    const row = document.createElement('tr');
+                    row.className = 'tool-row hover:bg-gray-700';
+                    row.dataset.category = tool.primaryCategory || (tool.categories ? tool.categories[0] : '');
+                    row.dataset.toolId = key;
+                    row.dataset.rating = tool.rating || 0;
+                    row.onclick = () => window.location.href = `detail_sp.html?id=${tool.id || key}`;
+
+                    let pricingHtml = '';
+                    if (Array.isArray(tool.pricing) && tool.pricing.length > 0) {
+                        // planName 기준으로 정렬 (Starter, Premium, Ultimate 순서 보장)
+                        const order = ['Starter', 'Premium', 'Ultimate'];
+                        const sortedPricing = [...tool.pricing].sort((a, b) => {
+                            const idxA = order.indexOf((a.planName||'').toString().toLowerCase().replace(/\s/g, '').replace('plan', '')) !== -1 ? order.indexOf((a.planName||'').toString().toLowerCase().replace(/\s/g, '').replace('plan', '')) : 99;
+                            const idxB = order.indexOf((b.planName||'').toString().toLowerCase().replace(/\s/g, '').replace('plan', '')) !== -1 ? order.indexOf((b.planName||'').toString().toLowerCase().replace(/\s/g, '').replace('plan', '')) : 99;
+                            return idxA - idxB;
+                        });
+                        pricingHtml = sortedPricing.map(plan => {
+                            return `<div>${plan.planName}: ${plan.price}</div>`;
+                        }).join('');
+                    } else {
+                        pricingHtml = '<div class="text-gray-400">정보 없음</div>';
+                    }
+
+                    const tagHtml = (tool.tags || []).map((tag, idx) => {
+                        const colorClass = tagColors[idx % tagColors.length];
+                        return `<span class="tag ${colorClass} mr-1 mb-1">${tag}</span>`;
+                    }).join('');
+
+                    row.innerHTML = `
+                        <td class="px-4 py-4 whitespace-nowrap w-36">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 bg-gray-700 rounded-md flex items-center justify-center">
+                                   <img src="${getValidImageUrl(tool)}" alt="${tool.name}" class="h-10 w-10 object-cover" onerror="window.handleImageError(this)">
+                            </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-white">${tool.name || ''}</div>
+                                    <div class="text-sm text-gray-400">${tool.developer || tool.company || ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 w-52">
+                            <div class="text-sm text-gray-200">${tool.description || ''}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-200">${pricingHtml}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-200">
+                                ${(Array.isArray(tool.featuresKr) && tool.featuresKr.length > 0)
+                                    ? tool.featuresKr.map(f => `<div><span style='font-size:0.7em;vertical-align:middle;'>●</span> ${f}</div>`).join('')
+                                    : ''}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap">
+                                ${(tool.tagsKr || []).map((tag, idx) => {
+                                    const colorClass = tagColors[idx % tagColors.length];
+                                    return `<span class="tag ${colorClass} mr-1 mb-1">${tag}</span>`;
+                                }).join('')}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="rating-stars text-yellow-400">
+                                    ${getStarRating(tool.rating || 0)}
+                                </div>
+                                <span class="text-gray-300 ml-2">${(tool.rating || 0).toFixed(1)}</span>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                }
+            }
+            // 모바일 카드 리스트 렌더링 추가 (페이징 적용)
+            const cardList = document.getElementById('tools-card-list');
+            if (cardList) {
+                cardList.innerHTML = '';
+                const toolsArr = Object.entries(tools);
+                const startIdx = (currentPage - 1) * itemsPerPage;
+                const endIdx = Math.min(startIdx + itemsPerPage, toolsArr.length);
+                for (let idx = startIdx; idx < endIdx; idx++) {
+                    const [key, tool] = toolsArr[idx];
+                    const card = document.createElement('div');
+                    card.className = 'bg-gray-800 rounded-lg p-4 mb-4 shadow hover:bg-gray-700 cursor-pointer';
+                    card.onclick = () => window.location.href = `detail_sp.html?id=${tool.id || key}`;
+                    card.innerHTML = `
+                        <div class="flex items-center mb-2">
+                            <img src="${getValidImageUrl(tool)}" alt="${tool.name}" class="h-10 w-10 object-cover rounded mr-3" onerror="window.handleImageError(this)">
+                            <div>
+                                <div class="font-bold text-white">${tool.name || ''}</div>
+                                <div class="text-xs text-gray-400">${tool.developer || tool.company || ''}</div>
+                            </div>
+                        </div>
+                        <div class="text-gray-200 text-sm mb-2">${tool.description || ''}</div>
+                        <div class="text-xs text-gray-400 mb-1">${(tool.pricing && tool.pricing[0]?.price) ? tool.pricing[0].price : '정보 없음'}</div>
+                        <div class="flex items-center">
+                            <span class="text-yellow-400">${getStarRating(tool.rating || 0)}</span>
+                            <span class="text-gray-300 ml-2">${(tool.rating || 0).toFixed(1)}</span>
+                        </div>
+                    `;
+                    cardList.appendChild(card);
+                }
+            }
+            // 페이지네이션 렌더링
+            renderPagination(Object.entries(tools).length);
+        }
+
+        // 필터/검색/정렬 등에서 currentPage를 1로 리셋
+        function resetToFirstPageAndUpdate() {
+            currentPage = 1;
+            updateToolsList(getFilteredAndSortedTools());
+        }
+
+        // 필터 적용 함수
+        function applyFilters() {
+            const toolRows = document.querySelectorAll('.tool-row');
+            toolRows.forEach(row => {
+                let shouldShow = true;
+                if (currentFilters.category !== 'all') {
+                    const rowCategory = row.getAttribute('data-category');
+                    shouldShow = shouldShow && (
+                        rowCategory === currentFilters.category ||
+                        (rowCategory && rowCategory.split(',').includes(currentFilters.category))
+                    );
+                }
+                if (currentFilters.price !== 'all') {
+                    const priceText = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
+                    switch(currentFilters.price) {
+                        case 'free':
+                            shouldShow = shouldShow && priceText.includes('무료');
+                            break;
+                        case 'freemium':
+                            shouldShow = shouldShow && (priceText.includes('무료') && priceText.includes('프리미엄'));
+                            break;
+                        case 'paid':
+                            shouldShow = shouldShow && !priceText.includes('무료');
+                            break;
+                    }
+                }
+                if (currentFilters.rating !== 'all') {
+                    const rating = parseFloat(row.dataset.rating);
+                    switch(currentFilters.rating) {
+                        case '4plus':
+                            shouldShow = shouldShow && rating >= 4.0;
+                            break;
+                        case '3plus':
+                            shouldShow = shouldShow && rating >= 3.0;
+                            break;
+                    }
+                }
+                row.style.display = shouldShow ? '' : 'none';
+            });
+            updatePagination();
+        }
+
+        // 페이지네이션 업데이트 함수
+        function updatePagination() {
+            const itemsPerPage = 10;
+            const visibleTools = Array.from(document.querySelectorAll('.tool-row')).filter(row => row.style.display !== 'none');
+            const pageCount = Math.ceil(visibleTools.length / itemsPerPage);
+            const paginationContainer = document.getElementById('pagination-container');
+            if (!paginationContainer) return;
+            paginationContainer.innerHTML = '';
+            for (let i = 1; i <= pageCount; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'pagination-btn px-3 py-1 mx-1 rounded-md bg-gray-700 text-white';
+                btn.textContent = i;
+                btn.onclick = () => {
+                    document.querySelectorAll('.pagination-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    showPage(i, visibleTools);
+                };
+                if (i === 1) btn.classList.add('active');
+                paginationContainer.appendChild(btn);
+            }
+            showPage(1, visibleTools);
+        }
+
+        // 페이지 표시 함수
+        function showPage(pageNumber, visibleTools) {
+            const itemsPerPage = 10;
+            const startIndex = (pageNumber - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, visibleTools.length);
+            visibleTools.forEach((row, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // loadAITools 함수 정의
+        async function loadAITools() {
+            try {
+                if (!window.dbManager.isInitialized) {
+                    await window.dbManager.init(window.db);
+                }
+                
+                let tools = await window.dbManager.loadAITools();
+                // tools가 배열이면 id 기반 객체로 변환
+                if (Array.isArray(tools)) {
+                    tools = Object.fromEntries(tools.map(tool => [tool.id, tool]));
+                }
+                if (tools) {
+                    allTools = tools;
+                    updateToolsList(getFilteredAndSortedTools());
+                    // 실시간 업데이트 설정
+                    window.dbManager.setupRealtimeUpdates((updatedTools) => {
+                        let t = updatedTools;
+                        if (Array.isArray(t)) {
+                            t = Object.fromEntries(t.map(tool => [tool.id, tool]));
+                        }
+                        allTools = t;
+                        updateToolsList(getFilteredAndSortedTools());
+                    });
+                }
+            } catch (error) {
+                console.error('도구 로드 중 오류:', error);
+                document.getElementById('tools-body').innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-red-400">데이터 로드 중 오류가 발생했습니다</td></tr>';
+            }
+        }
+       
+        // 전체 도구 수 업데이트 함수
+        function updateTotalToolsCount(count) {
+            const countElement = document.getElementById('filtered-tools-count');
+            if (countElement) {
+                countElement.textContent = count;
+            }
+            updatefilterDescription();
+        }
+
+        // 필터 설명 업데이트 함수
+        function updatefilterDescription() {
+            const descriptionElement = document.getElementById('filter-description');
+            if (!descriptionElement) return;
+
+            if (selectedCategories.size > 0) {
+                const categoryNames = Array.from(selectedCategories).map(category => 
+                    getCategoryDisplayName(category)
+                );
+                
+                let description = categoryNames.length === 1
+                    ? `${categoryNames[0]} 가능한`
+                    : `${categoryNames.join(' 및 ')} 모두 가능한`;
+                
+                descriptionElement.textContent = description;
+            } else {
+                descriptionElement.textContent = '전체';
+            }
+        }
+
+        // 정렬 함수 추가
+        function sortTools(tools, sortKey) {
+            const toolsArr = Object.entries(tools);
+            switch(sortKey) {
+                case 'rating':
+                    toolsArr.sort((a, b) => (b[1].rating || 0) - (a[1].rating || 0));
+                    break;
+                case 'newest':
+                    toolsArr.sort((a, b) => (b[1].year || 0) - (a[1].year || 0));
+                    break;
+                case 'popular':
+                    toolsArr.sort((a, b) => (b[1].popularity || 0) - (a[1].popularity || 0));
+                    break;
+                default:
+                    break;
+            }
+            return Object.fromEntries(toolsArr);
+        }
+
+        // 이미지 URL 유효성 체크 함수 (가장 위에 선언)
+        // 이 함수는 이제 window에 할당되므로 템플릿에서 직접 호출할 수 있습니다.
+    </script>
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <h2 class="text-3xl font-bold mb-6">AI 도구 찾기</h2>
+        
+        <!-- Search Bar -->
+        <div class="mb-8">
+            <div class="flex">
+                <input type="text" id="search-input" placeholder="AI 도구 검색..." class="w-full px-4 py-3 text-gray-800 bg-gray-100 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="search-button" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-r-md">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Categories -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold mb-4">카테고리별 AI</h3>
+            <div class="flex flex-wrap gap-2" id="category-filters">
+                <button class="category-tab px-4 py-2 rounded-md text-sm bg-gray-800 text-white active" data-category="all">전체</button>
+                <button class="category-tab px-4 py-2 rounded-md text-sm bg-gray-800 text-white" data-category="text-generation">텍스트 생성</button>
+                <button class="category-tab px-4 py-2 rounded-md text-sm bg-gray-800 text-white" data-category="image-generation">이미지 생성</button>
+                <button class="category-tab px-4 py-2 rounded-md text-sm bg-gray-800 text-white" data-category="audio-generation">음성/오디오</button>
+                <button class="category-tab px-4 py-2 rounded-md text-sm bg-gray-800 text-white" data-category="video-generation">비디오 제작</button>
+                <button class="category-tab px-4 py-2 rounded-md text-sm bg-gray-800 text-white" data-category="coding-assistant">코드 작성</button>
+                <button class="category-tab px-4 py-2 rounded-md text-sm bg-gray-800 text-white" data-category="data-analysis">데이터 분석</button>
+                <button class="category-tab px-4 py-2 rounded-md text-sm bg-gray-800 text-white" data-category="marketing">마케팅</button>
+            </div>
+        </div>
+        
+        <!-- Filter Options -->
+        <div class="mb-8 bg-gray-800 p-4 rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">가격 필터</label>
+                    <select name="price" class="bg-gray-700 text-white w-full p-2 rounded-md">
+                        <option value="all">전체</option>
+                        <option value="free">무료</option>
+                        <option value="freemium">프리미엄</option>
+                        <option value="paid">유료</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">평점</label>
+                    <select name="rating" class="bg-gray-700 text-white w-full p-2 rounded-md">
+                        <option value="all">전체</option>
+                        <option value="4plus">4점 이상</option>
+                        <option value="3plus">3점 이상</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">정렬</label>
+                    <select name="sort" class="bg-gray-700 text-white w-full p-2 rounded-md">
+                        <option value="relevance">관련성</option>
+                        <option value="rating">평점 높은순</option>
+                        <option value="newest">최신순</option>
+                        <option value="popular">인기순</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tools List -->
+        <div class="overflow-x-auto mb-8">
+            <!-- 데스크탑/태블릿: 테이블 -->
+            <table class="min-w-full bg-gray-800 rounded-lg overflow-hidden table-fixed hidden sm:table" style="table-layout: fixed; width: 100%;">
+                <colgroup>
+                    <col style="width: 14rem;" /> <!-- 도구명 -->
+                    <col style="width: 18rem;" /> <!-- 설명 -->
+                    <col style="width: 14rem;" /> <!-- 가격 정책 (더 넓게) -->
+                    <col style="width: 15.4rem;" /> <!-- 주요 기능 (30% 축소) -->
+                    <col style="width: 12rem;" /> <!-- 사용 사례 -->
+                    <col style="width: 8rem;" /> <!-- 평점 -->
+                </colgroup>
+                <thead class="bg-gray-700">
+                    <tr>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">도구명</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">설명</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">가격 정책</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">주요 기능</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">사용 사례</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider">평점</th>
+                    </tr>
+                </thead>
+                <tbody id="tools-body" class="divide-y divide-gray-600">
+                    <!-- 도구 목록은 모두 JS에서 동적으로 렌더링됩니다. -->
+                </tbody>
+            </table>
+            <!-- 모바일: 카드 리스트 -->
+            <div id="tools-card-list" class="block sm:hidden"></div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="flex justify-center mt-8">
+            <nav aria-label="Page navigation">
+                <ul class="flex">
+                    <li>
+                        <button class="pagination-btn bg-gray-800 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-l active">
+                            1
+                        </button>
+                    </li>
+                    <li>
+                        <button class="pagination-btn bg-gray-800 hover:bg-blue-600 text-white font-bold py-2 px-4" style="display: none;">
+                            2
+                        </button>
+                    </li>
+                    <li>
+                        <button class="pagination-btn bg-gray-800 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r" style="display: none;">
+                            3
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </main>
+    
+    <!-- Footer Container -->
+  <div id="footer-container"></div>
+  <script>
+    fetch('footer.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('footer-container').innerHTML = data;
+      });
+  </script>
+  
+</body></html>

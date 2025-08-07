@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 도구 찾기</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="assets/css/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/optimized.css">
+    <script src="js/theme-manager.js"></script>
+
+    <!-- 다국어 관련 스크립트 -->
+    <script src="lang/en.js"></script>
+    <script src="lang/ko.js"></script>
+    <script src="lang/ja.js"></script>
+    <script src="lang/zh.js"></script>
+    <script src="lang/ru.js"></script>
+    <script src="lang/es.js"></script>
+    <script src="lang/pt.js"></script>
+    <script src="lang/ar.js"></script>
+    <script src="lang/vi.js"></script>
+    <script src="lang/id.js"></script>
+    <script src="lang/fr.js"></script>
+    <script src="lang/hi.js"></script>
+    <script src="js/translate.js"></script>
+
+    <!-- 테마 관련 CSS 변수 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        
+        :root {
+            /* 다크 모드 기본값 */
+            --bg-primary: #0F1217;
+            --bg-secondary: #1a1f2e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border-color: #2d3748;
+            --card-bg: #1a1f2e;
+            --hover-bg: #2d3748;
+            --input-bg: #2d3748;
+            --modal-bg: #1a1f2e;
+            --gradient-start: #7C3AED;
+            --gradient-end: #DB2777;
+            --primary: #4a35e8;
+            --dark-bg: #121620;
+            --card-hover: #232939;
+        }
+        
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7fafc;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --border-color: #e2e8f0;
+            --card-bg: #ffffff;
+            --hover-bg: #edf2f7;
+            --input-bg: #f7fafc;
+            --modal-bg: #ffffff;
+        }
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0B1120;
+            color: #f8fafc;
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        footer {
+            margin-top: auto;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            color: var(--gradient-start);
+        }
+        
+        .theme-toggle i {
+            font-size: 1.25rem;
+        }
+
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+             line-clamp: 3;          
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 검색 영역 스타일 */
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            justify-content: space-between;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .search-input {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.75rem 2.5rem 0.75rem 1rem;
+            width: 100%;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+
+        /* 카테고리 카드 스타일 */
+        .filter-card {
+            background-color: var(--card-bg);
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .filter-card:hover {
+            transform: translateY(-2px);
+            border-color: #4F46E5;
+        }
+
+        .filter-card.selected {
+            background-color: #312E81;
+            border: 2px solid #4F46E5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1), 0 2px 4px -1px rgba(79, 70, 229, 0.06);
+        }
+
+        /* 선택 해제된 카드에 hover 시 테두리 제거 */
+        .filter-card:not(.selected):hover {
+            border-color: transparent !important;
+        }
+
+        /* 결과 카운트 박스 스타일 */
+        .result-count-box {
+            background: linear-gradient(135deg, rgba(49, 46, 129, 0.9), rgba(79, 70, 229, 0.9));
+            border: none;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* 도구 카드 스타일 */
+        .tool-card {
+            background: linear-gradient(to bottom, rgba(18, 22, 32, 0.95), rgba(18, 22, 32, 1));
+            border-radius: 0.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            height: auto;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .tool-card:hover {
+            background-color: rgba(55, 65, 81, 0.5);
+            transform: translateY(-4px);
+        }
+
+        .tool-card img {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            object-fit: contain;
+        }
+
+        .tool-card .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-card .card-description {
+            color: #9CA3AF;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+            flex-grow: 1;
+            line-height: 1.3;
+        }
+
+        .tool-card .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .stars {
+            color: #FBBF24;
+            display: flex;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        /* 탭 스타일 */
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .tab-button.active {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        .tab-button:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 2rem;
+            background-color: #1a1f2e;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 모달 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal {
+            background-color: #1a1f2e;
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 28rem;
+            position: relative;
+            margin: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+
+        /* 상세 정보 영역 스타일 */
+        .detail-section {
+            background-color: #1e293b;
+            border-radius: 1rem;
+            margin-top: 1rem;
+            display: none;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .detail-section.active {
+            display: block;
+        }
+
+        .detail-header {
+            display: flex;
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-image {
+            width: 200px;
+            height: 200px;
+            background-color: #2d3748;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 2rem;
+        }
+
+        .detail-info {
+            flex: 1;
+        }
+
+        .detail-tabs {
+            display: flex;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: #1a1f2e;
+        }
+
+        .detail-tab {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-right: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #8892b0;
+        }
+
+        .detail-tab.active {
+            background-color: #4F46E5;
+            color: white;
+        }
+
+        .detail-content {
+            padding: 2rem;
+        }
+
+        .pros-cons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .pros-cons-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pros-cons-item i {
+            width: 24px;
+            text-align: center;
+            margin-right: 0.5rem;
+        }
+
+        .pros i {
+            color: #10B981;
+        }
+
+        .cons i {
+            color: #EF4444;
+        }
+
+        .tag {
+            background-color: #1e3a8a;
+            color: #93c5fd;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+            display: inline-block;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--highlight);
+            color: var(--highlight);
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(26, 115, 232, 0.1);
+        }
+
+        /* 기능 아이템 스타일 */
+        .feature-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+        }
+
+        .feature-item i {
+            color: #4F46E5;
+        }
+
+        /* 가격 정책 카드 스타일 */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .pricing-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .pricing-card.popular {
+            border: 1px solid #4F46E5;
+            position: relative;
+        }
+
+        /* 리뷰 카드 스타일 */
+        .review-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .review-author {
+            margin-left: 1rem;
+            font-weight: 500;
+        }
+
+        /* 소셜 로그인 버튼 스타일 */
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #2d3748;
+        }
+
+        .social-btn img {
+            width: 24px;
+            height: 24px;
+            margin-right: 0.75rem;
+        }
+
+        .social-btn.google {
+            background-color: #ffffff;
+            color: #1a1f2e;
+        }
+
+        .social-btn.google:hover {
+            background-color: #f3f4f6;
+        }
+
+        /* 입력 필드 스타일 */
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #1B2438;
+            border: 1px solid #2D3748;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+
+        /* 구분선 스타일 */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .divider-text {
+            padding: 0 1rem;
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        /* 프로필 메뉴 스타일 */
+        .profile-menu {
+            position: relative;
+        }
+
+        /* 글래스모피즘 효과 */
+        .glass-effect {
+            background: rgba(26, 31, 46, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* 카드 섹션 스타일 */
+        .card-section .tool-card,
+        .card-section .category-card,
+        .card-section .method-card {
+            background: var(--card-bg) !important;
+            border: 1.5px solid var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* 라이트 테마 스타일 */
+        [data-theme="light"] .card-section .tool-card,
+        [data-theme="light"] .card-section .category-card,
+        [data-theme="light"] .card-section .method-card {
+            background: none !important;
+            border: 1.5px solid #9CB6D7 !important;
+            color: #1a202c !important;
+        }
+
+        [data-theme="light"] body,
+        [data-theme="light"] main,
+        [data-theme="light"] .container.mx-auto,
+        [data-theme="light"] .result-count-box,
+        [data-theme="light"] .tab-content,
+        [data-theme="light"] .detail-section,
+        [data-theme="light"] .modal,
+        [data-theme="light"] .search-container,
+        [data-theme="light"] .search-input-wrapper,
+        [data-theme="light"] .filter-card,
+        [data-theme="light"] .tool-card,
+        [data-theme="light"] .pricing-card,
+        [data-theme="light"] .review-card {
+            background-color: #fff !important;
+            color: #1a202c !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        [data-theme="light"] .tab-content,
+        [data-theme="light"] .detail-section {
+            background-color: #f7fafc !important;
+        }
+
+        [data-theme="light"] .result-count-box {
+            background: linear-gradient(135deg, #e0e7ef 0%, #f7fafc 100%) !important;
+            color: #1a202c !important;
+        }
+
+        [data-theme="light"] .filter-card.selected {
+            background-color: #e0e7ef !important;
+            border-color: #4F46E5 !important;
+        }
+
+        [data-theme="light"] .tool-card {
+            background: #fff !important;
+            border: 1.5px solid #9CB6D7 !important;
+            color: #1a202c !important;
+        }
+
+        [data-theme="light"] .tool-card:hover {
+            background-color: #f3f4f6 !important;
+        }
+
+        [data-theme="light"] .search-input {
+            background-color: #f7fafc !important;
+            color: #1a202c !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+
+        [data-theme="light"] .input-field {
+            background-color: #f7fafc !important;
+            color: #1a202c !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+
+        [data-theme="light"] .tab-button {
+            background-color: #f7fafc !important;
+            color: #4a5568 !important;
+        }
+
+        [data-theme="light"] .tab-button.active {
+            background-color: #4F46E5 !important;
+            color: #fff !important;
+        }
+
+        [data-theme="light"] .pros-cons-item {
+            background-color: #f3f4f6 !important;
+            color: #1a202c !important;
+        }
+
+        [data-theme="light"] .pricing-card {
+            background-color: #f3f4f6 !important;
+            color: #1a202c !important;
+        }
+
+        [data-theme="light"] .review-card {
+            background-color: #f3f4f6 !important;
+            color: #1a202c !important;
+        }
+
+        [data-theme="light"] .category-tag {
+            background: #e0e7ef !important;
+            color: #1a202c !important;
+        }
+
+        [data-theme="light"] .text-gray-400,
+        [data-theme="light"] .text-gray-500,
+        [data-theme="light"] .text-gray-300 {
+            color: #4a5568 !important;
+        }
+
+        [data-theme="light"] .bg-blue-900\/50 {
+            background-color: #e0e7ef !important;
+            color: #2563eb !important;
+        }
+
+        [data-theme="light"] .text-blue-300 {
+            color: #2563eb !important;
+        }
+
+        [data-theme="light"] .glass-effect {
+            background: #fff !important;
+            border-bottom: 1.5px solid #e2e8f0 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        [data-theme="light"] .tool-card,
+        [data-theme="light"] .tool-card h3,
+        [data-theme="light"] .tool-card p,
+        [data-theme="light"] .tool-card span,
+        [data-theme="light"] .tool-card .text-white,
+        [data-theme="light"] .tool-card .text-gray-400,
+        [data-theme="light"] .tool-card .text-gray-300 {
+            color: #1a202c !important;
+        }
+
+        [data-theme="light"] .tool-card .fa-star,
+        [data-theme="light"] .tool-card .fa-star-half-alt,
+        [data-theme="light"] .tool-card .far.fa-star,
+        [data-theme="light"] .review-card .fa-star,
+        [data-theme="light"] .review-card .fa-star-half-alt,
+        [data-theme="light"] .review-card .far.fa-star {
+            color: #FBBF24 !important;
+        }
+
+        [data-theme="light"] .filter-card {
+            border: 1.5px solid #9CB6D7 !important;
+        }
+        [data-theme="dark"] select,
+        [data-theme="dark"] .bg-white {
+            background-color: #1a1f2e !important;
+            color: #f8fafc !important;
+            border-color: #2d3748 !important;
+        }
+        [data-theme="dark"] .text-gray-800,
+        [data-theme="dark"] .text-gray-700,
+        [data-theme="dark"] .text-gray-600 {
+            color: #f8fafc !important;
+        }
+        .recipe-tool-card {
+            min-height: 100px;
+            height: 100px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            border-radius: 0.75rem;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(147, 51, 234, 0.08));
+            border: 1.5px solid rgba(79, 70, 229, 0.18);
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.06);
+            position: relative;
+            transition: box-shadow 0.2s, border 0.2s;
+        }
+        .recipe-tool-card:hover {
+            border-color: #7C3AED;
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.12);
+        }
+        .recipe-tool-card .card-controls {
+            position: absolute;
+            top: 3px;
+            right: 6px;
+            display: flex;
+            gap: 1px;
+            z-index: 2;
+        }
+        .recipe-tool-card .remove-btn,
+        .recipe-tool-card .move-btn {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 3px;
+            color: #7C3AED;
+            font-size: 0.7rem;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .recipe-tool-card .remove-btn:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+        .recipe-tool-card .move-btn:hover {
+            background: #e0e7ff;
+            color: #2563eb;
+            border-color: #2563eb;
+        }
+        .recipe-tool-card .move-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .recipe-tool-card img {
+            width: 32px;
+            height: 32px;
+            border-radius: 0.5rem;
+            object-fit: contain;
+            margin-bottom: 0.5rem;
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .recipe-tool-card .card-content {
+            flex: 1;
+            min-width: 0;
+            padding-right: 0;
+        }
+        .recipe-tool-card .card-header {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .recipe-tool-card .card-header .font-bold {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #4a35e8;
+        }
+        .recipe-tool-card .card-description {
+            color: #6b7280;
+            font-size: 0.7rem;
+            margin-bottom: 0.25rem;
+            word-break: break-all;
+            line-height: 1.2;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        /* 레시피 정보 입력 영역 스타일 */
+        .recipe-info-section {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(147, 51, 234, 0.05));
+            border: 1px solid rgba(79, 70, 229, 0.1);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .recipe-info-section label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .recipe-info-section input,
+        .recipe-info-section textarea {
+            transition: all 0.2s ease;
+        }
+
+        .recipe-info-section input:focus,
+        .recipe-info-section textarea:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+        }
+
+        /* 다크 테마에서의 입력 필드 스타일 */
+        [data-theme="dark"] .recipe-info-section {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(147, 51, 234, 0.1));
+            border-color: rgba(79, 70, 229, 0.2);
+        }
+
+        [data-theme="dark"] .recipe-info-section input,
+        [data-theme="dark"] .recipe-info-section textarea {
+            background-color: rgba(26, 31, 46, 0.8) !important;
+            border-color: rgba(79, 70, 229, 0.3) !important;
+            color: #f8fafc !important;
+        }
+
+        [data-theme="dark"] .recipe-info-section input:focus,
+        [data-theme="dark"] .recipe-info-section textarea:focus {
+            border-color: #4F46E5 !important;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
+        }
+
+        /* 라이트 테마에서의 입력 필드 스타일 */
+        [data-theme="light"] .recipe-info-section {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.03), rgba(147, 51, 234, 0.03));
+            border-color: rgba(79, 70, 229, 0.15);
+        }
+
+        [data-theme="light"] .recipe-info-section input,
+        [data-theme="light"] .recipe-info-section textarea {
+            background-color: #ffffff !important;
+            border-color: #e2e8f0 !important;
+            color: #1a202c !important;
+        }
+
+        [data-theme="light"] .recipe-info-section input:focus,
+        [data-theme="light"] .recipe-info-section textarea:focus {
+            border-color: #4F46E5 !important;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+        }
+
+        /* 모드 선택 버튼 스타일 */
+        .mode-button {
+            transition: all 0.3s ease;
+        }
+
+        .mode-button.active {
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .mode-button:not(.active) {
+            background: rgba(156, 163, 175, 0.1);
+            color: #6B7280;
+            border: 1px solid rgba(156, 163, 175, 0.2);
+        }
+
+        .mode-button:not(.active):hover {
+            background: rgba(156, 163, 175, 0.2);
+            color: #374151;
+        }
+
+        /* 이미지 업로드 영역 스타일 */
+        .image-upload-area {
+            border: 2px dashed rgba(156, 163, 175, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .image-upload-area:hover {
+            border-color: #4F46E5;
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .image-preview-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-remove-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .image-remove-btn:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: scale(1.1);
+        }
+
+        /* 상세 도구 설명 영역 스타일 */
+        .detailed-tool-section {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(147, 51, 234, 0.05));
+            border: 1px solid rgba(79, 70, 229, 0.1);
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .detailed-tool-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.15);
+        }
+
+        [data-theme="dark"] .detailed-tool-section {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(147, 51, 234, 0.1));
+            border-color: rgba(79, 70, 229, 0.2);
+        }
+
+        [data-theme="light"] .detailed-tool-section {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.03), rgba(147, 51, 234, 0.03));
+            border-color: rgba(79, 70, 229, 0.15);
+        }
+
+        /* 도구별 이미지 업로드 영역 스타일 */
+        .tool-image-upload-area {
+            border: 2px dashed rgba(156, 163, 175, 0.3);
+            transition: all 0.3s ease;
+            border-radius: 0.5rem;
+        }
+
+        .tool-image-upload-area:hover {
+            border-color: #4F46E5;
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        /* 도구별 텍스트 영역 스타일 */
+        .tool-textarea {
+            transition: all 0.3s ease;
+            border: 1.5px solid var(--border-color);
+        }
+
+        .tool-textarea:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+            border-color: #4F46E5;
+        }
+
+        /* 레시피 정보 입력 영역 개선 */
+        .recipe-info-section {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(147, 51, 234, 0.08));
+            border: 1.5px solid rgba(79, 70, 229, 0.18);
+            border-radius: 0.75rem;
+            padding: 2.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+        }
+
+        /* 레시피 미리보기 그리드 스타일 */
+        #selectedToolsContainer {
+            min-height: 220px;
+            max-height: 220px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        .recipe-info-section label {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: block;
+            color: var(--text-primary);
+        }
+
+        .recipe-info-section input,
+        .recipe-info-section textarea,
+        .recipe-info-section select {
+            transition: all 0.2s ease;
+            border: 1.5px solid var(--border-color);
+        }
+
+        .recipe-info-section input:focus,
+        .recipe-info-section textarea:focus,
+        .recipe-info-section select:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+            border-color: #4F46E5;
+        }
+
+        /* 카테고리 선택 영역 스타일 */
+        .category-select-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        [data-theme="light"] .category-select-section {
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        /* 설명 영역 구분 */
+        .description-section {
+            border-left: 3px solid #4F46E5;
+            padding-left: 1rem;
+            margin: 1rem 0;
+        }
+
+        .description-section label {
+            color: #4F46E5;
+            font-weight: 700;
+        }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore, doc, getDoc, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { firebaseConfig } from './js/config.js';
+        import { dbManager } from './js/db-manager.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+                const auth = getAuth(app);
+
+                window.app = app;
+                window.db = db;
+                window.auth = auth;
+                window.doc = doc;
+                window.getDoc = getDoc;
+
+                // DBManager 초기화
+                await dbManager.init(app);
+                
+                window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
+                    detail: { app, db, auth } 
+                }));
+            } catch (error) {
+                console.error('Firebase 초기화 오류:', error);
+            }
+        });
+    </script>
+
+    <!-- 공통 모듈 -->
+    <script type="module" src="js/auth-manager.js"></script>
+</head>
+<body>
+    <div id="header-container"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.body.setAttribute('data-theme', savedTheme);
+        });
+
+        fetch('header.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('header-container').innerHTML = data;
+                const script = document.createElement('script');
+                script.src = 'js/header-menu.js';
+                script.onload = function() {
+                    if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
+                    if (window.initMobileMenuToggle) window.initMobileMenuToggle();
+                    if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
+
+                    // === 폼 이벤트 연결 추가 ===
+                    // 로그인 폼
+                    const loginForm = document.getElementById('loginForm');
+                    if (loginForm) {
+                        loginForm.addEventListener('submit', async (e) => {
+                            e.preventDefault();
+                            const email = document.getElementById('loginEmail').value;
+                            const password = document.getElementById('loginPassword').value;
+                            if (window.handleEmailLogin) {
+                                await window.handleEmailLogin(email, password);
+                            }
+                        });
+                    }
+                    // 회원가입 폼
+                    const signupForm = document.getElementById('signupForm');
+                    if (signupForm) {
+                        signupForm.addEventListener('submit', async (e) => {
+                            e.preventDefault();
+                            const fullName = document.getElementById('fullName').value;
+                            const email = document.getElementById('signupEmail').value;
+                            const password = document.getElementById('signupPassword').value;
+                            if (window.handleEmailSignup) {
+                                await window.handleEmailSignup(fullName, email, password);
+                            }
+                        });
+                    }
+                    // 소셜 로그인 버튼
+                    const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
+                    googleBtns.forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            if (window.handleSocialLogin) {
+                                window.handleSocialLogin('google');
+                            }
+                        });
+                    });
+                    // === 폼 이벤트 연결 끝 ===
+                };
+                document.body.appendChild(script);
+            });
+    </script>
+    </head>
+    
+    <div id="header-container"></div>
+    <script>
+        fetch('header.html').then(r=>r.text()).then(d=>{document.getElementById('header-container').innerHTML=d});
+    </script>
+    <main class="container mx-auto px-4 py-8">
+        <div class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">커스텀 레시피 빌더</h2>
+            <p class="text-gray-600 mb-8">원하는 AI 도구들을 조합하여 나만의 워크플로우를 만드세요.</p>
+        </div>
+        <!-- AI 도구 선택 영역 -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-16">
+            <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-6">
+                <i class="fas fa-robot text-blue-500 mr-2"></i>AI 도구 선택
+            </h3>
+            <div class="mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">카테고리</label>
+                        <select id="toolCategoryFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">전체</option>
+                            <option value="text-generation">텍스트 생성</option>
+                            <option value="image-generation">이미지 생성</option>
+                            <option value="audio-generation">음성/오디오</option>
+                            <option value="video-generation">비디오 제작</option>
+                            <option value="coding-assistant">코드 작성</option>
+                            <option value="data-analysis">데이터 분석</option>
+                            <option value="marketing">마케팅</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-search text-blue-500 mr-2"></i>키워드 검색
+                        </label>
+                        <input type="text" id="toolKeywordFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="도구명, 설명, 기능 등을 검색하세요">
+                    </div>
+                </div>
+            </div>
+            <div class="space-y-2" id="toolSelector"></div>
+            <!-- 페이징 컨트롤 -->
+            <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    <span id="paginationInfo">0-0 / 0개 도구</span>
+                </div>
+                <div class="flex gap-2">
+                    <button id="prevPage" class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-chevron-left mr-1"></i>이전
+                    </button>
+                    <div id="pageNumbers" class="flex gap-1"></div>
+                    <button id="nextPage" class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                        다음<i class="fas fa-chevron-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 레시피 미리보기 영역 -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-16">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-6">
+                    <i class="fas fa-eye text-green-500 mr-2"></i>레시피 미리보기
+                </h3>
+
+                <!-- 선택된 도구 목록 (4개씩 2줄) -->
+                <div id="recipePreview" class="mb-6">
+                    <div class="text-center text-gray-500 dark:text-gray-400 py-8" id="emptyPreview">
+                        <i class="fas fa-plus-circle text-4xl mb-4"></i>
+                        <p>AI 도구를 선택하여 레시피를 만들어보세요</p>
+                    </div>
+                    <div id="selectedToolsContainer" style="display: none;">
+                        <!-- 선택된 도구들이 여기에 4개씩 2줄로 배치됩니다 -->
+                    </div>
+                </div>
+                
+                <!-- 레시피 작성 타입 선택 버튼 -->
+                <div class="mb-8">
+                    <div class="flex gap-4">
+                        <button id="integratedMode" class="flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 bg-blue-500 text-white hover:bg-blue-600">
+                            <i class="fas fa-layer-group mr-2"></i>도구 조합 통합 작성
+                        </button>
+                        <button id="detailedMode" class="flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-500">
+                            <i class="fas fa-tools mr-2"></i>상세 도구 사용 작성
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 레시피 정보 입력 영역 -->
+                <div id="recipeInfoSection" class="recipe-info-section" style="display: none;">
+                    <!-- 제목 입력 영역 -->
+                    <div class="mb-8">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-edit text-blue-500 mr-2"></i>레시피 제목
+                        </label>
+                                                    <input type="text" id="recipeTitle" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="레시피 제목을 입력하세요">
+                    </div>
+
+                    <!-- 카테고리, 난의도, 타입 선택 영역 -->
+                    <div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-tags text-orange-500 mr-2"></i>레시피 카테고리
+                            </label>
+                            <select id="recipeCategory" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">카테고리를 선택하세요</option>
+                                <option value="text-generation">텍스트 생성</option>
+                                <option value="image-generation">이미지 생성</option>
+                                <option value="audio-generation">음성/오디오</option>
+                                <option value="video-generation">비디오 제작</option>
+                                <option value="coding-assistant">코드 작성</option>
+                                <option value="data-analysis">데이터 분석</option>
+                                <option value="marketing">마케팅</option>
+                                <option value="productivity">생산성</option>
+                                <option value="design">디자인</option>
+                                <option value="education">교육</option>
+                                <option value="business">비즈니스</option>
+                                <option value="other">기타</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-share-alt text-green-500 mr-2"></i>레시피 난의도
+                            </label>
+                            <select id="recipeDifficulty" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">전체</option>
+                                <option value="beginner">초급</option>
+                                <option value="intermediate">중급</option>
+                                <option value="advanced">고급</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                <i class="fas fa-share-alt text-green-500 mr-2"></i>레시피 타입
+                            </label>
+                            <select id="recipeShareType" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="Private" selected>비공개 레시피</option>
+                                <option value="Public">전체 공개 레시피</option>
+                                <option value="partly_public">부분 공유 레시피</option>
+                            </select>
+                        </div>
+                    </div>
+                                        
+                    <!-- 레시피 기본 설명 영역 -->
+                    <div class="mb-12 description-section">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-align-left text-green-500 mr-2"></i>레시피 기본 설명
+                        </label>
+                        <textarea id="recipeBasicDescription" rows="5" class="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="레시피의 전체적인 목적과 사용 방법에 대한 기본 설명을 입력하세요"></textarea>
+                    </div>
+                    
+                    <!-- 통합 설명 영역 (도구 조합 통합 작성 모드) -->
+                    <div id="integratedDescriptionSection" class="description-section mb-12">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-layer-group text-purple-500 mr-2"></i>도구 조합 통합 설명
+                        </label>
+                        <textarea id="recipeTotalDescription" rows="4" class="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="선택한 도구들을 어떻게 조합하여 사용하는지에 대한 상세한 설명을 입력하세요"></textarea>
+                    </div>
+                    
+                    <!-- 도구 조합 장점 및 핵심 포인트 영역 -->
+                    <div class="mb-12 description-section">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-users text-purple-500 mr-2"></i>도구 조합 장점 및 핵심 포인트
+                        </label>
+                        <div class="space-y-4">
+                            <input type="text" id="advantagePoint1" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="첫 번째 장점 또는 핵심 포인트를 입력하세요">
+                            <input type="text" id="advantagePoint2" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="두 번째 장점 또는 핵심 포인트를 입력하세요">
+                            <input type="text" id="advantagePoint3" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="세 번째 장점 또는 핵심 포인트를 입력하세요">
+                        </div>
+                    </div>
+
+                    
+                    <!-- 레시피 이용 추천 그룹 선택 영역 -->
+                    <div class="mb-12">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <i class="fas fa-users text-purple-500 mr-2"></i>레시피 이용 추천 그룹 (최대 3개 선택)
+                        </label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="office-worker" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">회사원</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="university-student" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">대학생</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="professional" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">전문직</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="video-audio" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">영상/음성 관련</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="marketing" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">마케팅 직군</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="management-support" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">경영지원 직군</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="researcher" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">연구원</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="student" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">중고생</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="developer" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">개발직군</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="medical" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">의료 관련</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="design" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">디자인 직군</span>
+                            </label>
+                            <label class="flex items-center space-x-1 cursor-pointer">
+                                <input type="checkbox" name="recommendedGroups" value="c-level" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="text-sm text-gray-700 dark:text-gray-300">C level 임원</span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 상세 도구 설명 영역 (상세 도구 사용 작성 모드) -->
+                <div id="detailedToolsSection" class="recipe-info-section" style="display: none;">
+                    <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">
+                        <i class="fas fa-wrench text-orange-500 mr-2"></i>도구별 상세 설명
+                    </h4>
+                    <div id="detailedToolsList"></div>
+                </div>
+
+                <!-- 이미지 업로드 영역 -->
+                <div class="mt-12">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-image text-purple-500 mr-2"></i>참고 이미지 및 스크린 캡쳐
+                    </label>
+                    <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-3 text-center">
+                        <div class="flex items-center justify-center mb-2">
+                            <i class="fas fa-cloud-upload-alt text-xl text-gray-400 mr-2"></i>
+                            <span class="text-gray-500 dark:text-gray-400 text-sm">Drop images here</span>
+                        </div>
+                        <input type="file" id="recipeImages" multiple accept="image/*" class="hidden">
+                        <button type="button" onclick="document.getElementById('recipeImages').click()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-sm transition-colors duration-300">
+                            이미지 선택
+                        </button>
+                    </div>
+                    <div id="imagePreview" class="grid grid-cols-4 gap-2 mt-3"></div>
+                </div>
+
+                <div class="mt-12">
+                    <button id="saveRecipe" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-lg transition-colors duration-300 disabled:opacity-50" disabled="">
+                        <i class="fas fa-save mr-2"></i>레시피 저장
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="footer-container"></div>
+    <script>fetch('footer.html').then(r=>r.text()).then(d=>{document.getElementById('footer-container').innerHTML=d});</script>
+    <script type="module">
+import { dbManager } from './js/db-manager.js';
+
+let selectedTools = [];
+let allTools = [];
+let currentPage = 1;
+let itemsPerPage = 15;
+let filteredTools = [];
+let currentMode = 'integrated'; // 'integrated' 또는 'detailed'
+let uploadedImages = [];
+
+// 도구 카테고리별 아이콘 반환 함수
+function getToolIcon(category) {
+    const iconMap = {
+        'text-generation': '<i class="fas fa-font text-white text-sm"></i>',
+        'image-generation': '<i class="fas fa-image text-white text-sm"></i>',
+        'audio-generation': '<i class="fas fa-music text-white text-sm"></i>',
+        'video-generation': '<i class="fas fa-video text-white text-sm"></i>',
+        'coding-assistant': '<i class="fas fa-code text-white text-sm"></i>',
+        'data-analysis': '<i class="fas fa-chart-bar text-white text-sm"></i>',
+        'marketing': '<i class="fas fa-bullhorn text-white text-sm"></i>',
+        'productivity': '<i class="fas fa-tasks text-white text-sm"></i>',
+        'design': '<i class="fas fa-palette text-white text-sm"></i>',
+        'education': '<i class="fas fa-graduation-cap text-white text-sm"></i>',
+        'business': '<i class="fas fa-briefcase text-white text-sm"></i>'
+    };
+    return iconMap[category] || '<i class="fas fa-bars text-white text-sm"></i>';
+}
+
+// 도구 카테고리별 그라데이션 색상 반환 함수
+function getToolGradient(category) {
+    const gradientMap = {
+        'text-generation': 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
+        'image-generation': 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+        'audio-generation': 'linear-gradient(135deg, #EC4899, #DB2777)',
+        'video-generation': 'linear-gradient(135deg, #F59E0B, #D97706)',
+        'coding-assistant': 'linear-gradient(135deg, #10B981, #059669)',
+        'data-analysis': 'linear-gradient(135deg, #6366F1, #4F46E5)',
+        'marketing': 'linear-gradient(135deg, #EF4444, #DC2626)',
+        'productivity': 'linear-gradient(135deg, #06B6D4, #0891B2)',
+        'design': 'linear-gradient(135deg, #F97316, #EA580C)',
+        'education': 'linear-gradient(135deg, #84CC16, #65A30D)',
+        'business': 'linear-gradient(135deg, #6B7280, #4B5563)'
+    };
+    return gradientMap[category] || 'linear-gradient(135deg, #8B5CF6, #EC4899)';
+}
+
+function renderToolSelector(tools) {
+    const container = document.getElementById('toolSelector');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (!tools || tools.length === 0) {
+        container.innerHTML = '<div class="text-gray-400 text-center py-8">도구가 없습니다.</div>';
+        return;
+    }
+    
+    // 페이징 처리
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const toolsToShow = tools.slice(startIndex, endIndex);
+    
+    // 4열 그리드 컨테이너 생성
+    const gridContainer = document.createElement('div');
+    gridContainer.className = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3';
+    
+    toolsToShow.forEach(tool => {
+        const div = document.createElement('div');
+        div.className = 'tool-card cursor-pointer';
+        div.innerHTML = `
+            <div class="card-header">
+                ${tool.logoUrl ? `<img src="${tool.logoUrl}" alt="${tool.name}" />` : '<div class="w-8 h-8 bg-gray-300 rounded-lg flex items-center justify-center"><i class="fas fa-robot text-gray-500 text-sm"></i></div>'}
+                <span class="font-bold text-sm">${tool.name}</span>
+            </div>
+            <div class="card-description">${tool.description || '설명이 없습니다.'}</div>
+            <div class="card-footer">
+                <div class="flex items-center gap-1">
+                    ${tool.category ? `<span class="text-xs bg-blue-100 text-blue-800 px-1 py-0.5 rounded">${tool.category}</span>` : ''}
+                    ${tool.difficulty ? `<span class="text-xs bg-green-100 text-green-800 px-1 py-0.5 rounded">${tool.difficulty}</span>` : ''}
+                </div>
+            </div>
+        `;
+        
+        // 클릭 시 우측에 담기
+        div.addEventListener('click', () => {
+            if (!selectedTools.find(t => t.id === tool.id)) {
+                if (selectedTools.length >= 8) {
+                    alert('최대 8개의 도구만 선택할 수 있습니다.');
+                    return;
+                }
+                selectedTools.push(tool);
+                updateRecipePreview();
+                updateDetailedToolsSection();
+                updateSaveButton();
+            }
+        });
+        
+        gridContainer.appendChild(div);
+    });
+    
+    container.appendChild(gridContainer);
+    
+    // 페이징 정보 업데이트
+    updatePagination(tools.length);
+}
+
+function updateRecipePreview() {
+    const emptyPreview = document.getElementById('emptyPreview');
+    const selectedToolsContainer = document.getElementById('selectedToolsContainer');
+    
+    if (!emptyPreview || !selectedToolsContainer) return;
+    
+    if (selectedTools.length === 0) {
+        emptyPreview.style.display = 'block';
+        selectedToolsContainer.style.display = 'none';
+        selectedToolsContainer.innerHTML = '';
+        return;
+    }
+    
+    emptyPreview.style.display = 'none';
+    selectedToolsContainer.style.display = 'grid';
+    selectedToolsContainer.innerHTML = '';
+    
+    selectedTools.forEach((tool, idx) => {
+        const div = document.createElement('div');
+        div.className = 'recipe-tool-card';
+        div.innerHTML = `
+            <div class="card-controls">
+                <button class="move-btn" title="위로" data-dir="up" ${idx === 0 ? 'disabled' : ''}>&#8593;</button>
+                <button class="move-btn" title="아래로" data-dir="down" ${idx === selectedTools.length - 1 ? 'disabled' : ''}>&#8595;</button>
+                <button class="remove-btn" title="삭제">&times;</button>
+            </div>
+            <div class="card-content">
+                <div class="card-header">
+                    ${tool.logoUrl ? `<img src="${tool.logoUrl}" alt="${tool.name}" />` : '<div class="w-8 h-8 bg-gray-300 rounded-lg flex items-center justify-center"><i class="fas fa-robot text-gray-500 text-xs"></i></div>'}
+                    <span class="font-bold">${tool.name}</span>
+                </div>
+                <div class="card-description">${tool.description || '설명이 없습니다.'}</div>
+            </div>
+        `;
+        
+        // 삭제 버튼 이벤트
+        div.querySelector('.remove-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectedTools.splice(idx, 1);
+            updateRecipePreview();
+            updateDetailedToolsSection();
+            updateSaveButton();
+        });
+        
+        // 위/아래 이동 버튼 이벤트
+        div.querySelectorAll('.move-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const dir = btn.getAttribute('data-dir');
+                if (dir === 'up' && idx > 0) {
+                    [selectedTools[idx-1], selectedTools[idx]] = [selectedTools[idx], selectedTools[idx-1]];
+                    updateRecipePreview();
+                    updateDetailedToolsSection();
+                } else if (dir === 'down' && idx < selectedTools.length-1) {
+                    [selectedTools[idx+1], selectedTools[idx]] = [selectedTools[idx], selectedTools[idx+1]];
+                    updateRecipePreview();
+                    updateDetailedToolsSection();
+                }
+            });
+        });
+        
+        selectedToolsContainer.appendChild(div);
+    });
+}
+
+function updateSaveButton() {
+    const saveBtn = document.getElementById('saveRecipe');
+    const recipeInfoSection = document.getElementById('recipeInfoSection');
+    const detailedToolsSection = document.getElementById('detailedToolsSection');
+    
+    if (saveBtn) {
+        saveBtn.disabled = selectedTools.length === 0;
+    }
+    
+    // 레시피 정보 입력 영역 표시/숨김
+    if (recipeInfoSection) {
+        if (selectedTools.length > 0) {
+            recipeInfoSection.style.display = 'block';
+        } else {
+            recipeInfoSection.style.display = 'none';
+        }
+    }
+    
+    // 상세 도구 설명 영역 표시/숨김
+    if (detailedToolsSection) {
+        if (selectedTools.length > 0 && currentMode === 'detailed') {
+            detailedToolsSection.style.display = 'block';
+        } else {
+            detailedToolsSection.style.display = 'none';
+        }
+    }
+}
+
+function updateDetailedToolsSection() {
+    const detailedToolsList = document.getElementById('detailedToolsList');
+    if (!detailedToolsList || currentMode !== 'detailed') return;
+    
+    detailedToolsList.innerHTML = '';
+    
+    selectedTools.forEach((tool, idx) => {
+        const toolDiv = document.createElement('div');
+        toolDiv.className = 'detailed-tool-section p-6 mb-6';
+        toolDiv.innerHTML = `
+            <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-lg mr-3 flex items-center justify-center" style="background: ${getToolGradient(tool.category)};">
+                    ${tool.logoUrl ? `<img src="${tool.logoUrl}" alt="${tool.name}" class="w-6 h-6 rounded">` : getToolIcon(tool.category)}
+                </div>
+                <h5 class="font-semibold text-gray-800 dark:text-gray-200 text-lg">= [${tool.name}] 사용 설명</h5>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <textarea 
+                        class="w-full px-4 py-3 tool-textarea rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" 
+                        rows="6" 
+                        placeholder="레시피에 대한 설명을 입력하세요"
+                        data-tool-id="${tool.id}"
+                        data-tool-name="${tool.name}"
+                    ></textarea>
+                </div>
+                <div class="lg:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        <i class="fas fa-image text-purple-500 mr-2"></i>참고 이미지 및 스크린 캡쳐
+                    </label>
+                    <div class="space-y-3">
+                        <button type="button" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-300 text-sm" onclick="document.querySelector('.tool-image-input[data-tool-id=\\'${tool.id}\\']').click()">
+                            이미지 선택
+                        </button>
+                        <input type="file" class="tool-image-input hidden" multiple accept="image/*" data-tool-id="${tool.id}">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="w-full h-20 tool-image-upload-area flex items-center justify-center">
+                                <span class="text-gray-500 dark:text-gray-400 text-xs">이미지</span>
+                            </div>
+                            <div class="w-full h-20 tool-image-upload-area flex items-center justify-center">
+                                <span class="text-gray-500 dark:text-gray-400 text-xs">이미지</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tool-image-preview grid grid-cols-2 gap-2 mt-3" data-tool-id="${tool.id}"></div>
+        `;
+        
+        detailedToolsList.appendChild(toolDiv);
+        
+        // 도구별 이미지 업로드 이벤트
+        const imageInput = toolDiv.querySelector('.tool-image-input');
+        imageInput.addEventListener('change', handleToolImageUpload);
+    });
+}
+
+function handleToolImageUpload(event) {
+    const toolId = event.target.getAttribute('data-tool-id');
+    const files = event.target.files;
+    const previewContainer = document.querySelector(`.tool-image-preview[data-tool-id="${toolId}"]`);
+    
+    if (!previewContainer) return;
+    
+    // 이미지 개수 제한 (최대 2개)
+    if (files.length > 2) {
+        alert('도구별 이미지는 최대 2개까지 업로드할 수 있습니다.');
+        return;
+    }
+    
+    // 기존 이미지 제거
+    previewContainer.innerHTML = '';
+    
+    Array.from(files).forEach((file, index) => {
+        if (file.type.startsWith('image/')) {
+            // 파일 크기 제한 (2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert(`이미지 파일 "${file.name}"이 너무 큽니다. 2MB 이하의 파일을 선택해주세요.`);
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // base64 크기 제한 (300KB - Firestore 제한 준수)
+                if (e.target.result.length > 300000) {
+                    alert(`이미지 파일 "${file.name}"이 너무 큽니다. 더 작은 이미지를 선택해주세요.`);
+                    return;
+                }
+                
+                // 이미지 압축 시도
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // 이미지 크기 제한 (최대 800x600)
+                    const maxWidth = 800;
+                    const maxHeight = 600;
+                    let { width, height } = img;
+                    
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // 이미지 그리기 및 압축
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // 70% 품질
+                    
+                    // 압축된 이미지 크기 확인
+                    if (compressedDataUrl.length > 200000) { // 200KB 제한
+                        alert(`이미지 파일 "${file.name}"을 압축했지만 여전히 너무 큽니다. 더 작은 이미지를 선택해주세요.`);
+                        return;
+                    }
+                    
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'relative w-full h-20 tool-image-upload-area overflow-hidden';
+                    imgDiv.innerHTML = `
+                        <img src="${compressedDataUrl}" alt="Preview" class="w-full h-full object-cover rounded-lg">
+                        <button class="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center transition-colors duration-200 shadow-lg" onclick="this.parentElement.remove()">×</button>
+                    `;
+                    previewContainer.appendChild(imgDiv);
+                };
+                img.src = e.target.result;
+            };
+            
+            reader.onerror = function() {
+                alert(`이미지 파일 "${file.name}"을 읽는 중 오류가 발생했습니다.`);
+            };
+            
+            reader.readAsDataURL(file);
+        } else {
+            alert(`"${file.name}"은 지원되지 않는 파일 형식입니다. 이미지 파일을 선택해주세요.`);
+        }
+    });
+}
+
+function switchMode(mode) {
+    currentMode = mode;
+    const integratedBtn = document.getElementById('integratedMode');
+    const detailedBtn = document.getElementById('detailedMode');
+    const integratedSection = document.getElementById('integratedDescriptionSection');
+    const detailedSection = document.getElementById('detailedToolsSection');
+    
+    if (mode === 'integrated') {
+        integratedBtn.className = 'flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 bg-blue-500 text-white hover:bg-blue-600';
+        detailedBtn.className = 'flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-500';
+        if (integratedSection) integratedSection.style.display = 'block';
+        if (detailedSection) detailedSection.style.display = 'none';
+    } else {
+        integratedBtn.className = 'flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-500';
+        detailedBtn.className = 'flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 bg-blue-500 text-white hover:bg-blue-600';
+        if (integratedSection) integratedSection.style.display = 'none';
+        if (detailedSection) detailedSection.style.display = 'block';
+        updateDetailedToolsSection();
+    }
+    
+    updateSaveButton();
+}
+
+function updatePagination(totalItems) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    // 페이징 정보 업데이트
+    const paginationInfo = document.getElementById('paginationInfo');
+    if (paginationInfo) {
+        paginationInfo.textContent = `${startItem}-${endItem} / ${totalItems}개 도구`;
+    }
+    
+    // 이전/다음 버튼 상태 업데이트
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    
+    if (prevBtn) {
+        prevBtn.disabled = currentPage === 1;
+    }
+    if (nextBtn) {
+        nextBtn.disabled = currentPage === totalPages || totalPages === 0;
+    }
+    
+    // 페이지 번호 버튼 생성
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    if (pageNumbersContainer) {
+        pageNumbersContainer.innerHTML = '';
+        
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `px-3 py-1 text-sm rounded ${
+                i === currentPage 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+            }`;
+            pageBtn.textContent = i;
+            pageBtn.addEventListener('click', () => {
+                currentPage = i;
+                renderToolSelector(filteredTools);
+            });
+            pageNumbersContainer.appendChild(pageBtn);
+        }
+    }
+}
+
+function goToPage(page) {
+    const totalPages = Math.ceil(filteredTools.length / itemsPerPage);
+    if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        renderToolSelector(filteredTools);
+    }
+}
+
+function filterTools() {
+    const categoryFilter = document.getElementById('toolCategoryFilter').value;
+    const keywordFilter = document.getElementById('toolKeywordFilter').value.toLowerCase().trim();
+    
+    filteredTools = allTools;
+    
+    // 카테고리 필터링
+    if (categoryFilter) {
+        filteredTools = filteredTools.filter(tool => tool.category === categoryFilter);
+    }
+    
+    // 키워드 검색 필터링
+    if (keywordFilter) {
+        filteredTools = filteredTools.filter(tool => {
+            const searchText = `${tool.name} ${tool.description || ''} ${tool.category || ''} ${tool.difficulty || ''} ${tool.cost || ''}`.toLowerCase();
+            return searchText.includes(keywordFilter);
+        });
+    }
+    
+    // 필터링 후 첫 페이지로 이동
+    currentPage = 1;
+    renderToolSelector(filteredTools);
+}
+
+// 필터 이벤트 리스너 설정
+document.addEventListener('DOMContentLoaded', () => {
+    const categoryFilter = document.getElementById('toolCategoryFilter');
+    const keywordFilter = document.getElementById('toolKeywordFilter');
+    
+    if (categoryFilter) categoryFilter.addEventListener('change', filterTools);
+    if (keywordFilter) {
+        keywordFilter.addEventListener('input', filterTools);
+        keywordFilter.addEventListener('keyup', filterTools);
+    }
+    
+    // 페이징 버튼 이벤트 리스너
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderToolSelector(filteredTools);
+            }
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredTools.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderToolSelector(filteredTools);
+            }
+        });
+    }
+    
+    // 모드 전환 버튼 이벤트 리스너
+    const integratedBtn = document.getElementById('integratedMode');
+    const detailedBtn = document.getElementById('detailedMode');
+    
+    if (integratedBtn) {
+        integratedBtn.addEventListener('click', () => switchMode('integrated'));
+    }
+    
+    if (detailedBtn) {
+        detailedBtn.addEventListener('click', () => switchMode('detailed'));
+    }
+    
+    // 레시피 이미지 업로드 이벤트 리스너
+    const recipeImagesInput = document.getElementById('recipeImages');
+    if (recipeImagesInput) {
+        recipeImagesInput.addEventListener('change', handleRecipeImageUpload);
+    }
+});
+
+function handleRecipeImageUpload(event) {
+    const files = event.target.files;
+    const previewContainer = document.getElementById('imagePreview');
+    uploadedImages = [];
+    
+    if (!previewContainer) return;
+    
+    // 이미지 개수 제한 (최대 4개)
+    if (files.length > 4) {
+        alert('이미지는 최대 4개까지 업로드할 수 있습니다.');
+        return;
+    }
+    
+    previewContainer.innerHTML = '';
+    
+    Array.from(files).forEach(file => {
+        if (file.type.startsWith('image/')) {
+            // 파일 크기 제한 (2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert(`이미지 파일 "${file.name}"이 너무 큽니다. 2MB 이하의 파일을 선택해주세요.`);
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // base64 크기 제한 (300KB - Firestore 제한 준수)
+                if (e.target.result.length > 300000) {
+                    alert(`이미지 파일 "${file.name}"이 너무 큽니다. 더 작은 이미지를 선택해주세요.`);
+                    return;
+                }
+                
+                // 이미지 압축 시도
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // 이미지 크기 제한 (최대 1000x800)
+                    const maxWidth = 1000;
+                    const maxHeight = 800;
+                    let { width, height } = img;
+                    
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // 이미지 그리기 및 압축
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75); // 75% 품질
+                    
+                    // 압축된 이미지 크기 확인
+                    if (compressedDataUrl.length > 250000) { // 250KB 제한
+                        alert(`이미지 파일 "${file.name}"을 압축했지만 여전히 너무 큽니다. 더 작은 이미지를 선택해주세요.`);
+                        return;
+                    }
+                    
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'relative';
+                    imgDiv.innerHTML = `
+                        <img src="${compressedDataUrl}" alt="Preview" class="w-full h-16 object-cover rounded">
+                        <button class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center" onclick="this.parentElement.remove()">×</button>
+                    `;
+                    previewContainer.appendChild(imgDiv);
+                    uploadedImages.push(compressedDataUrl);
+                };
+                img.src = e.target.result;
+            };
+            
+            reader.onerror = function() {
+                alert(`이미지 파일 "${file.name}"을 읽는 중 오류가 발생했습니다.`);
+            };
+            
+            reader.readAsDataURL(file);
+        } else {
+            alert(`"${file.name}"은 지원되지 않는 파일 형식입니다. 이미지 파일을 선택해주세요.`);
+        }
+    });
+}
+
+// Firebase 초기화 상태 확인
+function checkFirebaseReady() {
+    return new Promise((resolve) => {
+        if (window.db && window.auth) {
+            resolve(true);
+        } else {
+            // Firebase 초기화 대기
+            const checkInterval = setInterval(() => {
+                if (window.db && window.auth) {
+                    clearInterval(checkInterval);
+                    resolve(true);
+                }
+            }, 100);
+            
+            // 10초 후 타임아웃
+            setTimeout(() => {
+                clearInterval(checkInterval);
+                resolve(false);
+            }, 10000);
+        }
+    });
+}
+
+// DBManager가 준비되면 도구 목록 불러오기
+window.addEventListener('dbManagerReady', async (e) => {
+    if (e.detail.success) {
+        try {
+            allTools = await dbManager.loadAITools();
+            console.log('로드된 도구 수:', allTools.length);
+            filteredTools = allTools; // 초기 필터링된 도구 목록 설정
+            renderToolSelector(filteredTools);
+        } catch (error) {
+            console.error('도구 로드 오류:', error);
+            const container = document.getElementById('toolSelector');
+            if (container) {
+                container.innerHTML = '<div class="text-red-400 text-center py-8">도구를 불러오는 중 오류가 발생했습니다.</div>';
+            }
+        }
+    } else {
+        console.error('DBManager 초기화 실패:', e.detail.error);
+        const container = document.getElementById('toolSelector');
+        if (container) {
+            container.innerHTML = '<div class="text-red-400 text-center py-8">데이터베이스 연결에 실패했습니다.</div>';
+        }
+    }
+});
+
+// 레시피 저장 함수
+async function saveRecipe() {
+    try {
+        // Firebase 모듈 동적 import
+        const { collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+        
+        if (selectedTools.length === 0) {
+            alert('저장할 도구를 선택해주세요.');
+            return;
+        }
+
+        const recipeTitle = document.getElementById('recipeTitle')?.value?.trim();
+        const recipeCategory = document.getElementById('recipeCategory')?.value;
+        const recipeDifficulty = document.getElementById('recipeDifficulty')?.value;
+        const recipeBasicDescription = document.getElementById('recipeBasicDescription')?.value?.trim();
+        const recipeTotalDescription = document.getElementById('recipeTotalDescription')?.value?.trim();
+        const recipeShareType = document.getElementById('recipeShareType')?.value;
+        
+        // 도구 조합 장점 및 핵심 포인트 수집
+        const advantagePoints = [];
+        const advantagePoint1 = document.getElementById('advantagePoint1')?.value?.trim();
+        const advantagePoint2 = document.getElementById('advantagePoint2')?.value?.trim();
+        const advantagePoint3 = document.getElementById('advantagePoint3')?.value?.trim();
+        
+        if (advantagePoint1) advantagePoints.push(advantagePoint1);
+        if (advantagePoint2) advantagePoints.push(advantagePoint2);
+        if (advantagePoint3) advantagePoints.push(advantagePoint3);
+        
+        // 추천 그룹 수집
+        const recommendedGroups = [];
+        const groupCheckboxes = document.querySelectorAll('input[name="recommendedGroups"]:checked');
+        groupCheckboxes.forEach(checkbox => {
+            recommendedGroups.push(checkbox.value);
+        });
+        
+        // 필수 필드 검증
+        if (!recipeTitle) {
+            alert('레시피 제목을 입력해주세요.');
+            return;
+        }
+        
+        if (!recipeCategory) {
+            alert('레시피 카테고리를 선택해주세요.');
+            return;
+        }
+        
+        if (!recipeBasicDescription) {
+            alert('레시피 기본 설명을 입력해주세요.');
+            return;
+        }
+
+        // 사용자 인증 확인
+        const user = window.auth?.currentUser;
+        if (!user) {
+            alert('로그인된 사용자만 레시피를 저장할 수 있습니다. 로그인해주세요.');
+            if (window.showLoginModal) {
+                setTimeout(() => window.showLoginModal(), 100);
+            }
+            return;
+        }
+
+        // Firebase 초기화 상태 확인
+        const isFirebaseReady = await checkFirebaseReady();
+        if (!isFirebaseReady) {
+            alert('데이터베이스 연결에 실패했습니다. 페이지를 새로고침해주세요.');
+            return;
+        }
+
+        // 기본 레시피 데이터
+        const recipeData = {
+            my_recipe_title: recipeTitle,
+            my_recipe_category: recipeCategory || '',
+            my_recipe_difficulty: recipeDifficulty || '',
+            my_recipe_recommended_groups: recommendedGroups,
+            my_recipe_basic_description: recipeBasicDescription || '',
+            my_recipe_advantage_points: advantagePoints,
+            my_recipe_tool: selectedTools.map(t => t.name),
+            recipe_share: recipeShareType || 'Private',
+            user_id: user.uid,
+            created_at: new Date().toISOString(),
+            recipe_images: uploadedImages || []
+        };
+
+        // 모드에 따른 설명 데이터 추가
+        if (currentMode === 'integrated') {
+            recipeData.recipe_total_description = recipeTotalDescription || '';
+            recipeData.recipe_type = 'integrated';
+        } else {
+            recipeData.recipe_type = 'detailed';
+            
+            // 상세 도구 설명 수집
+            const detailedDescriptions = [];
+            selectedTools.forEach(tool => {
+                const textarea = document.querySelector(`textarea[data-tool-id="${tool.id}"]`);
+                const description = textarea ? textarea.value.trim() : '';
+                
+                                        // 도구별 이미지 수집 (크기 제한 적용)
+                        const toolImages = [];
+                        const imagePreview = document.querySelector(`.tool-image-preview[data-tool-id="${tool.id}"]`);
+                        if (imagePreview) {
+                            const images = imagePreview.querySelectorAll('img');
+                            images.forEach(img => {
+                                // 이미지 크기 제한 (200KB - Firestore 제한 준수)
+                                if (img.src.length < 200000) {
+                                    toolImages.push(img.src);
+                                }
+                            });
+                        }
+                
+                detailedDescriptions.push({
+                    tool_name: tool.name,
+                    tool_id: tool.id,
+                    description: description,
+                    images: toolImages
+                });
+            });
+            
+            recipeData.recipe_detail_descriptions = detailedDescriptions;
+        }
+
+        // 전체 문서 크기 검증 (1MB 제한 - Firestore 제한 준수)
+        const recipeDataString = JSON.stringify(recipeData);
+        if (recipeDataString.length > 900000) { // 900KB로 제한하여 여유 확보
+            alert('레시피 데이터가 너무 큽니다. 이미지를 줄이거나 설명을 간단히 해주세요.');
+            return;
+        }
+
+        // 저장 버튼 비활성화
+        const saveBtn = document.getElementById('saveRecipe');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>저장 중...';
+        }
+
+        // 1. 내 레시피에 저장
+        await addDoc(
+            collection(window.db, 'users', user.uid, 'my_recipe'),
+            recipeData
+        );
+        
+        // 2. 공개 레시피라면 public_recipe_collection에도 저장
+        if (recipeShareType === 'Public') {
+            await addDoc(
+                collection(window.db, 'public_recipe_collection'),
+                recipeData
+            );
+        }
+        
+        alert(`레시피 "${recipeTitle}"이(가) 저장되었습니다!`);
+        
+        // 폼 초기화
+        if (document.getElementById('recipeTitle')) document.getElementById('recipeTitle').value = '';
+        if (document.getElementById('recipeCategory')) document.getElementById('recipeCategory').value = '';
+        if (document.getElementById('recipeDifficulty')) document.getElementById('recipeDifficulty').value = '';
+        if (document.getElementById('recipeBasicDescription')) document.getElementById('recipeBasicDescription').value = '';
+        if (document.getElementById('recipeTotalDescription')) document.getElementById('recipeTotalDescription').value = '';
+        if (document.getElementById('advantagePoint1')) document.getElementById('advantagePoint1').value = '';
+        if (document.getElementById('advantagePoint2')) document.getElementById('advantagePoint2').value = '';
+        if (document.getElementById('advantagePoint3')) document.getElementById('advantagePoint3').value = '';
+        
+        // 추천 그룹 체크박스 초기화
+        const resetGroupCheckboxes = document.querySelectorAll('input[name="recommendedGroups"]');
+        resetGroupCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            checkbox.disabled = false;
+        });
+        
+        selectedTools = [];
+        uploadedImages = [];
+        const imagePreview = document.getElementById('imagePreview');
+        if (imagePreview) imagePreview.innerHTML = '';
+        updateRecipePreview();
+        updateDetailedToolsSection();
+        updateSaveButton();
+        
+    } catch (error) {
+        console.error('레시피 저장 오류:', error);
+        
+        // 에러 메시지 개선
+        let errorMessage = '레시피 저장 중 오류가 발생했습니다.';
+        if (error.code === 'permission-denied') {
+            errorMessage = '저장 권한이 없습니다. 로그인 상태를 확인해주세요.';
+        } else if (error.code === 'unavailable') {
+            errorMessage = '네트워크 연결을 확인해주세요.';
+        } else if (error.message) {
+            errorMessage = `저장 오류: ${error.message}`;
+        }
+        
+        alert(errorMessage);
+    } finally {
+        // 저장 버튼 재활성화
+        const saveBtn = document.getElementById('saveRecipe');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i>레시피 저장';
+        }
+    }
+}
+
+// 추천 그룹 체크박스 선택 제한 함수
+function limitRecommendedGroups() {
+    const checkboxes = document.querySelectorAll('input[name="recommendedGroups"]');
+    const checkedBoxes = document.querySelectorAll('input[name="recommendedGroups"]:checked');
+    
+    if (checkedBoxes.length >= 3) {
+        checkboxes.forEach(checkbox => {
+            if (!checkbox.checked) {
+                checkbox.disabled = true;
+            }
+        });
+    } else {
+        checkboxes.forEach(checkbox => {
+            checkbox.disabled = false;
+        });
+    }
+}
+
+// 레시피 저장 버튼 이벤트 리스너
+document.addEventListener('DOMContentLoaded', () => {
+    const saveBtn = document.getElementById('saveRecipe');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveRecipe);
+    }
+    
+    // 추천 그룹 체크박스 이벤트 리스너
+    const groupCheckboxes = document.querySelectorAll('input[name="recommendedGroups"]');
+    groupCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', limitRecommendedGroups);
+    });
+});
+    </script>
+</body>
+</html> 

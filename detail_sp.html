@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 도구 상세 - AI Curator</title>
+    <link href="assets/css/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/optimized.css">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <script src="js/theme-manager.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    
+    <!-- 다국어 관련 스크립트 -->
+    <script src="lang/en.js"></script>
+    <script src="lang/ko.js"></script>
+    <script src="lang/ja.js"></script>
+    <script src="lang/zh.js"></script>
+    <script src="lang/ru.js"></script>
+    <script src="lang/es.js"></script>
+    <script src="lang/pt.js"></script>
+    <script src="lang/ar.js"></script>
+    <script src="lang/vi.js"></script>
+    <script src="lang/id.js"></script>
+    <script src="lang/fr.js"></script>
+    <script src="lang/hi.js"></script>
+    <script src="js/translate.js"></script>
+
+
+
+    
+    <style>
+        /* 헤더와 직접 관련 없는 컨텐츠 스타일만 남김1 */
+        .tag {
+            background-color: #1e3a8a;
+            color: #93c5fd;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+            display: inline-block;
+        }
+
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .tab-button.active {
+            background-color: var(--highlight);
+            color: white;
+        }
+
+        .tab-button:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 2rem;
+            background-color: var(--secondary-bg);
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .pros-cons-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .pros-cons-item i {
+            width: 24px;
+            text-align: center;
+            margin-right: 0.5rem;
+        }
+
+        .pros i {
+            color: #10B981;
+        }
+
+        .cons i {
+            color: #EF4444;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .theme-toggle i {
+            font-size: 1.25rem;
+        }
+
+        .modal-overlay.show { display: flex !important; }
+
+        [data-theme="light"] .btn-primary {
+            color: #fff !important;
+        }
+        [data-theme="light"] .tab-button {
+            background: #f3f4f6 !important;
+            color: #1a202c !important;
+            border: 1px solid #e5e7eb !important;
+        }
+        [data-theme="light"] .tab-button.active {
+            background: #fff !important;
+            color: #2563eb !important;
+            border-bottom: 2px solid #2563eb !important;
+        }
+        [data-theme="light"] .tab-content,
+        [data-theme="light"] .bg-secondary-bg,
+        [data-theme="light"] .pros-cons-item,
+        [data-theme="light"] .bg-opacity-10.bg-white,
+        [data-theme="light"] .rounded-lg {
+            background: #f3f4f6 !important;
+            color: #1a202c !important;
+        }
+
+        .glass-effect {
+            background: rgba(26, 31, 46, 0.85) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10) !important;
+        }
+        .tag.bg-blue-600 { background: #2563eb !important; color: #fff !important; border: none !important; }
+        .tag.bg-green-600 { background: #16a34a !important; color: #fff !important; border: none !important; }
+        .tag.bg-purple-600 { background: #7c3aed !important; color: #fff !important; border: none !important; }
+        .tag.bg-red-600 { background: #dc2626 !important; color: #fff !important; border: none !important; }
+        .tag.bg-yellow-600 { background: #ca8a04 !important; color: #fff !important; border: none !important; }
+        .tag.bg-pink-600 { background: #db2777 !important; color: #fff !important; border: none !important; }
+        .tag.bg-indigo-600 { background: #4f46e5 !important; color: #fff !important; border: none !important; }
+        .tag.bg-teal-600 { background: #0d9488 !important; color: #fff !important; border: none !important; }
+        [data-theme="light"] .btn-primary {
+            background: #2563eb !important;
+            color: #fff !important;
+        }
+        [data-theme="light"] .tag {
+            background: #2563eb !important;
+            color: #fff !important;
+            border: none !important;
+        }
+        [data-theme="light"] .btn-primary {
+            background: #2563eb !important;
+            color: #fff !important;
+            border-radius: 0.5rem !important;
+            font-weight: 500 !important;
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0.75rem 1.5rem !important;
+            transition: background 0.2s;
+        }
+        [data-theme="light"] .btn-primary:hover {
+            background: #1d4ed8 !important;
+        }
+
+        /* 모달 관련 CSS (index.html과 동일하게 적용) */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--card-bg, #1a1f2e);
+            border-radius: 1rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 28rem;
+            position: relative;
+            margin: 2rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color, #2d3748);
+            border-radius: 0.5rem;
+            background-color: var(--card-bg, #1a1f2e);
+            color: var(--text-primary, #fff);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        /* 로딩 스피너 스타일 */
+        .loading-spinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--border-color, #2d3748);
+            border-top: 5px solid var(--highlight, #3b82f6);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 에러 메시지 스타일 */
+        .error-message {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ef4444;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        /* 다크 테마에서만 탭 컨텐츠 영역 배경 강조 */
+        [data-theme="dark"] .tab-content {
+            background: #23263a !important;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.10);
+            border: 1px solid rgba(59,130,246,0.10);
+        }
+    </style>
+<!-- Firebase SDK -->
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getFirestore, doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+    import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { firebaseConfig } from './js/config.js';
+  
+    // DOMContentLoaded 이벤트를 기다림
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            // Firebase 초기화
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+  
+            // 전역 객체에 할당
+            window.app = app;
+            window.db = db;
+            window.auth = auth;
+  
+            // 초기화 완료 이벤트 발생
+            window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
+                detail: { app, db, auth } 
+            }));
+        } catch (error) {
+            console.error('Firebase 초기화 오류:', error);
+        }
+    });
+  </script>
+  
+  
+  <!-- 공통 모듈 -->
+  <script type="module" src="js/auth-manager.js"></script>
+  <script type="module" src="js/db-manager.js"></script>
+  </head>
+  <body>
+  <!-- 로딩 스피너 -->
+  <div id="loadingSpinner" class="loading-spinner">
+      <div class="spinner"></div>
+  </div>
+
+  <!-- 에러 메시지 -->
+  <div id="errorMessage" class="error-message"></div>
+
+  <div id="header-container"></div>
+  <script>
+    // 로딩 상태 관리
+    function showLoading() {
+        document.getElementById('loadingSpinner').classList.add('active');
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingSpinner').classList.remove('active');
+    }
+
+    // 에러 메시지 표시
+    function showError(message) {
+        const errorElement = document.getElementById('errorMessage');
+        errorElement.textContent = message;
+        errorElement.classList.add('active');
+        
+        // 5초 후 자동으로 사라짐
+        setTimeout(() => {
+            errorElement.classList.remove('active');
+        }, 5000);
+    }
+
+    // DBManager 이벤트 리스너
+    window.addEventListener('dbManagerReady', (event) => {
+        hideLoading();
+        if (!event.detail.success) {
+            showError(event.detail.error || '데이터베이스 초기화 실패');
+        }
+    });
+
+    window.addEventListener('dbManagerError', (event) => {
+        hideLoading();
+        showError(event.detail.error || '오류가 발생했습니다');
+    });
+
+    // 페이지 로드 시 로딩 표시
+    document.addEventListener('DOMContentLoaded', function() {
+        showLoading();
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.body.setAttribute('data-theme', savedTheme);
+    });
+  
+    fetch('header.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('header-container').innerHTML = data;
+            const script = document.createElement('script');
+            script.src = 'js/header-menu.js';
+            script.onload = function() {
+                if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
+                if (window.initMobileMenuToggle) window.initMobileMenuToggle();
+                if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
+  
+                // === 폼 이벤트 연결 추가 ===
+                // 로그인 폼
+                const loginForm = document.getElementById('loginForm');
+                if (loginForm) {
+                    loginForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const email = document.getElementById('loginEmail').value;
+                        const password = document.getElementById('loginPassword').value;
+                        if (window.handleEmailLogin) {
+                            await window.handleEmailLogin(email, password);
+                        }
+                    });
+                }
+                // 회원가입 폼
+                const signupForm = document.getElementById('signupForm');
+                if (signupForm) {
+                    signupForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const fullName = document.getElementById('fullName').value;
+                        const email = document.getElementById('signupEmail').value;
+                        const password = document.getElementById('signupPassword').value;
+                        if (window.handleEmailSignup) {
+                            await window.handleEmailSignup(fullName, email, password);
+                        }
+                    });
+                }
+                // 소셜 로그인 버튼
+                const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
+                googleBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (window.handleSocialLogin) {
+                            window.handleSocialLogin('google');
+                        }
+                    });
+                });
+                // === 폼 이벤트 연결 끝 ===
+            };
+            document.body.appendChild(script);
+        });
+  </script>
+  
+  <script type="module">
+    // 전역 변수 초기화
+    let selectedCategories = new Set();
+    let currentSearchQuery = '';
+    let allTools = []; // 전역 변수로 allTools 추가
+    
+    // 기본 이미지 URL 설정
+    window.DEFAULT_IMAGE = 'assets/icons/code-icon1.png';
+    
+    // DBManager 초기화 완료 이벤트 리스너
+    window.addEventListener('dbManagerReady', async () => {
+      try {
+        // 초기화 완료 후 필요한 함수들 실행
+        allTools = await window.dbManager.loadAITools();
+        console.log('AI 도구 데이터 로드 완료:', allTools.length);
+      } catch (error) {
+        console.error('AI 도구 데이터 로드 실패:', error);
+      }
+    });
+    
+    // 이미지 로드 실패 시 처리하는 함수
+    window.handleImageError = function(img) {
+        img.onerror = null; // 무한 루프 방지
+        img.src = window.DEFAULT_IMAGE;
+    };
+  
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', () => {
+        // 초기화 함수 호출
+        setupTabs();
+    });
+  
+    // 전역 객체에 필요한 참조 할당 (Firebase 초기화 후에만)
+    window.addEventListener('firebaseInitialized', (event) => {
+        const { app, database, auth } = event.detail;
+        window.app = app;
+        window.db = database;
+        window.auth = auth;
+    });
+
+        // Firebase 초기화 완료 후 실행될 코드
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // URL에서 도구 ID 가져오기
+                const urlParams = new URLSearchParams(window.location.search);
+                const toolId = urlParams.get('id');
+                console.log('URL에서 가져온 도구 ID:', toolId);
+
+                if (!toolId) {
+                    console.error('도구 ID가 없습니다.');
+                    document.getElementById('loginModal').classList.remove('show');
+                    return;
+                }
+
+                // 도구 상세 정보 로드
+                await loadToolDetails(toolId);
+                setupTabs();
+
+           
+
+                // 저장된 toolId 확인
+                const storedToolId = sessionStorage.getItem('pendingToolId');
+                if (storedToolId) {
+                    const user = auth.currentUser;
+                    if (user) {
+                        sessionStorage.removeItem('pendingToolId');
+                        if (window.location.search !== `?id=${storedToolId}`) {
+                            window.location.href = `${window.location.pathname}?id=${storedToolId}`;
+                            return;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('초기화 중 오류 발생:', error);
+                alert('페이지 로드 중 오류가 발생했습니다.');
+            }
+        });
+
+        // 도구 상세 정보 로드
+        async function loadToolDetails(toolId) {
+            try {
+                showLoading();
+                console.log('도구 ID:', toolId);
+                // db-manager 모듈의 메서드 사용
+                const toolData = await window.dbManager.getToolDetails(toolId);
+                if (toolData) {
+                    displayToolDetails(toolData, toolId);
+                } else {
+                    showError('해당 AI 도구를 찾을 수 없습니다.');
+                }
+            } catch (error) {
+                showError('데이터를 불러오는 중 오류가 발생했습니다.');
+                console.error('도구 정보 로드 중 오류:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 로그인 상태 감지 및 UI 업데이트
+        function setupAuthStateHandler() {
+            onAuthStateChanged(auth, (user) => {
+                const authButtons = document.getElementById('authButtons');
+                const profileMenu = document.getElementById('profileMenu');
+                
+                if (user) {
+                    if (authButtons) authButtons.style.display = 'none';
+                    if (profileMenu) profileMenu.style.display = 'flex';
+                    
+                    const profileElements = [
+                        { id: 'profileNameDisplay', value: user.displayName || user.email.split('@')[0] },
+                        { id: 'profileEmail', value: user.email },
+                        { id: 'profileInitialLarge', value: (user.displayName || user.email)[0].toUpperCase() },
+                        { id: 'profileName', value: user.displayName || user.email.split('@')[0] },
+                        { id: 'profileInitial', value: (user.displayName || user.email)[0].toUpperCase() }
+                    ];
+                    
+                    profileElements.forEach(element => {
+                        const el = document.getElementById(element.id);
+                        if (el) el.textContent = element.value;
+                    });
+                    
+                    const displayNameInput = document.getElementById('displayName');
+                    if (displayNameInput) displayNameInput.value = user.displayName || '';
+                    
+                    const emailInput = document.getElementById('email');
+                    if (emailInput) emailInput.value = user.email;
+                } else {
+                    if (authButtons) authButtons.style.display = 'flex';
+                    if (profileMenu) profileMenu.style.display = 'none';
+                }
+            });
+        }
+
+        // 별점 표시 생성
+        function getStarRating(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - Math.ceil(rating);
+            
+            return `
+                ${'<i class="fas fa-star text-yellow-400"></i>'.repeat(fullStars)}
+                ${hasHalfStar ? '<i class="fas fa-star-half-alt text-yellow-400"></i>' : ''}
+                ${'<i class="far fa-star text-yellow-400"></i>'.repeat(emptyStars)}
+            `;
+        }
+
+        // 도구 상세 정보 표시 함수
+        async function displayToolDetails(toolData, toolId) {
+            console.log('toolData:', toolData);
+            console.log('toolData.summary:', toolData.summary);
+            console.log('toolData.pricing:', toolData.pricing);
+            // 2. 항상 최신 id 저장
+            window.currentToolId = toolId;
+            // 도구 이름과 설명 업데이트
+            document.getElementById('tool-name').textContent = toolData.name || '이름 없음';
+            document.getElementById('tool-description').textContent = toolData.description || '설명 없음';
+            
+            // 이미지 업데이트 (기본 이미지 대체)
+            const toolImage = document.getElementById('tool-image');
+            toolImage.innerHTML = `<img src="${getValidImageUrl(toolData)}" alt="${toolData.name}" class="w-full aspect-square bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden" onerror="window.handleImageError(this)">`;
+            
+            // 평점 표시
+            const ratingSection = document.getElementById('rating-section');
+            if (toolData.rating) {
+                ratingSection.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        <div class="rating-stars mr-2">
+                            ${getStarRating(toolData.rating)}
+                        </div>
+                        <span class="text-xl">${toolData.rating.toFixed(1)}</span>
+                    </div>
+                `;
+            } else {
+                ratingSection.innerHTML = '<p class="text-gray-400">평점 정보 없음</p>';
+            }
+
+            // 태그 표시
+            const tagsContainer = document.getElementById('tags-container');
+            if (toolData.tags?.length > 0) {
+                const tagColors = [
+                    'bg-blue-600 text-blue-100',
+                    'bg-green-600 text-green-100',
+                    'bg-purple-600 text-purple-100',
+                    'bg-pink-600 text-pink-100',
+                    'bg-yellow-600 text-yellow-100',
+                    'bg-red-600 text-red-100',
+                    'bg-indigo-600 text-indigo-100',
+                    'bg-teal-600 text-teal-100',
+                    'bg-orange-600 text-orange-100'
+                ];
+                tagsContainer.innerHTML = toolData.tags.map((tag, idx) => {
+                    const colorClass = tagColors[idx % tagColors.length];
+                    return `<span class="tag ${colorClass}">${tag}</span>`;
+                }).join('');
+            } else {
+                tagsContainer.innerHTML = '<span class="text-gray-400">태그 정보 없음</span>';
+            }
+
+            // 웹사이트 링크
+            const websiteLink = document.getElementById('website-link');
+            if (toolData.websiteUrl) {
+                websiteLink.href = toolData.websiteUrl;
+                websiteLink.style.display = 'inline-flex';
+            } else {
+                websiteLink.style.display = 'none';
+            }
+
+            // 개요 탭 내용 (summary.longDescription 우선, 없으면 description)
+            const overviewContent = document.getElementById('overview-content');
+            overviewContent.innerHTML = (toolData.summary?.longDescription || toolData.description || '상세 설명이 없습니다.');
+
+            // 장점/단점 (summary.pros, summary.cons)
+            const prosContent = document.getElementById('pros-content');
+            const consContent = document.getElementById('cons-content');
+            prosContent.innerHTML = Array.isArray(toolData.summary?.pros) && toolData.summary.pros.length > 0
+                ? toolData.summary.pros.map(pro => `
+                    <div class="pros-cons-item pros">
+                        <i class="fas fa-check-circle"></i>
+                        ${pro}
+                    </div>
+                `).join('')
+                : '<p class="text-gray-400">장점 정보가 없습니다.</p>';
+
+            consContent.innerHTML = Array.isArray(toolData.summary?.cons) && toolData.summary.cons.length > 0
+                ? toolData.summary.cons.map(con => `
+                    <div class="pros-cons-item cons">
+                        <i class="fas fa-times-circle"></i>
+                        ${con}
+                    </div>
+                `).join('')
+                : '<p class="text-gray-400">단점 정보가 없습니다.</p>';
+
+            // 주요 기능 탭 내용 (summary.features 또는 features)
+            const featuresContent = document.getElementById('features-content');
+            const featuresArr = toolData.summary?.features || toolData.features || [];
+            featuresContent.innerHTML = featuresArr.length > 0
+                ? featuresArr.map(feature => `
+                    <div class="bg-opacity-10 bg-white rounded-lg p-4 mb-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-check text-blue-400 mt-1 mr-3"></i>
+                            <div>
+                                <h3 class="font-semibold mb-2">${feature}</h3>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')
+                : '<p class="text-gray-400">기능 정보가 없습니다.</p>';
+
+            // 가격 정책 탭 내용 (pricing 배열)
+            const pricingContent = document.getElementById('pricing-content');
+            if (Array.isArray(toolData.pricing) && toolData.pricing.length > 0) {
+                pricingContent.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        ${toolData.pricing.map(plan => `
+                            <div class="bg-opacity-10 bg-white rounded-lg p-6">
+                                <h3 class="text-xl font-bold mb-4">${plan.planName || ''}</h3>
+                                <p class="text-2xl font-bold mb-4">${plan.price || ''}</p>
+                                <p class="text-gray-400">${plan.details || ''}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                pricingContent.innerHTML = '<p class="text-gray-400">가격 정보가 없습니다.</p>';
+            }
+
+            // 리뷰 탭 내용 (reviews 배열)
+            const reviewsContent = document.getElementById('reviews-content');
+            reviewsContent.innerHTML = toolData.reviews?.length > 0
+                ? toolData.reviews.map(review => `
+                    <div class="bg-opacity-10 bg-white rounded-lg p-6 mb-4">
+                        <div class="flex items-center mb-4">
+                            <div class="rating-stars mr-2">
+                                ${getStarRating(review.rating)}
+                            </div>
+                            <span class="font-bold">${maskAuthorName(review.author)}</span>
+                        </div>
+                        <p class="text-text-secondary text-left">${review.comment}</p>
+                    </div>
+                `).join('')
+                : '<p class="text-gray-400">리뷰가 없습니다.</p>';
+
+            // 도구 상세 정보 표시 시 toolId 세팅
+            document.getElementById('save-btn-detail').setAttribute('data-toolid', toolId);
+
+            // 저장 버튼 클릭 이벤트
+            document.getElementById('save-btn-detail').addEventListener('click', function() {
+                // 3. 전역 변수 사용
+                handleSave(window.currentToolId);
+            });
+        }
+
+        // 탭 전환 기능
+        function setupTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    
+                    // 모든 탭 버튼에서 active 클래스 제거
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    // 클릭된 탭 버튼에 active 클래스 추가
+                    button.classList.add('active');
+                    
+                    // 모든 탭 컨텐츠 숨기기
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    // 선택된 탭 컨텐츠 표시
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+
+        // 저장하기 기능 (detail)
+        async function handleSave(toolId) {
+          console.log('저장 시도 toolId:', toolId); // 추가
+          // 로그인 상태 확인
+          const user = auth.currentUser;
+          
+          if (!user) {
+            alert('로그인이 필요합니다.');
+            showLoginModal();
+            return;
+          }
+
+          try {
+            // Firestore에서 도구 정보 가져오기
+            const firestore = window.dbManager.db;
+            const toolRef = window.dbManager ? window.dbManager.db && window.dbManager.db.constructor.name === 'Firestore' ? window.dbManager : null : null;
+            let toolData = null;
+            if (window.dbManager && window.dbManager.getToolDetails) {
+              toolData = await window.dbManager.getToolDetails(toolId);
+            }
+            if (!toolData) {
+              alert('도구 정보를 찾을 수 없습니다.');
+              return;
+            }
+
+            // Firestore users/{userId}/favorites/{toolId}에 저장
+            const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+            const favRef = doc(firestore, 'users', user.uid, 'favorites', toolId);
+            await setDoc(favRef, {
+              savedAt: new Date().toISOString(),
+              name: toolData.name || '',
+              description: toolData.description || '',
+              imageUrl: toolData.imageUrl || '',
+              rating: toolData.rating || 0,
+              priceType: toolData.priceType || '',
+              tags: toolData.tags || [],
+              websiteUrl: toolData.websiteUrl || '',
+              logoFileName: toolData.logoFileName || '',
+              logoUrl: toolData.logoUrl || ''
+            });
+            alert('즐겨찾기에 추가되었습니다.');
+            // 버튼 상태 업데이트
+            const saveBtn = document.getElementById('save-btn-detail');
+            if (saveBtn) {
+              saveBtn.innerHTML = '<i class="fas fa-bookmark mr-2"></i> 저장됨';
+              saveBtn.classList.add('saved');
+            }
+          } catch (error) {
+            console.error('저장 실패:', error);
+            alert('저장 중 오류가 발생했습니다.');
+          }
+        }
+
+        // 공유하기 모달 detail
+        function showShareModal() {
+            document.getElementById('shareModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+        function shareToTwitter() {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent('AI Curator에서 발견한 멋진 AI 도구를 확인해보세요!');
+            window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+        }
+        function shareToFacebook() {
+            const url = encodeURIComponent(window.location.href);
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        }
+        function copyLink() {
+            const toolId = getToolIdFromUrl();
+            const url = `${window.location.origin}${window.location.pathname}?id=${toolId}`;
+            navigator.clipboard.writeText(url)
+                .then(() => alert('링크가 복사되었습니다.'))
+                .catch(err => console.error('링크 복사 실패:', err));
+        }
+
+        function getToolIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // 1. Fix the handleSuccessfulAuth function to preserve URL parameters
+        window.handleSuccessfulAuth = function(user) {
+            const originalParams = new URLSearchParams(window.location.search);
+            const toolId = originalParams.get('id');
+            
+            if (toolId) {
+                window.location.href = `${window.location.pathname}?id=${toolId}`;
+            } else {
+                window.location.reload();
+            }
+        };
+
+        // 리뷰 모달 열기/닫기 및 별점 입력, 저장 기능 추가
+        (function() {
+            let currentRating = 5;
+            document.addEventListener('DOMContentLoaded', function() {
+                const writeBtn = document.getElementById('write-review-btn');
+                if (writeBtn) {
+                    writeBtn.onclick = openReviewModal;
+                }
+            });
+            window.openReviewModal = function() {
+                document.getElementById('reviewModal').style.display = 'flex';
+                renderStarInput(currentRating);
+            };
+            window.closeReviewModal = function() {
+                document.getElementById('reviewModal').style.display = 'none';
+                document.getElementById('review-text').value = '';
+            };
+            window.renderStarInput = function(rating) {
+                currentRating = rating;
+                const starDiv = document.getElementById('star-rating-input');
+                if (!starDiv) return;
+                starDiv.innerHTML = '';
+                for (let i = 1; i <= 5; i++) {
+                    const star = document.createElement('i');
+                    star.className = 'fa-star ' + (i <= rating ? 'fas text-yellow-400' : 'far text-gray-400');
+                    star.style.fontSize = '2rem';
+                    star.style.cursor = 'pointer';
+                    star.onclick = () => window.renderStarInput(i);
+                    starDiv.appendChild(star);
+                }
+            };
+            window.submitReview = async function() {
+                const comment = document.getElementById('review-text').value.trim();
+                if (comment.length < 35) {
+                    alert('리뷰는 35자 이상 입력해야 합니다.');
+                    return;
+                }
+                const user = window.auth.currentUser;
+                if (!user) {
+                    alert('로그인이 필요합니다.');
+                    window.closeReviewModal();
+                    if (window.showLoginModal) window.showLoginModal();
+                    return;
+                }
+                const toolId = window.currentToolId;
+                const db = window.dbManager.db;
+                // Firestore SDK 동적 import
+                const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+                // 리뷰 데이터
+                const review = {
+                    rating: currentRating,
+                    comment,
+                    author: user.displayName || user.email.split('@')[0],
+                    userId: user.uid,
+                    createdAt: new Date().toISOString()
+                };
+                // 리뷰 ID 생성 (crypto.randomUUID() 사용)
+                const reviewId = self.crypto.randomUUID();
+                try {
+                    // 1. ai-tools/{toolId}/reviews/{reviewId}
+                    await setDoc(doc(db, 'ai-tools', toolId, 'reviews', reviewId), review);
+                    // 2. users/{userId}/reviews/{reviewId}
+                    await setDoc(doc(db, 'users', user.uid, 'reviews', reviewId), {
+                        ...review,
+                        toolId
+                    });
+                    window.closeReviewModal();
+                    alert('리뷰가 등록되었습니다.');
+                    // 리뷰 새로고침
+                    if (window.loadToolDetails) await window.loadToolDetails(toolId);
+                } catch (error) {
+                    alert('리뷰 저장 중 오류가 발생했습니다.');
+                    console.error(error);
+                }
+            };
+        })();
+
+        // 이름 마스킹 함수 추가
+        function maskAuthorName(name) {
+            if (!name) return '';
+            // 한글 여부 체크 (첫 글자가 한글이면 한글 이름으로 간주)
+            const isKorean = /[가-힣]/.test(name[0]);
+            if (isKorean) {
+                if (name.length <= 1) return name;
+                return name[0] + '*'.repeat(name.length - 1);
+            } else {
+                if (name.length <= 3) return name;
+                return name.slice(0, 3) + '*'.repeat(name.length - 3);
+            }
+        }
+
+        // getStorageUrl 함수 추가
+        function getStorageUrl(fileName) {
+            return `https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebasestorage.app/o/ai_logos%2F${encodeURIComponent(fileName)}?alt=media&token=4b780bb4-d39d-4195-8c73-4766eda6ad6b`;
+        }
+        // getValidImageUrl 함수 추가
+        function getValidImageUrl(tool) {
+            if (typeof tool.logoUrl === 'string' && tool.logoUrl.trim() !== '') return tool.logoUrl;
+            if (typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
+                return getStorageUrl(tool.logoFileName);
+            }
+            if (typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') return tool.imageUrl;
+            if (typeof tool.image === 'string' && tool.image.trim() !== '') return tool.image;
+            return window.DEFAULT_IMAGE;
+        }
+
+</script>
+
+    <main class="container mx-auto px-4 py-8 mt-8 pt-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- 상단 타이틀 및 라인 -->
+            <div class="container" style="margin-top: 32px;">
+                <h2 class="text-3xl font-bold text-left mb-2">상세 AI 도구 소개</h2>
+                <div style="height:3px; background: #3b82f6; border-radius:2px; margin-bottom: 16px;"></div>
+            </div>
+            
+            <!-- 상단 정보 카드 (반응형) -->
+            <div class="glass-effect rounded-xl p-6 md:p-14 flex flex-col md:flex-row items-center md:items-start mb-8 shadow-lg">
+              <!-- 도구 이미지 -->
+              <div class="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 mb-4 md:mb-0 md:mr-8">
+                <div id="tool-image" class="w-full h-full rounded-lg bg-gray-700 flex items-center justify-center overflow-hidden"></div>
+              </div>
+              <!-- 도구 정보 -->
+              <div class="flex-1 flex flex-col items-start w-full">
+                <div class="flex flex-col md:flex-row md:items-center w-full">
+                  <h1 id="tool-name" class="text-2xl md:text-3xl font-bold mr-0 md:mr-4 mb-2 md:mb-0"></h1>
+                  <div id="rating-section" class="flex items-center"></div>
+                </div>
+                <p id="tool-description" class="text-base md:text-lg text-text-secondary mt-2 mb-4"></p>
+                <div id="tags-container" class="flex flex-wrap gap-2 mb-4"></div>
+                <div class="flex flex-col sm:flex-row gap-3 w-full">
+                  <a id="website-link" href="#" target="_blank" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium transition-colors duration-200">
+                    <i class="fas fa-external-link-alt mr-2"></i>웹사이트 방문
+                  </a>
+                  <button id="save-btn-detail" data-toolid="" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium transition-colors duration-200">
+                    <i class="far fa-bookmark mr-2"></i>저장하기
+                  </button>
+                  <button id="share-btn-detail" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium transition-colors duration-200">
+                    <i class="fas fa-share-alt mr-2"></i>공유하기
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 탭 메뉴 -->
+            <div class="mb-6">
+                <style>
+                    .tab-button.active {
+                        border: 2px solid #2563eb !important;
+                        box-shadow: 0 2px 8px 0 rgba(37,99,235,0.10);
+                    }
+                </style>
+                <div class="flex flex-wrap mb-4">
+                    <button class="tab-button active" data-tab="overview">개요</button>
+                    <button class="tab-button" data-tab="features">주요 기능</button>
+                    <button class="tab-button" data-tab="pricing">가격 정책</button>
+                    <button class="tab-button" data-tab="reviews" style="display:none;">리뷰</button>
+                </div>
+
+                <!-- 개요 탭 -->
+                <div id="overview" class="tab-content active bg-secondary-bg rounded-lg">
+                    <div id="overview-content" class="mb-8 text-left"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-xl font-bold mb-4 text-green-400 text-left">장점</h3>
+                            <div id="pros-content" class="text-left"></div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-4 text-red-400 text-left">단점</h3>
+                            <div id="cons-content" class="text-left"></div>
+                        </div>
+                    </div>
+                    <!-- 리뷰 영역 추가 -->
+                    <div id="reviews-section" class="mt-10">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-white">AI 사용자 리뷰</h3>
+                            <button id="write-review-btn" class="btn-primary">+ 리뷰 작성하기</button>
+                        </div>
+                        <div id="reviews-content"></div>
+                    </div>
+                </div>
+
+                <!-- 주요 기능 탭 -->
+                <div id="features" class="tab-content bg-secondary-bg rounded-lg">
+                    <div id="features-content"></div>
+                </div>
+
+                <!-- 가격 정책 탭 -->
+                <div id="pricing" class="tab-content bg-secondary-bg rounded-lg">
+                    <div id="pricing-content"></div>
+                </div>
+
+             
+                <!-- 리뷰 탭 (숨김 처리) -->
+                <div id="reviews" class="tab-content bg-secondary-bg rounded-lg" style="display:none;">
+                    <div id="reviews-content"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- footer.html 포함 -->
+    <div id="footer-container"></div>
+    <script>
+        fetch('footer.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('footer-container').innerHTML = data;
+            });
+    </script>
+
+    <!-- 공유하기 모달 -->
+    <div id="shareModal" class="modal-overlay" style="display:none;">
+      <div class="modal">
+        <div class="modal-close" onclick="closeShareModal()">
+          <i class="fas fa-times"></i>
+        </div>
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-bold text-white">공유하기</h2>
+        </div>
+        <div class="grid grid-cols-4 gap-4 mb-4">
+          <button onclick="shareEmail()" class="flex flex-col items-center">
+            <span class="bg-blue-400 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fas fa-envelope text-white text-xl"></i></span>
+            <span class="text-xs text-white">메일</span>
+          </button>
+          <button onclick="shareReddit()" class="flex flex-col items-center">
+            <span class="bg-orange-500 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fab fa-reddit text-white text-xl"></i></span>
+            <span class="text-xs text-white">Reddit</span>
+          </button>
+          <button onclick="shareWhatsApp()" class="flex flex-col items-center">
+            <span class="bg-green-500 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fab fa-whatsapp text-white text-xl"></i></span>
+            <span class="text-xs text-white">WhatsApp</span>
+          </button>
+          <button onclick="shareSms()" class="flex flex-col items-center">
+            <span class="bg-green-300 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fas fa-sms text-white text-xl"></i></span>
+            <span class="text-xs text-white">메시지</span>
+          </button>
+          <button onclick="shareX()" class="flex flex-col items-center">
+            <span class="bg-black rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fab fa-x-twitter text-white text-xl"></i></span>
+            <span class="text-xs text-white">X</span>
+          </button>
+          <button onclick="shareFacebook()" class="flex flex-col items-center">
+            <span class="bg-blue-700 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fab fa-facebook-f text-white text-xl"></i></span>
+            <span class="text-xs text-white">Facebook</span>
+          </button>
+          <button onclick="shareLine()" class="flex flex-col items-center">
+            <span class="bg-green-600 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fab fa-line text-white text-xl"></i></span>
+            <span class="text-xs text-white">Line</span>
+          </button>
+          <button onclick="shareKakao()" class="flex flex-col items-center">
+            <span class="bg-yellow-400 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fas fa-comment text-white text-xl"></i></span>
+            <span class="text-xs text-white">카카오톡</span>
+          </button>
+        </div>
+        <button onclick="copyShareLink()" class="w-full flex items-center bg-gray-700 text-white px-4 py-2 rounded mb-2">
+          <i class="fas fa-link mr-2"></i> 링크 복사
+        </button>
+      </div>
+    </div>
+
+    <!-- 리뷰 작성 모달 -->
+    <div id="reviewModal" class="modal-overlay" style="display:none;">
+      <div class="modal">
+        <div class="modal-close" onclick="closeReviewModal()">
+          <i class="fas fa-times"></i>
+        </div>
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-bold text-white">리뷰 작성하기</h2>
+        </div>
+        <div class="flex justify-center mb-4" id="star-rating-input"></div>
+        <textarea id="review-text" class="input-field mb-4" rows="4" placeholder="리뷰를 입력하세요 (35자 이상)"></textarea>
+        <button onclick="submitReview()" class="btn-primary w-full">리뷰 등록</button>
+      </div>
+    </div>
+
+</body>
+</html>

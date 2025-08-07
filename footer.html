@@ -1,0 +1,154 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="js/theme-manager.js"></script>
+
+<!-- 다국어 관련 스크립트 -->
+    <script src="lang/en.js"></script>
+    <script src="lang/ko.js"></script>
+    <script src="lang/ja.js"></script>
+    <script src="lang/zh.js"></script>
+    <script src="lang/ru.js"></script>
+    <script src="lang/es.js"></script>
+    <script src="lang/pt.js"></script>
+    <script src="lang/ar.js"></script>
+    <script src="lang/vi.js"></script>
+    <script src="lang/id.js"></script>
+    <script src="lang/fr.js"></script>
+    <script src="lang/hi.js"></script>
+    <script src="js/translate.js"></script>
+
+<!-- footer.html: 모든 페이지에서 include/import 하여 사용하는 공통 푸터 -->
+<footer class="bg-gray-900 pt-12 pb-6">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+            <div>
+                <h3 class="text-lg font-semibold mb-4" data-i18n="footer_ai_curator">AI Curator</h3>
+                <p class="text-gray-400 mb-4" data-i18n="footer_description">최적의 AI 도구를 찾아주는 추천 서비스</p>
+                <div class="flex space-x-4 mt-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold mb-4" data-i18n="footer_links">링크</h3>
+                <ul class="space-y-2">
+                    <li><a href="index.html" class="text-gray-400 hover:text-white transition" data-i18n="footer_home">홈</a></li>
+                    <li><a href="filter_search.html" class="text-gray-400 hover:text-white transition" data-i18n="footer_ai_tools_search">AI 도구 찾기</a></li>
+                    <li><a href="question_recommendation.html" class="text-gray-400 hover:text-white transition" data-i18n="footer_ai_recommendation_test">AI 추천 테스트</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold mb-4" data-i18n="footer_inquiry">문의</h3>
+                <p class="text-gray-400 mb-2" data-i18n="footer_inquiry_text">궁금한 점이 있으시면 언제든지 문의해주세요.</p>
+                <p class="text-gray-400" data-i18n="footer_email">이메일: contact@aicurator.com</p>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 pt-6 text-center text-gray-500 text-sm" data-i18n="footer_copyright">
+            2023 AI Curator. All rights reserved.
+        </div>
+    </div>
+</footer>
+<style>
+[data-theme="light"] #mobileMenu {
+  background-color: #fff !important;
+}
+[data-theme="light"] #mobileMenu button,
+[data-theme="light"] #mobileMenu nav button {
+  color: #222 !important;
+}
+[data-theme="light"] #mobileMenu #closeMobileMenu {
+  color: #222 !important;
+}
+[data-theme="light"] footer {
+  background-color: #fff !important;
+  color: #222 !important;
+}
+[data-theme="light"] footer h3,
+[data-theme="light"] footer a,
+[data-theme="light"] footer p,
+[data-theme="light"] footer li,
+[data-theme="light"] footer span {
+  color: #222 !important;
+}
+[data-theme="light"] footer .border-gray-800 {
+  border-color: #e5e7eb !important;
+}
+[data-theme="dark"] footer {
+  background-color: #181c23 !important;
+  color: #fff !important;
+}
+[data-theme="dark"] footer h3,
+[data-theme="dark"] footer a,
+[data-theme="dark"] footer p,
+[data-theme="dark"] footer li,
+[data-theme="dark"] footer span {
+  color: #fff !important;
+}
+[data-theme="dark"] footer .border-gray-800 {
+  border-color: #23272f !important;
+}
+</style>
+<script>
+// 다국어 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    // 저장된 언어 설정 불러오기
+    const savedLang = localStorage.getItem('language') || 'ko';
+    
+    // 초기 번역 실행
+    if (window.translate) {
+        window.translate(savedLang);
+    }
+});
+
+// 모바일 메뉴 토글 및 테마 토글 스크립트 (index.html에서 복사)
+document.addEventListener('DOMContentLoaded', function() {
+  const openBtn = document.getElementById('openMobileMenu');
+  const closeBtn = document.getElementById('closeMobileMenu');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileThemeToggle = document.getElementById('mobileThemeToggle');
+
+  if (openBtn && mobileMenu) {
+    openBtn.addEventListener('click', function() {
+      mobileMenu.classList.remove('translate-x-full');
+      mobileMenu.classList.add('translate-x-0');
+      document.body.style.overflow = 'hidden';
+    });
+  }
+  if (closeBtn && mobileMenu) {
+    closeBtn.addEventListener('click', function() {
+      mobileMenu.classList.remove('translate-x-0');
+      mobileMenu.classList.add('translate-x-full');
+      document.body.style.overflow = '';
+    });
+  }
+  mobileMenu.addEventListener('click', function(e) {
+    if (e.target === mobileMenu) {
+      mobileMenu.classList.remove('translate-x-0');
+      mobileMenu.classList.add('translate-x-full');
+      document.body.style.overflow = '';
+    }
+  });
+  if (mobileThemeToggle) {
+    mobileThemeToggle.addEventListener('click', function() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      const themeIcon = document.querySelector('#themeToggle i');
+      if (themeIcon) {
+        if (newTheme === 'dark') {
+          themeIcon.className = 'fas fa-sun';
+        } else {
+          themeIcon.className = 'fas fa-moon';
+        }
+      }
+    });
+  }
+});
+</script> 

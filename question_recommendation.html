@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>질문 추천 - AI Curator</title>
+             <link href="assets/css/tailwind.min.css" rel="stylesheet">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+     <link rel="stylesheet" href="assets/css/optimized.css">
+  <script src="js/theme-manager.js"></script>
+  
+  
+  
+    <!-- 다국어 관련 스크립트 -->
+    <script src="lang/en.js"></script>
+    <script src="lang/ko.js"></script>
+    <script src="lang/ja.js"></script>
+    <script src="lang/zh.js"></script>
+    <script src="lang/ru.js"></script>
+    <script src="lang/es.js"></script>
+    <script src="lang/pt.js"></script>
+    <script src="lang/ar.js"></script>
+    <script src="lang/vi.js"></script>
+    <script src="lang/id.js"></script>
+    <script src="lang/fr.js"></script>
+    <script src="lang/hi.js"></script>
+    <script src="js/translate.js"></script>
+
+
+    
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+    
+    /* 테마 관련 CSS 변수 */
+    :root {
+      /* 다크 모드 기본값 */
+      --bg-primary: #0F1217;
+      --bg-secondary: #1a1f2e;
+      --text-primary: #ffffff;
+      --text-secondary: #a0aec0;
+      --border-color: #2d3748;
+      --card-bg: #1a1f2e;
+      --hover-bg: #2d3748;
+      --input-bg: #2d3748;
+      --modal-bg: #1a1f2e;
+      --gradient-start: #7C3AED;
+      --gradient-end: #DB2777;
+    }
+
+    [data-theme="light"] {  
+      --bg-primary: #ffffff;
+      --bg-secondary: #f7fafc;
+      --text-primary: #1a202c;
+      --text-secondary: #4a5568;
+      --border-color: #e2e8f0;
+      --card-bg: #ffffff;
+      --hover-bg: #edf2f7;
+      --input-bg: #f7fafc;
+      --modal-bg: #ffffff;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .gradient-bg {
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      cursor: pointer;
+      padding: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: color 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      color: var(--gradient-start);
+    }
+
+    .theme-toggle i {
+      font-size: 1.25rem;
+    }
+
+    .glass-effect {
+      background: #1a1f2e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* 태그 스타일 개선 */
+    .tag {
+      background: var(--hover-bg);
+      color: var(--text-secondary);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      display: inline-block;
+    }
+    [data-theme="light"] .tag {
+      background: #f3f4f6 !important;
+      color: #4a5568 !important;
+      border: 1px solid #9CB6D7 !important;
+    }
+
+    /* 카드 섹션 스타일 */
+    .card-section .additional-card,
+    .card-section .popular-card {
+      background: var(--card-bg) !important;
+      border: 1.5px solid var(--border-color) !important;
+      color: var(--text-primary) !important;
+    }
+    [data-theme="light"] .card-section .additional-card,
+    [data-theme="light"] .card-section .popular-card {
+      background: none !important;
+      border: 1.5px solid #9CB6D7 !important;
+      color: #1a202c !important;
+    }
+
+    /* 기존 스타일 유지 */
+    .option-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-primary);
+      transition: all 0.3s;
+    }
+    [data-theme="light"] .option-card {
+      background: none !important;
+      border: 1.5px solid #9CB6D7 !important;
+      color: #1a202c !important;
+    }
+    .option-card.selected,
+    .option-card.selected.border-indigo-500 {
+      border-color: #6366f1 !important;
+      background: var(--hover-bg);
+    }
+    [data-theme="light"] .option-card.selected,
+    [data-theme="light"] .option-card.selected.border-indigo-500 {
+      background: #f3f4f6 !important;
+      border-color: #6366f1 !important;
+    }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;  
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    #popular-tools-slider {
+      transition: transform 0.3s ease-in-out;
+    }
+    
+    .overflow-hidden {
+      overflow: hidden;
+    }
+
+    /* 추가 AI 도구 추천 카드 스타일 */
+    .additional-card {
+      padding: 0.75rem !important;
+    }
+
+    .additional-card h3 {
+      font-size: 1rem !important;
+      margin-bottom: 0.5rem !important;
+    }
+
+    .additional-card p {
+      font-size: 0.875rem !important;
+      margin-bottom: 0.5rem !important;
+    }
+
+    .additional-card .tag {
+      font-size: 0.75rem !important;
+      padding: 0.25rem 0.75rem !important;
+    }
+
+    .additional-card .rating {
+      font-size: 0.875rem !important;
+    }
+
+    /* 최신 인기 AI Tools 추천 카드 스타일 */
+    .popular-card {
+      padding: 1rem !important;
+    }
+
+    .popular-card h3 {
+      font-size: 1.125rem !important;
+      margin-bottom: 0.5rem !important;
+    }
+
+    .popular-card p {
+      font-size: 0.875rem !important;
+      margin-bottom: 0.5rem !important;
+      line-height: 1.4 !important;
+    }
+
+    .popular-card .tag {
+      font-size: 0.75rem !important;
+      padding: 0.25rem 0.75rem !important;
+    }
+
+    .popular-card .rating {
+      font-size: 0.875rem !important;
+    }
+
+    /* 슬라이더 버튼 위치 조정 */
+    .slider-nav-button {
+      top: 45% !important;
+      transform: translateY(-50%) !important;
+      background: rgba(31, 41, 55, 0.8) !important;
+      z-index: 10 !important;
+    }
+
+    .slider-nav-button.prev {
+      left: -1rem !important;
+    }
+
+    .slider-nav-button.next {
+      right: -1rem !important;
+    }
+
+    .card-section .top-recommend-card {
+      background: var(--card-bg) !important;
+      border: 1.5px solid var(--border-color) !important;
+      color: var(--text-primary) !important;
+    }
+    [data-theme="light"] .card-section .top-recommend-card {
+      background: none !important;
+      border: 1.5px solid #9CB6D7 !important;
+      color: #1a202c !important;
+    }
+
+    [data-theme="light"] footer {
+      background-color: #fff !important;
+      color: #222 !important;
+    }
+    [data-theme="light"] footer h3,
+    [data-theme="light"] footer a,
+    [data-theme="light"] footer p,
+    [data-theme="light"] footer li,
+    [data-theme="light"] footer span {
+      color: #222 !important;
+    }
+    [data-theme="light"] footer .border-gray-800 {
+      border-color: #e5e7eb !important;
+    }
+    [data-theme="dark"] footer {
+      background-color: #181c23 !important;
+      color: #fff !important;
+    }
+    [data-theme="dark"] footer h3,
+    [data-theme="dark"] footer a,
+    [data-theme="dark"] footer p,
+    [data-theme="dark"] footer li,
+    [data-theme="dark"] footer span {
+      color: #fff !important;
+    }
+    [data-theme="dark"] footer .border-gray-800 {
+      border-color: #23272f !important;
+    }
+  </style>
+ <!-- Firebase SDK -->
+ <script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+  import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+  import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+  import { firebaseConfig } from './js/config.js';
+
+  // DOMContentLoaded 이벤트를 기다림
+  document.addEventListener('DOMContentLoaded', async () => {
+      try {
+          // Firebase 초기화
+          const app = initializeApp(firebaseConfig);
+          const db = getFirestore(app);
+          const auth = getAuth(app);
+
+          // 전역 객체에 할당
+          window.app = app;
+          window.db = db;
+          window.auth = auth;
+
+          // 초기화 완료 이벤트 발생
+          window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
+              detail: { app, db, auth } 
+          }));
+      } catch (error) {
+          console.error('Firebase 초기화 오류:', error);
+      }
+  });
+</script>
+
+<!-- 공통 모듈 -->
+<script type="module" src="js/auth-manager.js"></script>
+<script type="module" src="js/db-manager.js"></script>
+</head>
+<body>
+<div id="header-container"></div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.body.setAttribute('data-theme', savedTheme);
+  });
+
+  fetch('header.html')
+      .then(response => response.text())
+      .then(data => {
+          document.getElementById('header-container').innerHTML = data;
+          const script = document.createElement('script');
+          script.src = 'js/header-menu.js';
+          script.onload = function() {
+              if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
+              if (window.initMobileMenuToggle) window.initMobileMenuToggle();
+              if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
+
+              // === 폼 이벤트 연결 추가 ===
+              // 로그인 폼
+              const loginForm = document.getElementById('loginForm');
+              if (loginForm) {
+                  loginForm.addEventListener('submit', async (e) => {
+                      e.preventDefault();
+                      const email = document.getElementById('loginEmail').value;
+                      const password = document.getElementById('loginPassword').value;
+                      if (window.handleEmailLogin) {
+                          await window.handleEmailLogin(email, password);
+                      }
+                  });
+              }
+              // 회원가입 폼
+              const signupForm = document.getElementById('signupForm');
+              if (signupForm) {
+                  signupForm.addEventListener('submit', async (e) => {
+                      e.preventDefault();
+                      const fullName = document.getElementById('fullName').value;
+                      const email = document.getElementById('signupEmail').value;
+                      const password = document.getElementById('signupPassword').value;
+                      if (window.handleEmailSignup) {
+                          await window.handleEmailSignup(fullName, email, password);
+                      }
+                  });
+              }
+              // 소셜 로그인 버튼
+              const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
+              googleBtns.forEach(btn => {
+                  btn.addEventListener('click', (e) => {
+                      e.preventDefault();
+                      if (window.handleSocialLogin) {
+                          window.handleSocialLogin('google');
+                      }
+                  });
+              });
+              // === 폼 이벤트 연결 끝 ===
+          };
+          document.body.appendChild(script);
+      });
+</script>
+
+<script type="module">
+  // 전역 변수 초기화
+  let selectedCategories = new Set();
+  let currentSearchQuery = '';
+  let allTools = []; // 전역 변수로 allTools 추가
+  
+  // 기본 이미지 URL 설정
+  window.DEFAULT_IMAGE = 'assets/icons/code-icon1.png';
+  
+  // DBManager 초기화 완료 이벤트 리스너
+  window.addEventListener('dbManagerReady', async () => {
+    try {
+      // 초기화 완료 후 필요한 함수들 실행
+      allTools = await window.dbManager.loadAITools();
+      console.log('AI 도구 데이터 로드 완료:', allTools.length);
+    } catch (error) {
+      console.error('AI 도구 데이터 로드 실패:', error);
+    }
+  });
+  
+  // 이미지 로드 실패 시 처리하는 함수
+  window.handleImageError = function(img) {
+      img.onerror = null; // 무한 루프 방지
+      img.src = window.DEFAULT_IMAGE;
+  };
+
+  // 페이지 로드 시 실행
+  document.addEventListener('DOMContentLoaded', () => {
+      // 초기화 함수 호출
+      // setupTabs(); // setupTabs 호출 부분 삭제
+  });
+</script>
+
+  <script>
+    // getStorageUrl 함수 추가
+    function getStorageUrl(fileName) {
+        return `https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebasestorage.app/o/ai_logos%2F${encodeURIComponent(fileName)}?alt=media&token=4b780bb4-d39d-4195-8c73-4766eda6ad6b`;
+    }
+    // getValidImageUrl 함수 추가
+    function getValidImageUrl(tool) {
+        if (typeof tool.logoUrl === 'string' && tool.logoUrl.trim() !== '') return tool.logoUrl;
+        if (typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
+            return getStorageUrl(tool.logoFileName);
+        }
+        if (typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') return tool.imageUrl;
+        if (typeof tool.image === 'string' && tool.image.trim() !== '') return tool.image;
+        return window.DEFAULT_IMAGE;
+    }
+    // 기본 AI 도구 데이터 (Firebase 연결 실패시 폴백용)
+    const defaultTools = [
+      {
+        id: 'coda-ai',
+        name: 'Coda AI',
+        description: '문서 작성 및 협업을 위한 AI 도구',
+        category: 'productivity',
+        features: ['문서 작성', '협업', '데이터 정리'],
+        rating: 4.4,
+        priceType: 'freemium',
+        websiteUrl: 'https://coda.io',
+        tags: ['문서 작성', '협업', '생산성']
+      },
+      {
+        id: 'claude-anthropic',
+        name: 'Claude',
+        description: '언어와 추상적 대화가 가능한 AI의 시스템으로 상세하고 도움이 되는 응답 제공',
+        category: 'text-generation',
+        features: ['대화형 AI', '콘텐츠 작성', '연구 분석'],
+        rating: 4.6,
+        priceType: 'freemium',
+        websiteUrl: 'https://anthropic.com/claude',
+        tags: ['대화형 AI', '콘텐츠 작성', '연구']
+      },
+      {
+        id: 'runway-ml',
+        name: 'Runway ML',
+        description: '창작자를 위한 AI 기반 비디오 및 이미지 편집 도구',
+        category: 'video-editing',
+        features: ['비디오 편집', '이미지 생성', '콘텐츠 제작'],
+        rating: 4.7,
+        priceType: 'paid',
+        websiteUrl: 'https://runway.ml',
+        tags: ['비디오 편집', '이미지 생성', '콘텐츠 제작']
+      }
+    ];
+
+    let database;
+
+    // 질문 데이터 정의
+    const questions = [
+    {
+      id: 'purpose',
+      title: '어떤 작업을 위해 AI 도구를 찾고 계신가요?',
+      multiSelect: true,
+      options: [
+        { id: 'business', title: '비즈니스 도구 / 업무 효율 관련', description: 'AI로 업무 효율성을 높이고 싶어요' },
+        { id: 'writing', title: '글쓰기 / 블로그 콘텐츠 작성', description: 'AI로 글을 생성하거나 편집하고 싶어요' },
+        { id: 'image-generation', title: '이미지 생성 / 디자인', description: '디자인, 브랜딩, 시각 콘텐츠 생성' },
+        { id: 'video-creation', title: '영상 제작 / 편집', description: '홍보 영상, 튜토리얼 제작 등' },
+        { id: 'marketing', title: '마케팅 콘텐츠 작성', description: 'SNS 광고, 카피라이팅, 이메일 마케팅 등' },
+        { id: 'code-assist', title: '코딩 / 개발 보조', description: '코드 생성, 디버깅, API 설명 등' },        
+      ]
+    },
+      {
+        id: 'experience',
+        title: 'AI 도구 사용 경험은 어느 정도인가요?',
+        options: [
+          { id: 'beginner', title: '초보자', description: 'AI 도구를 처음 사용해보거나 경험이 거의 없음' },
+          { id: 'intermediate', title: '중급자', description: '기본적인 AI 도구를 사용해 본 경험이 있음' },
+          { id: 'expert', title: '전문가', description: '다양한 AI 도구를 적극적으로 활용해 왔음' },
+          { id: 'explorer', title: '탐구자', description: 'AI 도구에 대한 사용 경험은 있으나 정확한 수준과 사용 경험에 대한 정보 부족' }
+        ]
+      },
+      {
+        id: 'industry',
+        title: '귀하가 속한 산업 분야는 무엇인가요?',
+        options: [
+          { id: 'education', title: '교육', description: '강의자료, 교사 지원 도구 등' },
+          { id: 'marketing', title: '마케팅/광고', description: '콘텐츠, 캠페인 관리 도구 등' },
+          { id: 'ecommerce', title: '이커머스', description: '제품 설명, 고객 응대 등' },
+          { id: 'startup', title: '스타트업/개발', description: '기획, 코딩, 운영 자동화' },
+          { id: 'healthcare', title: '헬스케어', description: '의료문서 요약, 상담지원 등' },
+          { id: 'IT', title: '정보통신', description: 'IT 분야, 코딩, 플랫폼 설계계 등' }
+        ]
+      },
+      {
+        id: 'budget',
+        title: '원하는 가격 정책을 선택하세요.',
+        options: [
+          { id: 'free', title: '무료', description: '완전 무료 서비스' },
+          { id: 'freemium', title: '프리미엄(무료+유료)', description: '기본 무료, 고급 기능 유료' },
+          { id: 'paid', title: '유료', description: '유료 구독 또는 구매' },
+          { id: 'none', title: '고려하지 않는다', description: '무료, 유료 어떠한 것도 상관없음' }
+        ]
+      },
+      {
+        id: 'features',
+        title: '중요하게 생각하는 기능을 모두 골라주세요. (복수 선택 가능)',
+        multiSelect: true,
+        options: [
+          { id: 'easy', title: '사용 편의성', description: '직관적인 UI, 빠른 학습' },
+          { id: 'quality', title: '결과물 품질', description: '정확도, 풍부한 결과물' },
+          { id: 'integration', title: '연동성', description: 'Slack, Zapier 등 외부 도구와 연결 가능' },
+          { id: 'customization', title: '맞춤 설정', description: '세부 옵션 및 개인화 기능' }
+        ]
+      },      
+    ];
+
+    // 전역 상태 변수
+    let currentQuestionIndex = 0;
+    let userAnswers = {};
+
+    // 현재 질문 표시 함수
+    function displayCurrentQuestion() {
+      const questionContainer = document.getElementById('question-container');
+      const resultContainer = document.getElementById('result-container');
+      const progressBarContainer = document.getElementById('progress-bar-container');
+      const prevButton = document.getElementById('prev-button');
+      
+      if (!questionContainer) return;
+      
+      // 결과 컨테이너 숨기기
+      if (resultContainer) {
+        resultContainer.style.display = 'none';
+      }
+      
+      // 이전 버튼 상태 업데이트
+      if (prevButton) {
+        if (currentQuestionIndex > 0) {
+          prevButton.classList.remove('hidden', 'opacity-50', 'cursor-not-allowed');
+          prevButton.disabled = false;
+        } else {
+          prevButton.classList.add('hidden', 'opacity-50', 'cursor-not-allowed');
+          prevButton.disabled = true;
+        }
+      }
+      
+      // 모든 질문이 끝났는지 확인
+      if (currentQuestionIndex >= questions.length) {
+        showRecommendationResults();
+        return;
+      }
+      
+      const currentQuestion = questions[currentQuestionIndex];
+      
+      // 진행 상태 업데이트
+      if (progressBarContainer) {
+        const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+        progressBarContainer.innerHTML = `
+          <div class="mb-4">
+            <p class="text-sm text-gray-400 mb-1">진행 상태 ${currentQuestionIndex + 1} / ${questions.length}</p>
+            <div class="w-full bg-gray-700 rounded-full h-2.5">
+              <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${progress}%"></div>
+            </div>
+          </div>
+        `;
+      }
+      
+      // 질문 컨테이너 업데이트
+      questionContainer.innerHTML = `
+        <h2 class="text-2xl font-bold mb-6">${currentQuestion.title}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          ${currentQuestion.options.map(option => `
+            <div class="option-card bg-gray-800 rounded-xl p-6 hover:bg-gray-700 transition cursor-pointer border-2 border-transparent"
+                 data-option-id="${option.id}">
+              <h3 class="text-xl font-bold mb-2">${option.title}</h3>
+              <p class="text-gray-300">${option.description}</p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      
+      // 옵션 카드 이벤트 설정
+      setupOptionCards();
+    }
+
+    // 옵션 카드 이벤트 설정
+    function setupOptionCards() {
+      const optionCards = document.querySelectorAll('.option-card');
+      const nextButton = document.getElementById('next-button');
+      
+      optionCards.forEach(card => {
+        card.addEventListener('click', function() {
+          // 이전 선택 제거
+          document.querySelectorAll('.option-card').forEach(c => {
+            c.classList.remove('selected', 'border-indigo-500');
+          });
+          
+          // 현재 카드 선택
+          this.classList.add('selected', 'border-indigo-500');
+          
+          // 다음 버튼 활성화
+          if (nextButton) {
+            nextButton.disabled = false;
+            nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            nextButton.classList.add('hover:bg-indigo-700');
+          }
+          
+          // 0.5초 후 자동으로 다음으로 이동
+          setTimeout(() => {
+            handleNextButtonClick();
+          }, 500);
+        });
+      });
+    }
+
+    // 이전 버튼 클릭 핸들러 추가
+    function handlePrevButtonClick() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        displayCurrentQuestion();
+      }
+    }
+
+    // 다음 버튼 클릭 핸들러 수정
+    function handleNextButtonClick() {
+      const selectedCard = document.querySelector('.option-card.selected');
+      if (!selectedCard) return;
+      
+      // 현재 답변 저장
+      const currentQuestion = questions[currentQuestionIndex];
+      const optionId = selectedCard.dataset.optionId;
+      
+      if (!userAnswers) {
+        userAnswers = {};
+      }
+      
+      userAnswers[currentQuestion.id] = optionId;
+      
+      // 다음 질문으로 이동
+      currentQuestionIndex++;
+      
+      if (currentQuestionIndex >= questions.length) {
+        showRecommendationResults();
+      } else {
+        displayCurrentQuestion();
+      }
+    }
+
+    // AI 도구 데이터베이스 확장
+    const aiToolsDatabase = [
+      {
+        id: 'midjourney',
+        name: 'Midjourney',
+        description: '텍스트 프롬프트를 기반으로 고품질 이미지를 생성하는 AI 도구',
+        tags: ['AI 아트', '이미지 생성', '디자인', '일러스트레이션'],
+        rating: 4.9,
+        status: '프리미엄',
+        category: 'image-generation'
+      },
+      {
+        id: 'chatgpt',
+        name: 'ChatGPT',
+        description: '대화형 AI 언어 모델로 질문에 답변하고 다양한 형식의 콘텐츠를 생성합니다.',
+        tags: ['텍스트 생성', '콘텐츠 작성', '대화형 AI', '질의응답'],
+        rating: 4.8,
+        status: '프리미엄',
+        category: 'text-generation'
+      },
+      {
+        id: 'stable-diffusion',
+        name: 'Stable Diffusion',
+        description: '오픈소스 텍스트-이미지 생성 AI 모델',
+        tags: ['AI 아트', '텍스트-이미지', '오픈소스'],
+        rating: 4.8,
+        status: '오픈소스',
+        category: 'image-generation'
+      },
+      {
+        id: 'github-copilot',
+        name: 'GitHub Copilot',
+        description: 'AI 기반 코드 자동완성 및 생성 도구',
+        tags: ['코드 생성', 'AI 코딩', '개발 생산성'],
+        rating: 4.7,
+        status: '프리미엄',
+        category: 'development'
+      },
+      {
+        id: 'grammarly',
+        name: 'Grammarly',
+        description: 'AI 기반 문법 검사 및 글쓰기 개선 도구',
+        tags: ['문법 교정', '글쓰기 개선', '문체 개선'],
+        rating: 4.8,
+        status: '프리미엄',
+        category: 'writing'
+      },
+      {
+        id: 'leonardo-ai',
+        name: 'Leonardo.ai',
+        description: '게임 개발자와 창작자를 위한 AI 이미지 생성 도구',
+        tags: ['AI 아트', '게임 에셋', '컨셉 아트'],
+        rating: 4.7,
+        status: '프리미엄',
+        category: 'image-generation'
+      },
+      {
+        id: 'claude',
+        name: 'Claude',
+        description: '고급 자연어 처리 및 분석이 가능한 AI 어시스턴트',
+        tags: ['텍스트 생성', '데이터 분석', '연구 지원'],
+        rating: 4.7,
+        status: '프리미엄',
+        category: 'text-generation'
+      },
+      {
+        id: 'dall-e',
+        name: 'DALL-E',
+        description: 'OpenAI의 텍스트 기반 이미지 생성 AI',
+        tags: ['이미지 생성', '아트', '디자인'],
+        rating: 4.6,
+        status: '프리미엄',
+        category: 'image-generation'
+      },
+      {
+        id: 'jasper',
+        name: 'Jasper',
+        description: 'AI 기반 마케팅 콘텐츠 생성 도구',
+        tags: ['콘텐츠 마케팅', '카피라이팅', 'SEO'],
+        rating: 4.5,
+        status: '프리미엄',
+        category: 'marketing'
+      },
+      {
+        id: 'synthesia',
+        name: 'Synthesia',
+        description: 'AI 기반 비디오 생성 플랫폼',
+        tags: ['비디오 생성', '아바타', '교육'],
+        rating: 4.6,
+        status: '프리미엄',
+        category: 'video'
+      },
+      {
+        id: 'copy-ai',
+        name: 'Copy.ai',
+        description: 'AI 기반 마케팅 카피 및 콘텐츠 생성 도구',
+        tags: ['카피라이팅', '마케팅', '콘텐츠 생성'],
+        rating: 4.5,
+        status: '프리미엄',
+        category: 'marketing'
+      },
+      {
+        id: 'runway',
+        name: 'Runway',
+        description: 'AI 기반 비디오 편집 및 특수효과 도구',
+        tags: ['비디오 편집', '특수효과', '창작'],
+        rating: 4.6,
+        status: '프리미엄',
+        category: 'video'
+      }
+    ];
+
+    // 태그 색상 배열 선언 (템플릿 내에서 사용)
+    const tagColors = [
+        'bg-indigo-600 text-gray-100',
+        'bg-green-600 text-green-100',
+        'bg-purple-600 text-purple-100',
+        'bg-pink-600 text-pink-100',
+        'bg-yellow-600 text-yellow-100',
+        'bg-red-600 text-red-100',
+        'bg-indigo-600 text-indigo-100',
+        'bg-teal-600 text-teal-100',
+        'bg-orange-600 text-orange-100'
+    ];
+
+    // 추천 결과 계산 함수 개선
+    function calculateRecommendations(userAnswers, toolsData) {
+      console.log('Calculating recommendations with answers:', userAnswers);
+      console.log('Using tools data:', toolsData);
+      
+      if (!Array.isArray(toolsData)) {
+        console.error('Tools data is not an array');
+        return [];
+      }
+
+      try {
+        let scoredTools = toolsData.map(tool => {
+          let score = 100;
+          let scoreBreakdown = {
+            base: 100,
+            purpose: 0,
+            experience: 0,
+            budget: 0,
+            features: 0,
+            rating: 0  // 랜덤 대신 평점 기반 점수 사용
+          };
+          
+          // 목적에 따른 점수 계산 (가중치 상향: 50 -> 60)
+          if (userAnswers.purpose && tool.category) {
+            if (tool.category.includes(userAnswers.purpose)) {
+              score += 60;
+              scoreBreakdown.purpose += 60;
+            }
+            if (tool.tags && tool.tags.some(tag => tag.toLowerCase().includes(userAnswers.purpose))) {
+              score += 30;
+              scoreBreakdown.purpose += 30;
+            }
+          }
+
+          // 경험 수준에 따른 점수 계산 (가중치 상향: 30 -> 40)
+          if (userAnswers.experience === 'beginner') {
+            if (tool.tags && tool.tags.some(tag => ['기본', '쉬운', '입문'].some(keyword => tag.includes(keyword)))) {
+              score += 40;
+              scoreBreakdown.experience += 40;
+            }
+          } else if (userAnswers.experience === 'expert') {
+            if (tool.tags && tool.tags.some(tag => ['전문가', '고급', '프로'].some(keyword => tag.includes(keyword)))) {
+              score += 40;
+              scoreBreakdown.experience += 40;
+            }
+          }
+
+          // 예산에 따른 점수 계산 (가중치 상향: 40 -> 50)
+          if (userAnswers.budget === 'free' && tool.status && tool.status.includes('무료')) {
+            score += 50;
+            scoreBreakdown.budget += 50;
+          } else if (userAnswers.budget === 'paid' && tool.status && tool.status.includes('프리미엄')) {
+            score += 50;
+            scoreBreakdown.budget += 50;
+          }
+
+          // 기능 선호도에 따른 점수 계산 (가중치 상향: 30 -> 40)
+          if (userAnswers.features && tool.tags) {
+            const featureMatch = tool.tags.some(tag => 
+              userAnswers.features.toLowerCase().includes(tag.toLowerCase())
+            );
+            if (featureMatch) {
+              score += 40;
+              scoreBreakdown.features += 40;
+            }
+          }
+
+          // 평점 기반 점수 추가 (랜덤 대신 사용)
+          if (tool.rating) {
+            const ratingScore = tool.rating * 5; // 최대 25점
+            score += ratingScore;
+            scoreBreakdown.rating = ratingScore;
+          }
+
+          return { 
+            ...tool,
+            score,
+            scoreBreakdown,
+            originalId: tool.id  // 원본 ID 보존
+          };
+        });
+
+        // 점수 기준 정렬 (동점인 경우 평점으로 추가 정렬)
+        return scoredTools.sort((a, b) => {
+          const scoreDiff = b.score - a.score;
+          if (scoreDiff !== 0) return scoreDiff;
+          return (b.rating || 0) - (a.rating || 0);
+        });
+      } catch (error) {
+        console.error('Error in calculateRecommendations:', error);
+        return [];
+      }
+    }
+
+    // 랜덤 도구 선택 함수 개선
+    function getRandomTools(tools, count, exclude = []) {
+      if (!Array.isArray(tools)) {
+        console.error('Tools parameter is not an array');
+        return [];
+      }
+
+      try {
+        const availableTools = tools.filter(tool => !exclude.includes(tool.id));
+        const shuffled = [...availableTools].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, Math.min(count, shuffled.length));
+      } catch (error) {
+        console.error('Error in getRandomTools:', error);
+        return [];
+      }
+    }
+
+    // 랜덤 인기 도구 선택 함수
+    function getRandomPopularTools(tools, count = 8) {
+      return [...tools]
+        .sort(() => Math.random() - 0.5)  // 랜덤 셔플
+        .slice(0, count);
+    }
+
+    // 슬라이더 관련 변수와 함수
+    let currentSlide = 0;
+    let totalSlides = 2; // 4개씩 2페이지
+
+    function initializeSlider() {
+      const slider = document.getElementById('popular-tools-slider');
+      if (!slider) return;
+      updateSliderPosition();
+      updateSliderDots();
+    }
+
+    function moveSlider(direction) {
+      if (direction === 'next') {
+        currentSlide = (currentSlide + 1) % totalSlides;
+      } else {
+        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+      }
+      updateSliderPosition();
+      updateSliderDots();
+    }
+
+    function updateSliderPosition() {
+      const slider = document.getElementById('popular-tools-slider');
+      if (!slider) return;
+      slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+    }
+
+    function updateSliderDots() {
+      const dotsContainer = document.getElementById('slider-dots');
+      if (!dotsContainer) return;
+      
+      dotsContainer.innerHTML = Array(totalSlides)
+        .fill(0)
+        .map((_, index) => `
+          <button 
+            class="w-2 h-2 rounded-full mx-1 transition-all duration-300 ${
+              index === currentSlide ? 'bg-indigo-500 w-4' : 'bg-gray-400'
+            }"
+            onclick="goToSlide(${index})"
+          ></button>
+        `).join('');
+    }
+
+    function goToSlide(index) {
+      currentSlide = index;
+      updateSliderPosition();
+      updateSliderDots();
+    }
+
+    // 전역 스코프에 함수 추가
+    window.moveSlider = moveSlider;
+    window.goToSlide = goToSlide;
+
+    // 인기 도구 정렬 함수 추가
+    function getPopularTools(tools, count = 8) {
+      return [...tools]
+        .sort((a, b) => {
+          // 평점 우선 비교
+          const ratingDiff = (b.rating || 0) - (a.rating || 0);
+          if (ratingDiff !== 0) return ratingDiff;
+          
+          // 최신 업데이트 날짜 비교 (updatedAt이 있는 경우)
+          if (b.updatedAt && a.updatedAt) {
+            return new Date(b.updatedAt) - new Date(a.updatedAt);
+          }
+          return 0;
+        })
+        .slice(0, count);
+    }
+
+    // AI 도구 상세 페이지 이동 함수 수정
+    function goToAIToolDetail(toolId) {
+      if (!toolId) {
+        console.error('도구 ID가 없습니다.');
+        return;
+      }
+      const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+      const detailUrl = `${baseUrl}detail_sp.html?id=${toolId}`;
+      window.open(detailUrl, '_blank');
+    }
+
+    // 전역 스코프에 함수 추가
+    window.goToAIToolDetail = goToAIToolDetail;
+
+    // 추천 결과 표시 함수 수정
+    async function showRecommendationResults() {
+        const questionContainer = document.getElementById('question-container');
+        const nextButton = document.getElementById('next-button');
+        const prevButton = document.getElementById('prev-button');
+        const resultContainer = document.getElementById('result-container');
+        const progressBarContainer = document.getElementById('progress-bar-container');
+        const introSection = document.getElementById('intro-section');
+        
+        if (introSection) introSection.style.display = 'none';
+        if (!questionContainer || !resultContainer) return;
+        
+        // UI 요소 숨기기/표시
+        questionContainer.style.display = 'none';
+        if (nextButton) nextButton.style.display = 'none';
+        if (prevButton) prevButton.style.display = 'none';
+        if (progressBarContainer) progressBarContainer.style.display = 'none';
+        resultContainer.style.display = 'block';
+      
+      // 로딩 표시
+        resultContainer.innerHTML = `
+          <div class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
+          <p class="text-xl text-gray-300">AI 도구 데이터를 불러오는 중...</p>
+          </div>
+        `;
+        
+        try {
+          // DBManager를 통해 데이터 가져오기
+          let toolsData = [];
+          try {
+            toolsData = await window.dbManager.loadAITools();
+            console.log('DBManager에서 데이터 로드 완료:', toolsData.length);
+          } catch (error) {
+            console.error('DBManager 데이터 로드 오류:', error);
+            toolsData = aiToolsDatabase; // 폴백 데이터 사용
+          }
+
+          // 사용자 응답 기반으로 추천 계산
+          const recommendedTools = calculateRecommendations(userAnswers || {}, toolsData);
+          
+          // 상위 3개 추천
+          const topRecommendations = recommendedTools.slice(0, 3);
+          
+          // 4-7위 추천 (추가 AI 도구 추천용)
+          const additionalRecommendations = recommendedTools.slice(3, 7);
+          
+          // 상위 7개를 제외한 나머지 도구들
+          const remainingTools = recommendedTools.slice(7);
+          
+          // 남은 도구들 중에서 랜덤으로 8개 선택 (최신 인기 AI Tools용)
+          const popularTools = shuffleArray([...remainingTools]).slice(0, 8);
+
+          // 결과 HTML 생성
+          let html = `
+            <!-- 상위 추천 도구 섹션 -->
+            <div class="mb-10">
+              <h2 class="text-2xl font-bold mb-2 text-center">당신에게 추천하는 AI 도구</h2>
+              <p class="text-gray-300 mb-8 text-center">답변을 기반으로 당신에게 가장 적합한 AI 도구를 선별했습니다.</p>
+              <div class="card-section max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+                ${topRecommendations.map(tool => `
+                  <div class="top-recommend-card rounded-xl p-4 hover:bg-gray-700 transition cursor-pointer flex items-center gap-4" 
+                       style="width:400px;min-height:320px;max-width:100%;box-sizing:border-box;"
+                       onclick="goToAIToolDetail('${tool.originalId}')">
+                    <div class="tool-thumbnail" style="width:48px;height:48px;flex-shrink:0;overflow:hidden;border-radius:12px;background:#232939;display:flex;align-items:center;justify-content:center;">
+                      <img src="${getValidImageUrl(tool)}" alt="${tool.name}" style="width:44px;height:44px;object-fit:cover;border-radius:12px;" onerror="this.onerror=null;this.src=window.DEFAULT_IMAGE;">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-xl font-bold mb-2">${tool.name}</h3>
+                      <p class="text-gray-300 mb-4" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:66px;">${tool.description}</p>
+                      <div class="flex flex-wrap gap-2 mb-4 tag-clamp" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:66px;">
+                        ${(tool.tags || []).map((tag, idx) => 
+                          `<span class=\"tag ${tagColors[idx % tagColors.length]}\">${tag}</span>`
+                        ).join('')}
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                          <span class="text-yellow-400 mr-1">★</span>
+                          <span>${tool.rating}</span>
+                          <span style="background:#181e2a;border:1.5px solid #6366f1;color:#ffe066;font-weight:600;padding:0.15rem 0.6rem;border-radius:0.5rem;font-size:0.90rem;box-shadow:0 2px 8px rgba(99,102,241,0.08);margin-left:8px;">
+                            매칭 점수: ${Math.round(tool.score)}점
+                          </span>
+                        </div>
+                        <span class="text-indigo-400">${tool.status || ''}</span>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- 추가 AI 도구 추천 섹션 -->
+            <div class="mt-16 card-section">
+              <h2 class="text-2xl font-bold mb-4">추가 AI 도구 추천</h2>
+              <p class="text-gray-400 mb-6">당신의 선호도와 일치하는 다른 AI 도구들입니다.</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${additionalRecommendations.map(tool => `
+                  <div class="additional-card bg-gray-800 rounded-xl hover:bg-gray-700 transition cursor-pointer flex items-center gap-4" 
+                       onclick="goToAIToolDetail('${tool.originalId}')">
+                      <div class="tool-thumbnail" style="width:48px;height:48px;flex-shrink:0;overflow:hidden;border-radius:8px;background:#232939;display:flex;align-items:center;justify-content:center;">
+                        <img src="${getValidImageUrl(tool)}" alt="${tool.name}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;" onerror="this.onerror=null;this.src=window.DEFAULT_IMAGE;">
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="font-bold">${tool.name}</h3>
+                            <span class="tag bg-indigo-600 rounded-full text-xs">${tool.status || ''}</span>
+                        </div>
+                        <p class="text-gray-300 line-clamp-2">${tool.description}</p>
+                        <div class="flex flex-wrap gap-1 mb-2">
+                            ${(tool.tags || []).map(tag => 
+                                `<span class="tag bg-indigo-600 text-white\">${tag}</span>`
+                            ).join('')}
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="rating flex items-center">
+                                ${Array(Math.floor(tool.rating || 0)).fill('★').map(star => 
+                                    `<span class="text-yellow-400">${star}</span>`
+                                ).join('')}
+                            </div>
+                            <button onclick="event.stopPropagation(); goToAIToolDetail('${tool.originalId}')" 
+                                    class="text-indigo-400 hover:text-indigo-300 text-sm">
+                                상세 정보 →
+                            </button>
+                        </div>
+                      </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- 버튼 영역 -->
+            <div class="mt-12 text-center mb-12">
+                <button onclick="location.reload()" 
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg mr-4">
+                    다시 테스트하기
+                </button>
+                <a href="filter_search.html" 
+                    class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg">
+                    모든 AI 도구 보기
+                </a>
+            </div>
+
+            <!-- 최신 인기 AI Tools 섹션 -->
+            <div class="mt-12 card-section">
+                <h2 class="text-2xl font-bold mb-4">최신 인기 AI Tools 추천</h2>
+                <p class="text-gray-400 mb-6">다른 사용자들이 관심을 보이는 AI 도구들입니다.</p>
+                <div class="relative px-4">
+                    <div class="overflow-hidden">
+                        <div id="popular-tools-slider" class="flex transition-transform duration-300 ease-in-out">
+                            <!-- 첫 번째 페이지 -->
+                            <div class="flex-none w-full">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    ${popularTools.slice(0, 4).map(tool => `
+                                        <div class="popular-card bg-gray-800 rounded-xl hover:bg-gray-700 transition cursor-pointer flex items-center gap-4" 
+                                             onclick="goToAIToolDetail('${tool.originalId}')">
+                                            <div class="tool-thumbnail" style="width:40px;height:40px;flex-shrink:0;overflow:hidden;border-radius:8px;background:#232939;display:flex;align-items:center;justify-content:center;">
+                                              <img src="${getValidImageUrl(tool)}" alt="${tool.name}" style="width:32px;height:32px;object-fit:cover;border-radius:8px;" onerror="this.onerror=null;this.src=window.DEFAULT_IMAGE;">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                              <div class="flex items-center justify-between mb-2">
+                                                  <h3 class="font-bold">${tool.name}</h3>
+                                                  <span class="tag bg-indigo-600 rounded-full text-xs">${tool.status || ''}</span>
+                                              </div>
+                                              <p class="text-gray-300 line-clamp-2">${tool.description}</p>
+                                              <div class="flex flex-wrap gap-1 mb-2">
+                                                  ${(tool.tags || []).map(tag => 
+                                                      `<span class="tag bg-indigo-600 text-white\">${tag}</span>`
+                                                  ).join('')}
+                                              </div>
+                                              <div class="flex items-center justify-between">
+                                                  <div class="rating flex items-center">
+                                                      ${Array(Math.floor(tool.rating || 0)).fill('★').map(star => 
+                                                          `<span class="text-yellow-400">${star}</span>`
+                                                      ).join('')}
+                                                  </div>
+                                                  <button onclick="event.stopPropagation(); goToAIToolDetail('${tool.originalId}')" 
+                                                          class="text-indigo-400 hover:text-indigo-300 text-sm">
+                                                      상세 정보 →
+                                                  </button>
+                                              </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <!-- 두 번째 페이지 -->
+                            <div class="flex-none w-full">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    ${popularTools.slice(4, 8).map(tool => `
+                                        <div class="popular-card bg-gray-800 rounded-xl hover:bg-gray-700 transition cursor-pointer flex items-center gap-4" 
+                                             onclick="goToAIToolDetail('${tool.originalId}')">
+                                            <div class="tool-thumbnail" style="width:40px;height:40px;flex-shrink:0;overflow:hidden;border-radius:8px;background:#232939;display:flex;align-items:center;justify-content:center;">
+                                              <img src="${getValidImageUrl(tool)}" alt="${tool.name}" style="width:32px;height:32px;object-fit:cover;border-radius:8px;" onerror="this.onerror=null;this.src=window.DEFAULT_IMAGE;">
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                              <div class="flex items-center justify-between mb-2">
+                                                  <h3 class="font-bold">${tool.name}</h3>
+                                                  <span class="tag bg-indigo-600 rounded-full text-xs">${tool.status || ''}</span>
+                                              </div>
+                                              <p class="text-gray-300 line-clamp-2">${tool.description}</p>
+                                              <div class="flex flex-wrap gap-1 mb-2">
+                                                  ${(tool.tags || []).map(tag => 
+                                                      `<span class="tag bg-indigo-600 text-white\">${tag}</span>`
+                                                  ).join('')}
+                                              </div>
+                                              <div class="flex items-center justify-between">
+                                                  <div class="rating flex items-center">
+                                                      ${Array(Math.floor(tool.rating || 0)).fill('★').map(star => 
+                                                          `<span class="text-yellow-400">${star}</span>`
+                                                      ).join('')}
+                                                  </div>
+                                                  <button onclick="event.stopPropagation(); goToAIToolDetail('${tool.originalId}')" 
+                                                          class="text-indigo-400 hover:text-indigo-300 text-sm">
+                                                      상세 정보 →
+                                                  </button>
+                                              </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 슬라이더 네비게이션 버튼 -->
+                    <button onclick="moveSlider('prev')" 
+                            class="slider-nav-button prev absolute rounded-full p-2 focus:outline-none">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button onclick="moveSlider('next')" 
+                            class="slider-nav-button next absolute rounded-full p-2 focus:outline-none">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+
+                    <!-- 슬라이더 도트 네비게이션 -->
+                    <div id="slider-dots" class="flex justify-center mt-4 space-x-2"></div>
+                </div>
+            </div>
+          `;
+            
+          resultContainer.innerHTML = html;
+          initializeSlider();
+
+        } catch (error) {
+          console.error("추천 결과 표시 중 오류:", error);
+          resultContainer.innerHTML = `
+            <div class="text-center py-12">
+              <p class="text-xl text-gray-300 mb-4">추천 결과를 표시하는 중 문제가 발생했습니다.</p>
+              <button onclick="location.reload()" 
+                      class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg">
+                다시 시도하기
+              </button>
+            </div>
+          `;
+        }
+    }
+
+    // 배열을 랜덤하게 섞는 함수 추가
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', function() {
+      // await initializeFirebase(); // ← 이 줄을 주석 처리 또는 삭제
+      
+      // 이전 버튼 이벤트 리스너 설정
+      const prevButton = document.getElementById('prev-button');
+      if (prevButton) {
+        prevButton.addEventListener('click', handlePrevButtonClick);
+      }
+      
+      // 다음 버튼 이벤트 리스너 설정
+      const nextButton = document.getElementById('next-button');
+      if (nextButton) {
+        nextButton.addEventListener('click', handleNextButtonClick);
+      }
+      
+      // 첫 번째 질문 표시
+      displayCurrentQuestion();
+    });
+  </script>
+</head>
+<body>
+ 
+  <!-- 여기서부터 main, footer 등 나머지 콘텐츠 -->
+  <main class="container mx-auto px-4 py-12 pt-16">
+    <div class="max-w-7xl mx-auto">
+      <div id="intro-section">
+        <h1 class="text-3xl font-bold mb-8 text-center">AI 큐레이터 추천 받기 </h1>
+        <p class="text-gray-300 text-center mb-12">몇 가지 질문에 답하고 당신에게 가장 적합한 AI 도구를 추천 받아보세요. <br>당신에게 꼭 맞는 AI 솔루션을 추천해 드립니다.</p>
+      </div>
+      <!-- 진행 상태 표시 -->
+      <div id="progress-bar-container" class="mb-8">
+        <div class="mb-4">
+          <p class="text-sm text-gray-400 mb-1">진행 상태 1 / 5</p>
+          <div class="w-full bg-gray-700 rounded-full h-2.5">
+            <div class="bg-indigo-600 h-2.5 rounded-full" style="width: 20%"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 질문 컨테이너 -->
+      <div id="question-container" class="mb-8">
+        <!-- 질문은 JavaScript로 동적 생성됩니다 -->
+      </div>
+      
+      <!-- 이전/다음 버튼 -->
+      <div class="text-center mb-8 flex justify-center gap-4">
+        <button id="prev-button" class="bg-gray-600 text-white font-bold py-3 px-8 rounded-lg opacity-50 cursor-not-allowed hidden" disabled>
+          이전
+        </button>
+        <button id="next-button" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-lg opacity-50 cursor-not-allowed" disabled>
+          다음
+        </button>
+      </div>
+      
+      <!-- 결과 컨테이너 -->
+      <div id="result-container" style="display: none;">
+        <!-- 결과는 JavaScript로 동적 생성됩니다 -->
+      </div>
+    </div>
+  </main>
+  ...
+</body>
+</html>

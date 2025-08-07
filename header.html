@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Curator Header</title>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- header.html -->
+    <!-- 다국어 관련 스크립트 -->
+    <script src="lang/en.js"></script>
+    <script src="lang/ko.js"></script>
+    <script src="lang/ja.js"></script>
+    <script src="lang/zh.js"></script>
+    <script src="lang/ru.js"></script>
+    <script src="lang/es.js"></script>
+    <script src="lang/pt.js"></script>
+    <script src="lang/ar.js"></script>
+    <script src="lang/vi.js"></script>
+    <script src="lang/id.js"></script>
+    <script src="lang/fr.js"></script>
+    <script src="lang/hi.js"></script>
+    <script src="js/translate.js"></script>
+
+    
+    <style>
+        /* CSS 변수 정의 - 기본 다크 모드 */
+        :root {
+            --bg-primary: #121620;
+            --bg-secondary: #1a1f2e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border-color: #374151;
+            --hover-bg: #2d3748;
+            --transition: all 0.3s ease;
+        }
+
+        /* 라이트 테마 - 사용자가 명시적으로 선택한 경우에만 */
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --hover-bg: #f1f5f9;
+        }
+
+        /* 기본 리셋 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 헤더 기본 스타일 */
+        .header {
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        /* 로고 스타일 */
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 160px;
+        }
+
+        .logo:hover {
+            color: #3b82f6;
+        }
+
+        .logo i {
+            font-size: 1.75rem;
+        }
+
+        /* 중앙 설명 텍스트 영역 */
+        .header-description {
+            flex: 1;
+            text-align: left;
+            margin: 0 2rem;
+            max-width: 450px;
+        }
+
+        .description-text {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .description-line1 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .description-line2 {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            line-height: 1.3;
+        }
+
+        /* 오른쪽 컨트롤 영역 */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            min-width: 200px;
+            justify-content: flex-end;
+        }
+
+        /* 테마 토글 버튼 */
+        .theme-toggle-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-toggle-btn:hover {
+            background-color: var(--hover-bg);
+            border-color: var(--gradient-start);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+        }
+
+        .theme-toggle-btn:active {
+            transform: translateY(0);
+        }
+
+        .theme-toggle-btn i {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle-btn:hover i {
+            transform: rotate(180deg);
+        }
+
+        /* 언어 선택 드롭다운 */
+        .language-selector {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+            border-radius: 6px;
+            min-width: 90px;
+        }
+
+        .language-selector:hover {
+            background-color: var(--hover-bg);
+            border-color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .language-selector i {
+            font-size: 0.75rem;
+        }
+
+        /* 프로필 메뉴 스타일 */
+        .profile-menu {
+            position: relative;
+        }
+
+        .profile-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border: none;
+            background: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .profile-menu-btn:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .profile-menu-btn::after {
+            content: attr(data-email);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--bg-primary);
+            color: var(--text-secondary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1002;
+            border: 1px solid var(--border-color);
+        }
+
+        .profile-menu-btn:hover::after {
+            opacity: 1;
+        }
+
+        .profile-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(to right, #8b5cf6, #ec4899);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-initial {
+            color: white;
+            font-weight: 500;
+        }
+
+        .profile-name {
+            font-weight: 500;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            display: none;
+            z-index: 1001;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .profile-menu:hover .profile-dropdown {
+            display: block;
+        }
+
+        /* 드롭다운이 화면 밖으로 나가지 않도록 조정 */
+        @media (max-width: 768px) {
+            .profile-dropdown {
+                right: auto;
+                left: 0;
+                min-width: 180px;
+            }
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--hover-bg);
+            color: #3b82f6;
+        }
+
+        .dropdown-divider {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 0.5rem 0;
+        }
+
+        /* 인증 버튼 스타일 */
+        .auth-buttons {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .auth-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: var(--transition);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .login-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .login-btn:hover {
+            background-color: var(--hover-bg);
+            border-color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .signup-btn {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            color: white;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .signup-btn:hover {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* 네비게이션 메뉴 */
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+            border-top: 1px solid var(--border-color);
+            padding: 1.25rem 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            background-color: var(--bg-primary);
+        }
+
+        .nav-menu li {
+            position: relative;
+        }
+
+        .nav-menu a {
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 0.625rem 1rem;
+            border-radius: 6px;
+            transition: var(--transition);
+            font-weight: 500;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            background-color: var(--hover-bg);
+            color: #3b82f6;
+            transform: translateY(-1px);
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-menu a:hover::after {
+            width: 80%;
+        }
+
+        /* 햄버거 메뉴 버튼 */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .hamburger-btn:hover {
+            background-color: var(--hover-bg);
+        }
+
+        /* 모바일 네비게이션 */
+        .nav-mobile {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+        }
+
+        .nav-mobile.active {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mobile-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .mobile-menu li {
+            margin: 0;
+        }
+
+        .mobile-menu a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 1rem 0.75rem;
+            transition: var(--transition);
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.875rem;
+            min-height: 60px;
+        }
+
+        .mobile-menu a:hover {
+            background-color: var(--hover-bg);
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        /* 모바일 테마 토글 */
+        .mobile-theme-toggle {
+            padding: 1rem 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .mobile-theme-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .mobile-theme-btn:hover {
+            background-color: var(--hover-bg);
+            border-color: #3b82f6;
+        }
+
+        /* 모바일 메뉴 섹션 스타일 */
+        .mobile-menu-section,
+        .mobile-account-section,
+        .mobile-settings-section {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mobile-section-title {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        /* 모바일 메뉴에 인증 버튼 추가 */
+        .mobile-auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .mobile-auth-btn {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-weight: 500;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .mobile-login-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .mobile-login-btn:hover {
+            background-color: var(--hover-bg);
+            border-color: #3b82f6;
+        }
+
+        .mobile-signup-btn {
+            background-color: #3b82f6;
+            border: none;
+            color: white;
+        }
+
+        .mobile-signup-btn:hover {
+            background-color: #2563eb;
+        }
+
+        /* 모바일 설정 섹션 스타일 */
+        .mobile-setting-item {
+            margin-bottom: 1rem;
+        }
+
+        .mobile-setting-label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .mobile-language-selector {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mobile-language-selector:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .mobile-profile-btn,
+        .mobile-settings-btn,
+        .mobile-logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-weight: 500;
+            text-align: left;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            color: var(--text-primary);
+        }
+
+        .mobile-profile-btn:hover,
+        .mobile-settings-btn:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .mobile-logout-btn {
+            color: #ef4444;
+        }
+
+        .mobile-logout-btn:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        /* 반응형 미디어 쿼리 */
+        @media (max-width: 768px) {
+            .header-description {
+                display: none;
+            }
+            
+            .auth-buttons {
+                display: none;
+            }
+            
+            .profile-menu {
+                display: none;
+            }
+
+            .language-selector {
+                display: none;
+            }
+
+            .hamburger-btn {
+                display: block;
+            }
+
+            .header-container {
+                padding: 0 1rem;
+            }
+
+            .logo {
+                font-size: 1.25rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-container {
+                height: 60px;
+                padding: 0 0.75rem;
+            }
+
+            .logo {
+                font-size: 1.125rem;
+            }
+
+            .mobile-menu {
+                grid-template-columns: 1fr;
+                gap: 0.25rem;
+            }
+
+            .mobile-menu a {
+                padding: 0.875rem 0.5rem;
+                font-size: 0.8rem;
+                min-height: 50px;
+            }
+        }
+
+        /* 접근성 */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* 포커스 스타일 */
+        .nav-menu a:focus,
+        .mobile-menu a:focus,
+        .theme-toggle-btn:focus,
+        .hamburger-btn:focus,
+        .mobile-theme-btn:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+
+        /* 모달 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: none;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            max-width: 400px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .input-field {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.75rem;
+            transition: var(--transition);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* CSS 변수 추가 */
+        :root {
+            --modal-bg: #1a1f2e;
+            --input-bg: #2d3748;
+        }
+
+        [data-theme="light"] {
+            --modal-bg: #ffffff;
+            --input-bg: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-container">
+            <!-- 로고 -->
+            <a href="index.html" class="logo">
+                <i class="fas fa-robot"></i>
+                <span data-i18n="header_ai_curator">AI Curator</span>
+            </a>
+
+            <!-- 중앙 설명 텍스트 -->
+            <div class="header-description">
+                <div class="description-text">
+                    <div class="description-line1" data-i18n="header_description_line1">Ai Curator Hub 에서 제공하는 수많은 Ai 툴</div>
+                    <div class="description-line2" data-i18n="header_description_line2">그리고 고급 사용자들의 레시피와 함께 새로운 세계로의 여행을 시작하세요</div>
+                </div>
+            </div>
+
+            <!-- 오른쪽 컨트롤 영역 -->
+            <div class="header-controls">
+                <!-- 테마 토글 버튼 -->
+                <button class="theme-toggle-btn" data-theme-toggle aria-label="테마 변경" title="테마 변경">
+                    <i class="fas fa-moon"></i>
+                </button>
+
+                <!-- 로그인/회원가입 버튼 -->
+                <div id="authButtons" class="auth-buttons">
+                    <button onclick="window.showLoginModal()" class="auth-btn login-btn" data-i18n="header_login">로그인</button>
+                    <button onclick="window.showSignupModal()" class="auth-btn signup-btn" data-i18n="header_signup">회원가입</button>
+                </div>
+
+                <!-- 프로필 메뉴 (로그인 시) -->
+                <div id="profileMenu" class="profile-menu" style="display: none;">
+                    <button id="profileMenuButton" class="profile-menu-btn" type="button" data-email="user@example.com">
+                        <div class="profile-avatar">
+                            <span id="profileInitial" class="profile-initial">U</span>
+                        </div>
+                        <span id="profileName" class="profile-name" data-i18n="header_user">사용자</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="profile-dropdown" id="profileDropdown" style="display: none;">
+                        <div class="dropdown-item" style="cursor: default; color: var(--text-secondary); font-size: 0.8rem; padding: 0.5rem 1rem;">
+                            <i class="fas fa-envelope"></i>
+                            <span id="profileEmail">user@example.com</span>
+                        </div>
+                        <hr class="dropdown-divider">
+                        <a href="javascript:void(0)" onclick="navigateToProfile()" class="dropdown-item">
+                            <i class="fas fa-user"></i><span data-i18n="header_profile">프로필</span>
+                        </a>
+                        <a href="javascript:void(0)" onclick="navigateToSettings()" class="dropdown-item">
+                            <i class="fas fa-cog"></i><span data-i18n="header_settings">설정</span>
+                        </a>
+                        <hr class="dropdown-divider">
+                        <a href="javascript:void(0)" onclick="handleLogout()" class="dropdown-item">
+                            <i class="fas fa-sign-out-alt"></i><span data-i18n="header_logout">로그아웃</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 언어 선택 -->
+                <select id="languageSwitcher" class="language-selector">
+                    <option value="ko">한국어</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="zh">中文</option>
+                    <option value="ru">Русский</option>
+                    <option value="es">Español</option>
+                    <option value="pt">Português</option>
+                    <option value="ar">العربية</option>
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="id">Bahasa Indonesia</option>
+                    <option value="fr">Français</option>
+                    <option value="hi">हिन्दी</option>
+                </select>
+            </div>
+
+            <!-- 햄버거 메뉴 버튼 (모바일) -->
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="메뉴 열기" title="메뉴 열기">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- 네비게이션 메뉴 -->
+        <nav class="nav-desktop" style="display: flex; justify-content: center;">
+            <ul class="nav-menu">
+                <li><a href="question_recommendation.html" data-i18n="header_ai_recommendation_test">AI 추천 테스트</a></li>
+                <li><a href="filter_search.html" data-i18n="header_ai_tools_search">AI 도구 찾기</a></li>
+                <li><a href="ai_comb_list.html" data-i18n="header_ai_recipes_create">Ai 레시피 작성</a></li>
+                <li><a href="service_apply_add.html" data-i18n="header_ai_tools_register">AI 도구 등록 신청</a></li>
+                <li><a href="service_sales_page.html" data-i18n="header_ai_tools_paid_service">AI 도구 유료 서비스 신청</a></li>
+            </ul>
+        </nav>
+
+        <!-- 모바일 네비게이션 -->
+        <nav class="nav-mobile" id="nav-mobile">
+            <!-- 모바일 메뉴 섹션 -->
+            <div class="mobile-menu-section">
+                <h3 class="mobile-section-title" data-i18n="header_navigation">네비게이션</h3>
+                <ul class="mobile-menu">
+                    <li><a href="question_recommendation.html" data-i18n="header_ai_recommendation_test">AI 추천 테스트</a></li>
+                    <li><a href="filter_search.html" data-i18n="header_ai_tools_search">AI 도구 찾기</a></li>
+                    <li><a href="ai_comb_list.html" data-i18n="header_ai_recipes_create">Ai 레시피 작성</a></li>
+                    <li><a href="service_apply_add.html" data-i18n="header_ai_tools_register">AI 도구 등록 신청</a></li>
+                    <li><a href="service_sales_page.html" data-i18n="header_ai_tools_paid_service">AI 도구 유료 서비스 신청</a></li>
+                </ul>
+            </div>
+            
+            <!-- 모바일 계정 섹션 -->
+            <div class="mobile-account-section">
+                <h3 class="mobile-section-title" data-i18n="header_account">계정</h3>
+                <div id="mobileAuthButtons" class="mobile-auth-buttons">
+                    <button onclick="showLoginModal()" class="mobile-auth-btn mobile-login-btn" data-i18n="header_login">로그인</button>
+                    <button onclick="showSignupModal()" class="mobile-auth-btn mobile-signup-btn" data-i18n="header_signup">회원가입</button>
+                </div>
+                <div id="mobileProfileMenu" style="display:none; flex-direction:column; gap:0.5rem;">
+                    <button onclick="navigateToProfile()" class="mobile-auth-btn mobile-profile-btn">
+                        <i class="fas fa-user"></i>
+                        <span id="mobileProfileName" data-i18n="header_user">사용자</span>
+                    </button>
+                    <button onclick="navigateToSettings()" class="mobile-auth-btn mobile-settings-btn">
+                        <i class="fas fa-cog"></i>
+                        <span data-i18n="header_settings">설정</span>
+                    </button>
+                    <button onclick="handleLogout()" class="mobile-auth-btn mobile-logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span data-i18n="header_logout">로그아웃</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 모바일 설정 섹션 -->
+            <div class="mobile-settings-section">
+                <h3 class="mobile-section-title" data-i18n="header_settings">설정</h3>
+                
+                <!-- 테마 토글 -->
+                <div class="mobile-setting-item">
+                    <button class="mobile-theme-btn" data-theme-toggle>
+                        <i class="fas fa-moon"></i>
+                        <span data-i18n="header_theme_change">테마 변경</span>
+                    </button>
+                </div>
+                
+                <!-- 언어 선택 -->
+                <div class="mobile-setting-item">
+                    <label for="mobileLanguageSwitcher" class="mobile-setting-label" data-i18n="header_language">언어</label>
+                    <select id="mobileLanguageSwitcher" class="mobile-language-selector">
+                        <option value="ko">한국어</option>
+                        <option value="en">English</option>
+                        <option value="ja">日本語</option>
+                        <option value="zh">中文</option>
+                        <option value="ru">Русский</option>
+                        <option value="es">Español</option>
+                        <option value="pt">Português</option>
+                        <option value="ar">العربية</option>
+                        <option value="vi">Tiếng Việt</option>
+                        <option value="id">Bahasa Indonesia</option>
+                        <option value="fr">Français</option>
+                        <option value="hi">हिन्दी</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 로그인 모달 -->
+    <div id="loginModal" class="modal-overlay flex items-center justify-center" style="display:none;">
+      <div class="modal relative mx-auto bg-[var(--modal-bg)] rounded-2xl p-8 shadow-lg">
+        <button class="modal-close absolute top-4 right-4 text-2xl text-gray-400 hover:text-white" onclick="document.getElementById('loginModal').classList.remove('show');">&times;</button>
+        <h2 class="text-2xl font-bold mb-2 text-center" data-i18n="header_login">로그인</h2>
+        <p class="text-center text-gray-400 mb-6" data-i18n="header_welcome_message">AI Curator에 오신 것을 환영합니다!</p>
+        <button onclick="window.handleSocialLogin('google')" class="w-full flex items-center justify-center gap-2 bg-white text-gray-800 font-semibold py-3 rounded-lg shadow hover:bg-gray-100 mb-4 border border-gray-200">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> <span data-i18n="header_continue_with_google">Google로 계속하기</span>
+        </button>
+        <div class="flex items-center my-4">
+          <div class="flex-grow h-px bg-gray-300"></div>
+          <span class="mx-2 text-gray-400 text-sm" data-i18n="header_or">또는</span>
+          <div class="flex-grow h-px bg-gray-300"></div>
+        </div>
+        <form id="loginForm" class="space-y-4">
+          <div>
+            <label for="loginEmail" class="block text-sm mb-1 text-gray-300" data-i18n="header_email_address">이메일 주소</label>
+            <input id="loginEmail" type="email" data-i18n-placeholder="header_enter_email" placeholder="이메일 주소를 입력하세요" required class="input-field w-full bg-[var(--input-bg)] text-white" />
+          </div>
+          <div>
+            <label for="loginPassword" class="block text-sm mb-1 text-gray-300" data-i18n="header_password">비밀번호</label>
+            <div class="relative">
+              <input id="loginPassword" type="password" data-i18n-placeholder="header_enter_password" placeholder="비밀번호를 입력하세요" required class="input-field w-full bg-[var(--input-bg)] text-white pr-10" />
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" onclick="togglePasswordVisibility('loginPassword')">
+                <i class="fas fa-eye"></i>
+              </span>
+            </div>
+            <div class="text-right mt-1">
+              <a href="#" class="text-xs text-purple-400 hover:underline" data-i18n="header_forgot_password">비밀번호를 잊으셨나요?</a>
+            </div>
+          </div>
+          <button type="submit" class="w-full py-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-lg mt-2" data-i18n="header_login">로그인</button>
+        </form>
+        <div class="mt-6 text-center text-gray-400 text-sm">
+          <span data-i18n="header_no_account">계정이 없으신가요?</span> <a href="#" onclick="document.getElementById('loginModal').classList.remove('show'); window.showSignupModal(); return false;" class="text-purple-400 hover:underline" data-i18n="header_signup_link">회원가입</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 회원가입 모달 -->
+    <div id="signupModal" class="modal-overlay flex items-center justify-center" style="display:none;">
+      <div class="modal relative mx-auto bg-[var(--modal-bg)] rounded-2xl p-8 shadow-lg">
+        <button class="modal-close absolute top-4 right-4 text-2xl text-gray-400 hover:text-white" onclick="document.getElementById('signupModal').classList.remove('show');">&times;</button>
+        <h2 class="text-2xl font-bold mb-2 text-center" data-i18n="header_create_account">계정 만들기</h2>
+        <p class="text-center text-gray-400 mb-6" data-i18n="header_welcome_signup">AI Curator에 오신 것을 환영합니다!</p>
+        <button onclick="window.handleSocialLogin('google')" class="w-full flex items-center justify-center gap-2 bg-white text-gray-800 font-semibold py-3 rounded-lg shadow hover:bg-gray-100 mb-4 border border-gray-200">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5"> <span data-i18n="header_continue_with_google">Google로 계속하기</span>
+        </button>
+        <div class="flex items-center my-4">
+          <div class="flex-grow h-px bg-gray-300"></div>
+          <span class="mx-2 text-gray-400 text-sm" data-i18n="header_or">또는</span>
+          <div class="flex-grow h-px bg-gray-300"></div>
+        </div>
+        <form id="signupForm" class="space-y-4">
+          <div>
+            <label for="fullName" class="block text-sm mb-1 text-gray-300" data-i18n="header_full_name">이름</label>
+            <input id="fullName" type="text" data-i18n-placeholder="header_enter_name" placeholder="이름을 입력하세요" required class="input-field w-full bg-[var(--input-bg)] text-white" />
+          </div>
+          <div>
+            <label for="signupEmail" class="block text-sm mb-1 text-gray-300" data-i18n="header_email_address">이메일 주소</label>
+            <input id="signupEmail" type="email" data-i18n-placeholder="header_enter_email" placeholder="이메일 주소를 입력하세요" required class="input-field w-full bg-[var(--input-bg)] text-white" />
+          </div>
+          <div>
+            <label for="signupPassword" class="block text-sm mb-1 text-gray-300" data-i18n="header_password">비밀번호</label>
+            <div class="relative">
+              <input id="signupPassword" type="password" data-i18n-placeholder="header_enter_password" placeholder="비밀번호를 입력하세요" required class="input-field w-full bg-[var(--input-bg)] text-white pr-10" />
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer" onclick="togglePasswordVisibility('signupPassword')">
+                <i class="fas fa-eye"></i>
+              </span>
+            </div>
+            <div class="text-xs text-gray-400 mt-1" data-i18n="header_min_password">최소 6자 이상 입력해주세요</div>
+          </div>
+          <button type="submit" class="w-full py-3 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-lg mt-2" data-i18n="header_signup">회원가입</button>
+        </form>
+        <div class="mt-6 text-center text-gray-400 text-sm">
+          <span data-i18n="header_has_account">이미 계정이 있으신가요?</span> <a href="#" onclick="document.getElementById('signupModal').classList.remove('show'); window.showLoginModal(); return false;" class="text-purple-400 hover:underline" data-i18n="header_login_link">로그인</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 모바일 메뉴 토글
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const navMobile = document.getElementById('nav-mobile');
+            let isOpen = false;
+
+            if (hamburgerBtn && navMobile) {
+                hamburgerBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (isOpen) {
+                        navMobile.classList.remove('active');
+                        hamburgerBtn.querySelector('i').className = 'fas fa-bars';
+                        isOpen = false;
+                    } else {
+                        navMobile.classList.add('active');
+                        hamburgerBtn.querySelector('i').className = 'fas fa-times';
+                        isOpen = true;
+                    }
+                });
+
+                // 외부 클릭 시 메뉴 닫기
+                document.addEventListener('click', function(e) {
+                    if (isOpen && !navMobile.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+                        navMobile.classList.remove('active');
+                        hamburgerBtn.querySelector('i').className = 'fas fa-bars';
+                        isOpen = false;
+                    }
+                });
+            }
+
+            // 프로필 드롭다운 토글
+            const profileMenuBtn = document.getElementById('profileMenuButton');
+            const profileDropdown = document.getElementById('profileDropdown');
+            
+            if (profileMenuBtn && profileDropdown) {
+                profileMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (profileDropdown.style.display === 'block') {
+                        profileDropdown.style.display = 'none';
+                    } else {
+                        profileDropdown.style.display = 'block';
+                    }
+                });
+
+                // 외부 클릭 시 드롭다운 닫기
+                document.addEventListener('click', function(e) {
+                    if (!profileMenuBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                        profileDropdown.style.display = 'none';
+                    }
+                });
+            }
+
+            // 언어 선택기
+            const languageSwitcher = document.getElementById('languageSwitcher');
+            const mobileLanguageSwitcher = document.getElementById('mobileLanguageSwitcher');
+            
+            if (languageSwitcher) {
+                languageSwitcher.addEventListener('change', function() {
+                    const selectedLang = this.value;
+                    if (window.changeLanguage) {
+                        window.changeLanguage(selectedLang);
+                    }
+                    // 모바일 언어 선택기도 동기화
+                    if (mobileLanguageSwitcher) {
+                        mobileLanguageSwitcher.value = selectedLang;
+                    }
+                });
+            }
+            
+            if (mobileLanguageSwitcher) {
+                mobileLanguageSwitcher.addEventListener('change', function() {
+                    const selectedLang = this.value;
+                    if (window.changeLanguage) {
+                        window.changeLanguage(selectedLang);
+                    }
+                    // 데스크톱 언어 선택기도 동기화
+                    if (languageSwitcher) {
+                        languageSwitcher.value = selectedLang;
+                    }
+                });
+            }
+        });
+
+        // 네비게이션 함수들
+        function navigateToProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        function navigateToSettings() {
+            // 설정 페이지로 이동하는 로직
+            console.log('설정 페이지로 이동');
+        }
+
+        function handleLogout() {
+            // 로그아웃 로직
+            if (window.firebase && window.firebase.auth) {
+                window.firebase.auth().signOut().then(() => {
+                    console.log('로그아웃 성공');
+                    window.location.reload();
+                }).catch((error) => {
+                    console.error('로그아웃 오류:', error);
+                });
+            }
+        }
+
+        // 모달 표시 함수들
+        function showLoginModal() {
+            const loginModal = document.getElementById('loginModal');
+            if (loginModal) {
+                loginModal.style.display = 'flex';
+                loginModal.classList.add('show');
+            }
+        }
+
+        function showSignupModal() {
+            const signupModal = document.getElementById('signupModal');
+            if (signupModal) {
+                signupModal.style.display = 'flex';
+                signupModal.classList.add('show');
+            }
+        }
+
+        // 비밀번호 표시/숨김 토글
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        // 전역 함수로 등록
+        window.showLoginModal = showLoginModal;
+        window.showSignupModal = showSignupModal;
+        window.navigateToProfile = navigateToProfile;
+        window.navigateToSettings = navigateToSettings;
+        window.handleLogout = handleLogout;
+    </script>
+
+    <!-- 외부 스크립트 파일들 -->
+    <script src="js/header-menu.js"></script>
+    <script src="js/theme-manager.js"></script>
+    <script src="js/auth-manager.js"></script>
+    <script src="js/firebase-init.js"></script>
+
+</body>
+</html> 

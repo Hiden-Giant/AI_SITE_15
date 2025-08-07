@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서비스 판매 - AI Curator</title>
+  <link href="assets/css/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/optimized.css">
+  <script src="js/theme-manager.js"></script>
+  
+  <!-- 다국어 관련 스크립트 -->
+    <script src="lang/en.js"></script>
+    <script src="lang/ko.js"></script>
+    <script src="lang/ja.js"></script>
+    <script src="lang/zh.js"></script>
+    <script src="lang/ru.js"></script>
+    <script src="lang/es.js"></script>
+    <script src="lang/pt.js"></script>
+    <script src="lang/ar.js"></script>
+    <script src="lang/vi.js"></script>
+    <script src="lang/id.js"></script>
+    <script src="lang/fr.js"></script>
+    <script src="lang/hi.js"></script>
+    <script src="js/translate.js"></script>
+
+  <style>
+    :root {
+      --primary: #4a35e8;
+      --dark-bg: #121620;
+      --card-bg: #1a1f2e;
+      --card-hover: #232939;
+      /* 다크 모드 기본값 */
+      --bg-primary: #121620;
+      --bg-secondary: #1a1f2e;
+      --text-primary: #ffffff;
+      --text-secondary: #a0aec0;
+      --border-color: #2d3748;
+      --hover-bg: #2d3748;
+      --input-bg: #2d3748;
+      --modal-bg: #1a1f2e;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      background-color: var(--bg-primary);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-secondary {
+      background-color: transparent;
+      color: white;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.375rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .card {
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      border-radius: 0.75rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      background-color: var(--card-hover);
+    }
+    
+    .tag {
+      background-color: #2563eb !important;
+      color: #fff !important;
+      padding: 0.5rem 1rem !important;
+      border-radius: 0.25rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      display: inline-block;
+    }
+    
+    details {
+      background-color: var(--card-bg);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    summary {
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    details p {
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 0.5rem;
+    }
+
+    /* 헤더 스타일 */
+    .auth-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .auth-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .auth-btn.login {
+      background-color: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+    }
+    
+    .auth-btn.signup {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .auth-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .profile-menu {
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .profile-button {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+    
+    .profile-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .profile-menu-content {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 8px;
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      min-width: 200px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+    
+    .profile-menu-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      color: white;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+    
+    .profile-menu-item i {
+      margin-right: 12px;
+      width: 16px;
+      text-align: center;
+    }
+    
+    .profile-menu-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .profile-menu-item span {
+      margin-left: 8px;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f7fafc;
+      --text-primary: #1a202c;
+      --text-secondary: #4a5568;
+      --border-color: #e2e8f0;
+      --card-bg: #ffffff;
+      --hover-bg: #edf2f7;
+      --input-bg: #f7fafc;
+      --modal-bg: #ffffff;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      cursor: pointer;
+      padding: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .theme-toggle i {
+      font-size: 1.25rem;
+    }
+
+    .glass-effect {
+      background: rgba(26, 31, 46, 0.85); /* 반투명 효과 */
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px); /* 진짜 글래스 효과 */
+      -webkit-backdrop-filter: blur(8px);
+    }
+  </style>
+
+<!-- 공통 인증 모듈 -->
+<script type="module" src="js/auth-manager.js"></script>
+
+</head>
+<body>
+  <div id="header-container"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.body.setAttribute('data-theme', savedTheme);
+    });
+
+    fetch('header.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('header-container').innerHTML = data;
+        const script = document.createElement('script');
+        script.src = 'js/header-menu.js';
+        script.onload = function() {
+          if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
+          if (window.initMobileMenuToggle) window.initMobileMenuToggle();
+          if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
+
+          // === 폼 이벤트 연결 추가 ===
+          // 로그인 폼
+          const loginForm = document.getElementById('loginForm');
+          if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const email = document.getElementById('loginEmail').value;
+              const password = document.getElementById('loginPassword').value;
+              if (window.handleEmailLogin) {
+                await window.handleEmailLogin(email, password);
+              }
+            });
+          }
+          // 회원가입 폼
+          const signupForm = document.getElementById('signupForm');
+          if (signupForm) {
+            signupForm.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const fullName = document.getElementById('fullName').value;
+              const email = document.getElementById('signupEmail').value;
+              const password = document.getElementById('signupPassword').value;
+              if (window.handleEmailSignup) {
+                await window.handleEmailSignup(fullName, email, password);
+              }
+            });
+          }
+          // 소셜 로그인 버튼
+          const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
+          googleBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              if (window.handleSocialLogin) {
+                window.handleSocialLogin('google');
+              }
+            });
+          });
+          // === 폼 이벤트 연결 끝 ===
+        };
+        document.body.appendChild(script);
+      });
+  </script>
+
+  <div class="max-w-7xl mx-auto p-6 pt-32">
+    <!-- 소개 -->
+    <div class="card mb-10" style="border:1.5px solid var(--border-color);color:var(--text-primary);">
+      <h2 class="text-3xl font-bold mb-4 text-center">AI 큐레이터 등록/광고 서비스</h2>
+      <p class="text-lg text-center leading-relaxed mb-4">
+        당신의 AI 도구가 더 많은 사람들에게 소개될 수 있도록, AI 큐레이터에서는 <strong style="color:var(--primary);">신뢰 기반 등록</strong>부터
+        <strong style="color:#eab308;">전문 인증</strong>, 그리고 <strong style="color:#ec4899;">전략적 광고</strong>까지
+        다양한 홍보 서비스를 제공합니다. 지금 등록하여 AI 트렌드의 중심에 서보세요!
+      </p>
+      <ul class="flex flex-col md:flex-row justify-center text-center text-sm gap-4">
+        <li class="tag">AI 툴 노출 극대화</li>
+        <li class="tag">검색 최적화(SEO) 지원</li>
+        <li class="tag">SNS 채널 연동 홍보</li>
+        <li class="tag">뱃지 부여로 신뢰도 향상</li>
+      </ul>
+    </div>
+
+    <!-- 흐름도 -->
+    <div class="card mb-10" style="border:1.5px solid var(--border-color);color:var(--text-primary);">
+      <h3 class="text-2xl font-bold text-center mb-6">서비스 이용 흐름</h3>
+      <div class="grid md:grid-cols-5 gap-4 text-center">
+        <div><div class="text-4xl mb-2">📄</div><p>신청서 제출</p><small>(AI 툴 정보 입력)</small></div>
+        <div><div class="text-4xl mb-2">🔍</div><p>AI 툴 검토</p><small>(신뢰성·기능 확인)</small></div>
+        <div><div class="text-4xl mb-2">✅</div><p>리스트 등록</p><small>(Standard/Verified)</small></div>
+        <div><div class="text-4xl mb-2">📢</div><p>노출 시작</p><small>(섹션/배너/SNS)</small></div>
+        <div><div class="text-4xl mb-2">📈</div><p>성과 분석</p><small>(통계 제공 예정)</small></div>
+      </div>
+    </div>
+
+    <!-- 가격 카드 -->
+    <div class="grid md:grid-cols-3 gap-6 mb-10">
+      <div class="card" style="border:1.5px solid var(--border-color);color:var(--text-primary);">
+        <h2 class="text-2xl font-bold mb-4">Basic Listing</h2>
+        <p class="text-xl font-semibold mb-2">₩89,000 <span class="text-sm">일회성</span></p>
+        <ul class="list-disc list-inside space-y-2 mb-4">
+          <li>검증 및 등록 5일</li>
+          <li>AI 트렌드 섹션 7일 노출</li>
+          <li>큐레이터 셀렉션 30일</li>
+          <li>AI 기본 정보 + 이미지 등록</li>
+          <li>구글 검색 색인 지원</li>
+        </ul>
+        <a href="service_apply_basic.html" class="btn-primary block text-center">신청하기</a>
+      </div>
+
+      <div class="card border" style="border:1.5px solid #fde047;color:var(--text-primary);">
+        <h2 class="text-2xl font-bold mb-4">Verified Listing</h2>
+        <p class="text-xl font-semibold mb-2">₩279,000 <span class="text-sm">일회성</span></p>
+        <ul class="list-disc list-inside space-y-2 mb-4">
+          <li>검증 및 등록 3일</li>
+          <li>인증 뱃지 부여</li>
+          <li>추천 필터에 포함</li>
+          <li>트렌드 30일 / 셀렉션 50일</li>
+          <li>미디어 등록 + 검색 색인</li>
+        </ul>
+        <a href="service_apply_verified.html" class="btn-primary block text-center">신청하기</a>
+      </div>
+
+      <div class="card border" style="border:1.5px solid #f9a8d4;color:var(--text-primary);">
+        <h2 class="text-2xl font-bold mb-4">AI Advertising</h2>
+        <p class="text-xl font-semibold mb-2">₩459,000 <span class="text-sm">일회성</span></p>
+        <ul class="list-disc list-inside space-y-2 mb-4">
+          <li>Top class 섹션 7일 노출</li>
+          <li>뱃지 유지 14일</li>
+          <li>메인 최상단 배너 1일</li>
+          <li>하단 배너 3일 + SNS 소개</li>
+          <li>※ Standard/Verified 신청자 대상</li>
+        </ul>
+        <a href="service_apply_add.html" class="btn-primary block text-center">신청하기</a>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="card" style="border:1.5px solid var(--border-color);color:var(--text-primary);">
+      <h3 class="text-2xl font-bold text-center mb-6">자주 묻는 질문 (FAQ)</h3>
+      <div class="space-y-4">
+        <details style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:0.5rem;padding:1rem;">
+          <summary style="color:var(--text-primary);font-weight:600;cursor:pointer;">Standard와 Verified의 차이는?</summary>
+          <p style="color:var(--text-secondary);margin-top:0.5rem;">Verified는 더 빠른 검토, 인증 뱃지, 필터 등록 등 추가 혜택이 있습니다.</p>
+        </details>
+        <details style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:0.5rem;padding:1rem;">
+          <summary style="color:var(--text-primary);font-weight:600;cursor:pointer;">광고만 신청할 수 있나요?</summary>
+          <p style="color:var(--text-secondary);margin-top:0.5rem;">아니요, 광고는 등록된 AI 툴에 한해 가능합니다.</p>
+        </details>
+        <details style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:0.5rem;padding:1rem;">
+          <summary style="color:var(--text-primary);font-weight:600;cursor:pointer;">환불이 가능한가요?</summary>
+          <p style="color:var(--text-secondary);margin-top:0.5rem;">등록 후 검토가 시작되면 환불은 불가합니다. 단, 거절 시 환불됩니다.</p>
+        </details>
+        <details style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:0.5rem;padding:1rem;">
+          <summary style="color:var(--text-primary);font-weight:600;cursor:pointer;">노출 연장 가능 여부?</summary>
+          <p style="color:var(--text-secondary);margin-top:0.5rem;">별도 연장 신청을 통해 가능합니다.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Container -->
+  <div id="footer-container"></div>
+  <script>
+    fetch('footer.html')
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('footer-container').innerHTML = data;
+      });
+  </script>
+</body>
+</html>

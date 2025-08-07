@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 조합 상세 - 똑똑한 일잘러를 위한 AI 툴 모음</title>
+    <meta name="description" content="AI 도구 조합의 상세 정보를 확인하고 리뷰를 작성할 수 있는 페이지입니다.">
+    <link href="./ai_comb_list_files/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="./ai_comb_list_files/all.min.css">
+    <script src="js/theme-manager.js"></script>
+    <!-- 공통 인증 모듈 -->
+    <script type="module" src="js/auth-manager.js"></script>
+    <script>
+        // AuthManager 초기화 완료 대기
+        window.addEventListener('authManagerReady', function() {
+            console.log('AuthManager가 준비되었습니다.');
+        });
+    </script>
+
+    
+    <!-- 다국어 관련 스크립트 -->
+    <script src="lang/en.js"></script>
+    <script src="lang/ko.js"></script>
+    <script src="lang/ja.js"></script>
+    <script src="lang/zh.js"></script>
+    <script src="lang/ru.js"></script>
+    <script src="lang/es.js"></script>
+    <script src="lang/pt.js"></script>
+    <script src="lang/ar.js"></script>
+    <script src="lang/vi.js"></script>
+    <script src="lang/id.js"></script>
+    <script src="lang/fr.js"></script>
+    <script src="lang/hi.js"></script>
+    <script src="js/translate.js"></script>
+
+    <style>
+        /* 테마 2변수 정의 */
+        :root {
+            --bg-primary: #121620;
+            --bg-secondary: #1a1f2e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border-color: #374151;
+            --hover-bg: #2d3748;
+            --card-bg: #1a1f2e;
+            --card-hover: #232939;
+            --modal-bg: #1a1f2e;
+            --input-bg: #2d3748;
+            --transition: all 0.3s ease;
+        }
+
+        /* 헤더 컨테이너 너비 조정 */
+        #header-container .header-container {
+            max-width: 1500px !important;
+        }
+
+        /* 푸터 컨테이너 너비 조정 */
+        #footer-container .container {
+            max-width: 1500px !important;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --hover-bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --card-hover: #f8fafc;
+            --modal-bg: #ffffff;
+            --input-bg: #f8fafc;
+        }
+
+        body {
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* 페이지 전체 컨테이너 */
+        .page-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .recipe-card {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .tool-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            overflow: hidden;
+        }
+        
+        .tool-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        
+        .tool-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .tool-name {
+            font-size: 10px;
+        }
+
+        /* 저장된 버튼 스타일 */
+        .main-btn-save.saved {
+            background-color: #10b981;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .main-btn-save.saved:hover {
+            background-color: #10b981;
+        }
+
+        .tool-name {
+            color: var(--text-secondary);
+            margin-top: 4px;
+            max-width: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .arrow {
+            font-size: 18px;
+            color: #9CA3AF;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* 제목과 텍스트 색상 */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-primary);
+        }
+
+        p, span, label {
+            color: var(--text-secondary);
+        }
+
+        /* 버튼 스타일 */
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #ef4444;
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .btn-secondary:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* 모달 스타일 */
+        .modal-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            z-index: 10000 !important;
+            display: none !important;
+        }
+
+        .modal-overlay.show {
+            display: flex !important;
+        }
+
+        .modal {
+            background: #1a1f2e !important;
+            border: 1.5px solid #374151 !important;
+            color: var(--text-primary) !important;
+            max-width: 420px !important;
+            min-width: 320px !important;
+            width: 92vw !important;
+            max-height: 92vh !important;
+            overflow-y: auto !important;
+            margin: auto !important;
+            border-radius: 18px !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18) !important;
+            padding: 2.2rem 1.5rem 1.5rem 1.5rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+
+        .input-field {
+            border: 1px solid var(--border-color) !important;
+            border-radius: 8px !important;
+            padding: 1rem !important;
+            transition: var(--transition) !important;
+            background-color: var(--input-bg) !important;
+            color: var(--text-primary) !important;
+            font-size: 1.08rem !important;
+            margin-bottom: 1.2rem !important;
+        }
+
+        .input-field:focus {
+            outline: none !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
+
+        /* 별점 스타일 */
+        .star-rating {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-start;
+            margin-bottom: 1.2rem;
+        }
+
+        .star {
+            font-size: 2rem;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .star.filled {
+            color: #fbbf24;
+        }
+
+        .star:hover {
+            color: #fbbf24;
+        }
+
+        /* 리뷰 카드 스타일 */
+        .review-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .review-stars {
+            display: flex;
+            gap: 2px;
+            margin-left: 8px;
+        }
+
+        .review-star {
+            font-size: 14px;
+            color: #fbbf24;
+        }
+
+        .review-star.empty {
+            color: #d1d5db;
+        }
+
+        /* 장점 특징 카드 */
+        .features-card {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features-list li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .features-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: white;
+            font-weight: bold;
+        }
+        /* 카드/리뷰 카드 테마별 스타일 개선 */
+        .recipe-card, .review-card {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            border: 2px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        .review-card {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        }
+        .recipe-card .text-gray-300,
+        .recipe-card .text-gray-400,
+        .recipe-card .text-gray-600,
+        .review-card .text-gray-700 {
+            color: var(--text-primary) !important;
+        }
+        .recipe-card .bg-gray-200,
+        .review-card .bg-gray-200 {
+            background: #e5e7eb !important;
+            color: #374151 !important;
+        }
+        /* 테마별 카드/텍스트 색상 */
+        body[data-theme="light"] .recipe-card,
+        body[data-theme="light"] .review-card {
+            background: #fff !important;
+            color: #1e293b !important;
+            border: 2px solid #e2e8f0 !important;
+        }
+        body[data-theme="dark"] .recipe-card,
+        body[data-theme="dark"] .review-card {
+            background: #232939 !important;
+            color: #fff !important;
+            border: 2px solid #374151 !important;
+        }
+        body[data-theme="light"] .recipe-card .bg-gray-200,
+        body[data-theme="light"] .review-card .bg-gray-200 {
+            background: #f1f5f9 !important;
+            color: #64748b !important;
+        }
+        body[data-theme="dark"] .recipe-card .bg-gray-200,
+        body[data-theme="dark"] .review-card .bg-gray-200 {
+            background: #1a1f2e !important;
+            color: #a0aec0 !important;
+        }
+        /* 카드 내부 여백/구분선 */
+        .recipe-card > *:not(:last-child), .review-card > *:not(:last-child) {
+            margin-bottom: 0.75rem;
+        }
+        /* 주요 텍스트 강조 */
+        .recipe-card .font-bold, .review-card .font-bold, .recipe-card .font-semibold {
+            color: var(--text-primary) !important;
+        }
+        /* 카드 그림자 강조 */
+        .recipe-card, .review-card {
+            box-shadow: 0 4px 24px rgba(0,0,0,0.14);
+        }
+        /* 첨부 이미지와 동일한 UI/색상/정렬/여백/폰트로 맞춤 */
+        .custom-badge {
+            display: inline-block;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 0.25rem 1.1rem;
+            border-radius: 0.7rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .badge-orange { background: #ff9800; color: #fff; }
+        .badge-green { background: #1fc47c; color: #fff; }
+        .badge-red { background: #ef4444; color: #fff; }
+        .badge-blue { background: #22d3ee; color: #fff; }
+        .badge-yellow { background: #ffe066; color: #222; border: 1.5px solid #e6c200; }
+        .badge-outline { border: 2px solid #fff; background: transparent; color: #fff; }
+
+        .feature-card-custom {
+            background: #c6f7e2;
+            border-radius: 18px;
+            padding: 2rem 2rem 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem 2rem;
+            grid-auto-flow: row dense;
+        }
+        .feature-check {
+            color: #a78bfa;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .feature-text {
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        }
+        body[data-theme="dark"] .feature-text {
+            color: #000;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+        }
+        .ai-card {
+            background: #1a1f2e;
+            border: 2px solid #374151;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.14);
+            padding: 1.5rem 1.5rem 1.5rem 1.5rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+        
+        /* 두 번째 AI 카드 특별 스타일 */
+        .ai-card:nth-child(2) {
+            background: #1a1f2e;
+            border: 2px solid #374151;
+        }
+        .ai-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+        .ai-card-num {
+            width: 2.5rem; height: 2.5rem;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.3rem;
+            margin-right: 1rem;
+        }
+        
+        .ai-card-num-1 { background: #f472b6; color: #fff; }
+        .ai-card-num-2 { background: #60a5fa; color: #fff; }
+        
+        /* AI 카드 아이콘 스타일 */
+        .ai-card-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.7rem;
+        }
+        
+        .ai-card-icon div {
+            width: 28px;
+            height: 28px;
+            background: #8b5cf6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        
+        /* AI 카드 텍스트 영역 */
+        .ai-card-textarea {
+            width: 100%;
+            min-height: 200px;
+            background: #1a1f2e;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #cbd5e1;
+            font-size: 1rem;
+            resize: vertical;
+            font-family: inherit;
+            border: none;
+            outline: none;
+        }
+        
+        .ai-card-textarea:focus {
+            outline: none;
+            border: 1px solid #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .ai-card-textarea::placeholder {
+            color: #9ca3af;
+            font-style: italic;
+        }
+        
+        /* 참고 이미지 영역 */
+        .ai-card-reference {
+            margin-top: 1.2rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid #374151;
+        }
+        
+        .ai-card-reference-title {
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .ai-card-reference-title i {
+            color: #8b5cf6;
+            font-size: 1rem;
+        }
+        
+        .ai-card-reference-images {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .ai-card-reference-img {
+            background: #e5e7eb;
+            color: #64748b;
+            border: 2px dashed #d1d5db;
+            border-radius: 10px;
+            flex: 1 1 0;
+            width: 180px;
+            height: 110px;
+            min-width: 180px;
+            max-width: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: border-color 0.2s;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .ai-card-reference-img:hover {
+            border-color: #8b5cf6;
+        }
+        
+        .ai-card-reference-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .ai-card-reference-img:hover {
+            border-color: #3b82f6;
+        }
+        .ai-card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-left: 0.5rem;
+        }
+        .ai-card-desc {
+            color: #cbd5e1;
+            font-size: 1rem;
+            margin-bottom: 0.8rem;
+        }
+        .ai-card-comment {
+            background: #2d3748;
+            color: #cbd5e1;
+            border-radius: 10px;
+            padding: 1rem 1rem;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            min-height: 6.4rem; /* 4줄 높이: 1.6 * 4 = 6.4rem */
+        }
+        .ai-card-imgs {
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+        .ai-card-img {
+            background: #e5e7eb;
+            color: #64748b;
+            border-radius: 10px;
+            flex: 1 1 0;
+            width: 200px;
+            height: 120px;
+            min-width: 200px;
+            max-width: 200px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .ai-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        .ai-card-img img:hover {
+            transform: scale(1.05);
+        }
+        /* 이미지 모달 */
+        .img-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .img-modal-content {
+            background: #1a1f2e;
+            border-radius: 16px;
+            padding: 1.5rem;
+            max-width: 90vw;
+            max-height: 90vh;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .img-modal-content img {
+            max-width: 80vw;
+            max-height: 70vh;
+            border-radius: 12px;
+        }
+        .img-modal-close {
+            margin-top: 1rem;
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .ai-card-btns {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            gap: 0.7rem;
+            margin-top: 1.2rem;
+        }
+        .ai-btn {
+            flex: none;
+            min-width: 160px;
+        }
+        .ai-btn-visit { background: #2563eb; color: #fff; }
+        .ai-btn-visit:hover { background: #1d4ed8; transform: translateY(-2px); }
+        .ai-btn-detail { background: #ef4444; color: #fff; }
+        .ai-btn-detail:hover { background: #dc2626; transform: translateY(-2px); }
+        .main-btns {
+            display: flex;
+            gap: 1.2rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+        .main-btn-help {
+            background: #ef4444;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 0.6rem;
+            font-size: 1.1rem;
+            padding: 0.7rem 1.5rem;
+            border: none;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .main-btn-review {
+            background: #3b82f6;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 0.6rem;
+            font-size: 1.1rem;
+            padding: 0.7rem 1.5rem;
+            border: none;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .review-section {
+            margin-bottom: 2.5rem;
+        }
+        .review-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1.2rem;
+        }
+        .review-card {
+            background: #1a1f2e;
+            border: 2px solid #374151;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            padding: 1.2rem 1.5rem 1rem 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+        .review-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .review-stars {
+            display: flex;
+            gap: 2px;
+            margin-left: 0.7rem;
+        }
+        .review-star {
+            font-size: 1.1rem;
+            color: #fbbf24;
+        }
+        .review-star.empty {
+            color: #d1d5db;
+        }
+        .review-card .font-semibold {
+            color: #fff !important;
+        }
+        .review-card .text-gray-700 {
+            color: #e5e7eb !important;
+        }
+        .review-card .text-gray-500 {
+            color: #cbd5e1 !important;
+        }
+        /* 전체 배경 */
+        body {
+            background: #121620 !important;
+        }
+        /* 타이틀/설명 */
+        .main-title {
+            color: #fff;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        .main-desc {
+            color: #cbd5e1;
+            font-size: 1.15rem;
+            margin-bottom: 1.5rem;
+        }
+        /* 구분선 */
+        .divider {
+            border-bottom: 2px solid #374151;
+            margin: 2rem 0 1.5rem 0;
+        }
+        .section-title {
+            color: #fff;
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.7rem;
+            margin-top: 1.5rem;
+        }
+        .ai-card-imgs-and-btns {
+            display: flex;
+            flex-direction: row;
+            gap: 2rem;
+            margin-bottom: 1.2rem;
+            align-items: stretch;
+        }
+        .ai-card-imgs {
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+            flex: 2 1 0;
+            min-width: 420px;
+        }
+        .ai-card-btns {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: stretch;
+            gap: 1.1rem;
+            flex: 1 1 0;
+            margin-top: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .ai-card-btns-horizontal {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: stretch;
+            gap: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        .ai-btn {
+            flex: none;
+            min-width: 140px;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .ai-btn-visit { background: #2563eb; color: #fff; }
+        .ai-btn-visit:hover { background: #1d4ed8; transform: translateY(-2px); }
+        .ai-btn-detail { background: #ef4444; color: #fff; }
+        .ai-btn-detail:hover { background: #dc2626; transform: translateY(-2px); }
+        @media (max-width: 900px) {
+            .ai-card-imgs-and-btns {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .ai-card-imgs {
+                min-width: auto;
+                flex-direction: column;
+            }
+            .ai-card-img {
+                width: 100%;
+                min-width: auto;
+                max-width: none;
+            }
+            .ai-card-btns {
+                flex-direction: column;
+                gap: 1.1rem;
+                justify-content: flex-start;
+                align-items: stretch;
+                height: auto;
+            }
+            .ai-card-btns-horizontal {
+                flex-direction: column;
+                gap: 0.7rem;
+                width: 100%;
+            }
+            /* AI 카드 설명과 버튼 레이아웃 모바일 대응 */
+            .ai-card > div[style*="display: flex"] {
+                flex-direction: column !important;
+                gap: 1rem !important;
+            }
+            .ai-card-btns-horizontal {
+                justify-content: flex-start !important;
+                align-items: stretch !important;
+            }
+            .ai-btn {
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+            .feature-card-custom {
+                grid-template-columns: 1fr;
+                padding: 1.2rem 1rem 1rem 1rem;
+                gap: 0.7rem 0;
+            }
+            .main-btns {
+                flex-direction: column;
+                gap: 0.7rem;
+            }
+            .main-title {
+                font-size: 1.4rem;
+            }
+            .main-desc {
+                font-size: 1rem;
+            }
+            .ai-card {
+                padding: 1.1rem 0.7rem 0.7rem 0.7rem;
+            }
+            .ai-card-header {
+                font-size: 1rem;
+            }
+            .ai-card-title {
+                font-size: 1.05rem;
+            }
+            .ai-card-desc, .ai-card-comment {
+                font-size: 0.98rem;
+            }
+            .ai-btn {
+                font-size: 1rem;
+                padding: 0.7rem 0;
+                min-width: 0;
+            }
+            .review-card {
+                padding: 0.8rem 0.7rem 0.7rem 0.7rem;
+            }
+            .review-title {
+                font-size: 1.05rem;
+            }
+            .review-header {
+                font-size: 0.98rem;
+            }
+            .feature-text {
+                font-size: 0.98rem;
+            }
+            .category-row, .group-row {
+                gap: 0.7rem;
+                font-size: 0.98rem;
+            }
+            .tag {
+                font-size: 0.95rem;
+                padding: 0.18rem 0.5rem;
+            }
+        }
+        @media (max-width: 640px) {
+            .main-title {
+                font-size: 1.1rem;
+            }
+            .main-desc {
+                font-size: 0.95rem;
+            }
+            .ai-card {
+                padding: 0.7rem 0.3rem 0.5rem 0.3rem;
+            }
+            .ai-card-header {
+                font-size: 0.95rem;
+            }
+            .ai-card-title {
+                font-size: 0.95rem;
+            }
+            .ai-card-desc, .ai-card-comment {
+                font-size: 0.93rem;
+            }
+            .ai-card-img {
+                height: 80px;
+            }
+            .ai-card-reference-img {
+                width: 100%;
+                min-width: auto;
+                max-width: none;
+                height: 80px;
+            }
+            .ai-btn {
+                font-size: 0.93rem;
+                padding: 0.8rem 0;
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+            .feature-card-custom {
+                padding: 0.7rem 0.3rem 0.5rem 0.3rem;
+                gap: 0.5rem 0;
+            }
+            .review-card {
+                padding: 0.5rem 0.3rem 0.5rem 0.3rem;
+            }
+            .review-title {
+                font-size: 0.95rem;
+            }
+            .review-header {
+                font-size: 0.93rem;
+            }
+            .feature-text {
+                font-size: 0.93rem;
+            }
+            .category-row, .group-row {
+                gap: 0.4rem;
+                font-size: 0.93rem;
+            }
+            .tag {
+                font-size: 0.9rem;
+                padding: 0.13rem 0.35rem;
+            }
+            .modal {
+                min-width: 90vw !important;
+                max-width: 98vw !important;
+                padding: 1.2rem 0.5rem 0.7rem 0.5rem !important;
+            }
+        }
+        .category-row, .group-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.7rem;
+            margin-bottom: 1.1rem;
+        }
+        .category-row .check-icon, .group-row .check-icon {
+            color: #a78bfa;
+            font-size: 1.4rem;
+            margin-right: 0.4rem;
+        }
+        .category-row .section-title, .group-row .section-title {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            margin-right: 0.7rem;
+        }
+        .category-row .custom-badge, .group-row .custom-badge {
+            margin-bottom: 0;
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
+        /* total_page.html 태그 스타일 적용 */
+        .tag {
+            font-size: 1rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 0.25rem;
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+            display: inline-block;
+            font-weight: 600;
+        }
+        .tag-blue { background: #2563eb; color: #dbeafe; }
+        .tag-green { background: #16a34a; color: #dcfce7; }
+        .tag-orange { background: #f59e42; color: #fff7ed; }
+        .tag-red { background: #dc2626; color: #fee2e2; }
+        .tag-cyan { background: #06b6d4; color: #cffafe; }
+        .tag-yellow { background: #fbbf24; color: #fef9c3; }
+        .tag-purple { background: #9333ea; color: #f3e8ff; }
+        .tag-pink { background: #db2777; color: #fce7f3; }
+        .tag-gray { background: #64748b; color: #f1f5f9; }
+        @media (max-width: 900px) {
+            .category-row, .group-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.3rem;
+                width: 100%;
+            }
+            .category-row .tag, .group-row .tag, .category-row .custom-badge, .group-row .custom-badge {
+                margin-right: 0.3rem;
+                margin-bottom: 0.3rem;
+                font-size: 0.93rem;
+                padding: 0.13rem 0.4rem;
+                display: inline-block;
+            }
+            .category-row .tag, .group-row .tag {
+                min-width: 70px;
+                text-align: center;
+            }
+        }
+        @media (max-width: 640px) {
+            .category-row, .group-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.2rem;
+                width: 100%;
+            }
+            .category-row .tag, .group-row .tag, .category-row .custom-badge, .group-row .custom-badge {
+                margin-right: 0.2rem;
+                margin-bottom: 0.2rem;
+                font-size: 0.88rem;
+                padding: 0.09rem 0.25rem;
+                display: inline-block;
+            }
+            .category-row .tag, .group-row .tag {
+                min-width: 60px;
+                text-align: center;
+            }
+        }
+        /* 카드형 상단 구조 및 반응형 스타일 */
+.top-feature-cards {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+        .feature-card {
+            flex: 1 1 0;
+            background: #1a1f2e;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+            padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+.feature-card-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.feature-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.main-feature-cards {
+  display: flex;
+  gap: 1.2rem;
+  margin-bottom: 2.5rem;
+}
+.main-feature-card {
+  flex: 1 1 0;
+  background: #e0f2fe;
+  border-radius: 16px;
+  padding: 1.3rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  color: #222;
+  font-weight: 600;
+  font-size: 1.08rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+@media (max-width: 900px) {
+  .top-feature-cards, .main-feature-cards {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .feature-card, .main-feature-card {
+    padding: 1rem 0.7rem;
+  }
+}
+.main-feature-title {
+  text-align: center;
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-bottom: 1.2rem;
+  margin-top: 1.5rem;
+  letter-spacing: -0.5px;
+}
+.main-feature-cards {
+  display: flex;
+  gap: 1.2rem;
+  margin-bottom: 2.5rem;
+  justify-content: center;
+}
+        .main-feature-card {
+            flex: 1 1 0;
+            background: #1a1f2e;
+            border-radius: 16px;
+            padding: 1.3rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 0;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.08rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+            position: relative;
+        }
+.main-feature-card .feature-check {
+  color: #60a5fa;
+  font-size: 2.1rem;
+  font-weight: bold;
+  position: absolute;
+  bottom: 1.1rem;
+  right: 1.2rem;
+  opacity: 0.7;
+}
+@media (max-width: 900px) {
+  .main-feature-cards {
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: center;
+  }
+  .main-feature-card {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
+        .main-btn-save, .main-btn-share {
+            background: #374151;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 0.6rem;
+            font-size: 1.1rem;
+            padding: 0.7rem 1.5rem;
+            border: none;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            margin-left: 0.5rem;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+.main-btn-save:hover, .main-btn-share:hover {
+  background: #2563eb;
+}
+@media (max-width: 900px) {
+  .main-btns { flex-direction: column; gap: 0.7rem; }
+  .main-btn-save, .main-btn-share { margin-left: 0; }
+}
+    </style>
+</head>
+<body data-new-gr-c-s-check-loaded="14.1244.0" data-gr-ext-installed="">
+
+    <div class="page-container">
+        <!-- 공통 헤더 -->
+        <div id="header-container"></div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.body.setAttribute('data-theme', savedTheme);
+
+            // 리뷰 작성하기 버튼 이벤트 추가
+            const reviewBtn = document.querySelector('.main-btn-review');
+            if (reviewBtn) {
+                reviewBtn.addEventListener('click', function() {
+                    if (!window.auth || !window.auth.currentUser) {
+                        alert('리뷰 작성을 위해서 로그인해주세요');
+                        return;
+                    }
+                    window.showReviewModal();
+                });
+            }
+        });
+
+        fetch('header.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('header-container').innerHTML = data;
+                const script = document.createElement('script');
+                script.src = 'js/header-menu.js';
+                script.onload = function() {
+                    if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
+                    if (window.initMobileMenuToggle) window.initMobileMenuToggle();
+                    if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
+
+                    // === 폼 이벤트 연결 추가 ===
+                    // AuthManager가 준비될 때까지 대기
+                    function waitForAuthManager() {
+                        if (window.authManager && window.authManager.isInitialized) {
+                            console.log('AuthManager 준비됨, 이벤트 리스너 연결');
+                            
+                            // 로그인 폼
+                            const loginForm = document.getElementById('loginForm');
+                            if (loginForm) {
+                                loginForm.addEventListener('submit', async (e) => {
+                                    e.preventDefault();
+                                    const email = document.getElementById('loginEmail').value;
+                                    const password = document.getElementById('loginPassword').value;
+                                    try {
+                                        if (window.handleEmailLogin) {
+                                            await window.handleEmailLogin(email, password);
+                                            console.log('로그인 성공');
+                                        }
+                                    } catch (error) {
+                                        console.error('로그인 실패:', error);
+                                        alert('로그인에 실패했습니다: ' + (window.authManager ? window.authManager.getErrorMessage(error) : error.message));
+                                    }
+                                });
+                            }
+                            
+                            // 회원가입 폼
+                            const signupForm = document.getElementById('signupForm');
+                            if (signupForm) {
+                                signupForm.addEventListener('submit', async (e) => {
+                                    e.preventDefault();
+                                    const fullName = document.getElementById('fullName').value;
+                                    const email = document.getElementById('signupEmail').value;
+                                    const password = document.getElementById('signupPassword').value;
+                                    try {
+                                        if (window.handleEmailSignup) {
+                                            await window.handleEmailSignup(fullName, email, password);
+                                            console.log('회원가입 성공');
+                                        }
+                                    } catch (error) {
+                                        console.error('회원가입 실패:', error);
+                                        alert('회원가입에 실패했습니다: ' + (window.authManager ? window.authManager.getErrorMessage(error) : error.message));
+                                    }
+                                });
+                            }
+                            
+                            // 소셜 로그인 버튼
+                            const googleBtns = document.querySelectorAll('button[data-provider="google"]');
+                            googleBtns.forEach(btn => {
+                                btn.addEventListener('click', async (e) => {
+                                    e.preventDefault();
+                                    try {
+                                        if (window.handleSocialLogin) {
+                                            await window.handleSocialLogin('google');
+                                            console.log('소셜 로그인 성공');
+                                        }
+                                    } catch (error) {
+                                        console.error('소셜 로그인 실패:', error);
+                                        alert('소셜 로그인에 실패했습니다: ' + error.message);
+                                    }
+                                });
+                            });
+                        } else {
+                            console.log('AuthManager 아직 준비되지 않음, 1초 후 재시도');
+                            setTimeout(waitForAuthManager, 1000);
+                        }
+                    }
+                    
+                    // AuthManager 준비 이벤트 리스너
+                    window.addEventListener('authManagerReady', waitForAuthManager);
+                    
+                    // 즉시 시도
+                    waitForAuthManager();
+                    // === 폼 이벤트 연결 끝 ===
+                };
+                document.body.appendChild(script);
+            });
+    </script>
+
+    <!-- Main Content -->
+    <main class="mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8" style="max-width:1600px;">
+        <!-- Title Section -->
+        <div class="mb-2">
+            <h1 class="main-title" style="margin-bottom:0.2rem;">똑똑한 일잘러를 위한 AI 툴 모음</h1>
+            <div style="border-bottom:2px solid #374151; margin-bottom:1.2rem;"></div>
+            <p class="main-desc" style="margin-bottom:2.2rem;">신입 사원 및 대리 직급의 실무를 많이 취급하는 담당자를 위한 AI 조합 레시피 입니다.</p>
+        </div>
+        <!-- 난이도 및 카테고리 + 추천 사용자 그룹 카드형 UI -->
+        <div class="top-feature-cards">
+          <div class="feature-card">
+            <div class="feature-card-title"><i class="fas fa-layer-group"></i> 난이도 및 카테고리</div>
+            <div class="feature-card-tags" id="difficulty-category-tags"></div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card-title"><i class="fas fa-users"></i> 추천 사용자 그룹</div>
+            <div class="feature-card-tags" id="recommended-group-tags"></div>
+          </div>
+        </div>
+        <!-- 장점 및 특징 3분할 카드 -->
+        <div class="main-feature-title">도구 조합 장점 및 특징</div>
+        <div class="main-feature-cards">
+          <div class="main-feature-card" id="feature-point-1"></div>
+          <div class="main-feature-card" id="feature-point-2"></div>
+          <div class="main-feature-card" id="feature-point-3"></div>
+        </div>
+        <div class="divider"></div>
+        <!-- 사용한 AI 도구 -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold mb-4" style="color:#fff;">사용한 AI 도구:</h2>
+            <div class="ai-card">
+                <div class="ai-card-header">
+                    <div class="ai-card-icon">
+                        <div style="width: 32px; height: 32px; background: #8b5cf6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">A</div>
+                    </div>
+                    <span class="ai-card-title">[AdCreative.ai] 사용 설명</span>
+                </div>
+                <div style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1rem;">
+                    <div class="ai-card-comment" style="flex: 1; min-height: 6.4rem;">
+                        <p style="color: #cbd5e1; font-size: 1rem; line-height: 1.6; margin: 0;">텍스트 기반의 이미지 내용을 정리해달라고 요청 합니다. 예를 들어 구름과 태양이 떠있는 하늘을 그리려고 하는데 적합한 이미지리를 만들어라</p>
+                    </div>
+                    <div class="ai-card-btns-horizontal" style="flex-shrink: 0; margin: 0;">
+                        <button class="ai-btn ai-btn-visit"><i class="fas fa-external-link-alt"></i> 사이트 방문</button>
+                        <button class="ai-btn ai-btn-detail"><i class="fas fa-info-circle"></i> 상세 페이지 </button>
+                    </div>
+                </div>
+                <div class="ai-card-reference">
+                    <div class="ai-card-reference-title">
+                        <i class="fas fa-image" style="color: #8b5cf6; font-size: 1.1rem;"></i>
+                        참고 이미지 및 스크린 캡쳐
+                    </div>
+                    <div class="ai-card-reference-images">
+                        <div class="ai-card-reference-img">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTIwIiBmaWxsPSIjMDAwIi8+CjxwYXRoIGQ9Ik0yMCAyMEgxODBWNDBIMjBWMjBaIiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0yMCA0NUgxODBWNjVIMjBWMjVaIiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0yMCA3MEgxODBWOTBIMjBWNzBaIiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0yMCA5NUgxODBWMTE1SDIwVjk1WiIgZmlsbD0iI2ZmZiIvPgo8Y2lyY2xlIGN4PSI0MCIgY3k9IjMwIiByPSI4IiBmaWxsPSIjZmYwMDAwIi8+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjU1IiByPSI4IiBmaWxsPSIjZmYwMDAwIi8+CjxjaXJjbGUgY3g9IjE2MCIgY3k9IjgwIiByPSI4IiBmaWxsPSIjZmYwMDAwIi8+CjxsaW5lIHgxPSI0OCIgeTE9IjMwIiB4Mj0iOTIiIHkyPSI1NSIgc3Ryb2tlPSIjZmYwMDAwIiBzdHJva2Utd2lkdGg9IjIiLz4KPGxpbmUgeDE9IjEwOCIgeTE9IjU1IiB4Mj0iMTUyIiB5Mj0iODAiIHN0cm9rZT0iI2ZmMDAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjwvc3ZnPgo=" alt="플로우차트 이미지" data-imgsrc="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTIwIiBmaWxsPSIjMDAwIi8+CjxwYXRoIGQ9Ik0yMCAyMEgxODBWNDBIMjBWMjBaIiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0yMCA0NUgxODBWNjVIMjBWMjVaIiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0yMCA3MEgxODBWOTBIMjBWNzBaIiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0yMCA5NUgxODBWMTE1SDIwVjk1WiIgZmlsbD0iI2ZmZiIvPgo8Y2lyY2xlIGN4PSI0MCIgY3k9IjMwIiByPSI4IiBmaWxsPSIjZmYwMDAwIi8+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjU1IiByPSI4IiBmaWxsPSIjZmYwMDAwIi8+CjxjaXJjbGUgY3g9IjE2MCIgY3k9IjgwIiByPSI4IiBmaWxsPSIjZmYwMDAwIi8+CjxsaW5lIHgxPSI0OCIgeTE9IjMwIiB4Mj0iOTIiIHkyPSI1NSIgc3Ryb2tlPSIjZmYwMDAwIiBzdHJva2Utd2lkdGg9IjIiLz4KPGxpbmUgeDE9IjEwOCIgeTE9IjU1IiB4Mj0iMTUyIiB5Mj0iODAiIHN0cm9rZT0iI2ZmMDAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjwvc3ZnPgo=" />
+                        </div>
+                        <div class="ai-card-reference-img">이미지</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="main-btns">
+            <button class="main-btn-help"><i class="fas fa-heart"></i> 도움이 되었어요!</button>
+            <button class="main-btn-review"><i class="fas fa-pen"></i> 리뷰 작성하기</button>
+            <button class="main-btn-save" id="save-recipe-btn"><i class="far fa-bookmark"></i> 저장하기</button>
+            <button class="main-btn-share" id="share-recipe-btn"><i class="fas fa-share-alt"></i> 공유하기</button>
+        </div>
+        <div class="review-section">
+            <div class="review-title">사용자 리뷰</div>
+            <div class="review-card">
+                <div class="review-header">
+                    <span class="font-semibold">undefined</span>
+                    <div class="review-stars">
+                        <i class="fas fa-star review-star"></i>
+                        <i class="fas fa-star review-star"></i>
+                        <i class="fas fa-star review-star"></i>
+                        <i class="fas fa-star review-star"></i>
+                        <i class="fas fa-star review-star"></i>
+                    </div>
+                    <span class="text-gray-500 ml-2">undefined</span>
+                </div>
+                <p class="text-gray-700">비전공 분야 작업이 훨씬 간편해졌습니다.</p>
+            </div>
+            <div class="review-card">
+                <div class="review-header">
+                    <span class="font-semibold">undefined</span>
+                    <div class="review-stars">
+                        <i class="fas fa-star review-star"></i>
+                        <i class="fas fa-star review-star"></i>
+                        <i class="fas fa-star review-star"></i>
+                        <i class="fas fa-star review-star"></i>
+                        <i class="far fa-star review-star empty"></i>
+                    </div>
+                    <span class="text-gray-500 ml-2">undefined</span>
+                </div>
+                <p class="text-gray-700">그런 스크립트 제거 기능을 원했는데, 무료 크레딧의 한계 소재입니다.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- 이미지 모달 -->
+    <div id="imgModal" class="img-modal-overlay" style="display: none;">
+        <div class="img-modal-content">
+            <img id="imgModalImg" src="" alt="확대된 이미지" />
+            <button class="img-modal-close" onclick="closeImgModal()">닫기</button>
+        </div>
+    </div>
+
+    <!-- 리뷰 작성 모달 -->
+    <div id="reviewModal" class="modal-overlay">
+        <div class="modal">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">리뷰 작성하기</h2>
+                <button onclick="closeReviewModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="flex justify-center mb-4" id="star-rating-input">
+                <div class="star-rating">
+                    <i class="fas fa-star star" data-rating="1"></i>
+                    <i class="fas fa-star star" data-rating="2"></i>
+                    <i class="fas fa-star star" data-rating="3"></i>
+                    <i class="fas fa-star star" data-rating="4"></i>
+                    <i class="fas fa-star star" data-rating="5"></i>
+                </div>
+            </div>
+            <textarea id="review-text" class="input-field mb-4" rows="4" placeholder="리뷰를 입력하세요 (35자 이상)"></textarea>
+            <button onclick="submitReview()" class="btn-primary w-full">리뷰 등록</button>
+        </div>
+    </div>
+
+        <!-- 공통 푸터 -->
+        <div id="footer-container"></div>
+        <script>
+            fetch('footer.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('footer-container').innerHTML = data;
+                });
+        </script>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, doc, updateDoc, increment, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { firebaseConfig } from './js/config.js';
+
+        // DOMContentLoaded 이벤트를 기다림
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Firebase 초기화
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+                const auth = getAuth(app);
+
+                // 전역 객체에 할당
+                window.app = app;
+                window.db = db;
+                window.auth = auth;
+
+                // 초기화 완료 이벤트 발생
+                window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
+                    detail: { app, db, auth } 
+                }));
+
+                // URL 파라미터에서 레시피 ID 가져오기
+                const urlParams = new URLSearchParams(window.location.search);
+                const recipeId = urlParams.get('id');
+                
+                if (recipeId) {
+                    await loadRecipeDetail(recipeId);
+                }
+
+                // 리뷰 로드
+                await loadReviews(recipeId);
+
+                // 저장 상태 확인
+                await checkSaveStatus(recipeId);
+
+                // "도움이 되었어요!" 버튼 클릭 이벤트 연결 및 처리 함수 추가
+                const helpBtn = document.querySelector('.main-btn-help');
+                if (helpBtn) {
+                    helpBtn.addEventListener('click', handleHelpfulClick);
+                }
+
+                // "저장하기" 버튼 클릭 이벤트 연결
+                const saveBtn = document.getElementById('save-recipe-btn');
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', handleSaveRecipe);
+                }
+
+                // "리뷰 작성하기" 버튼 클릭 이벤트 연결
+                const reviewBtn = document.querySelector('.main-btn-review');
+                if (reviewBtn) {
+                    reviewBtn.addEventListener('click', showReviewModal);
+                }
+            } catch (error) {
+                console.error('Firebase 초기화 오류:', error);
+            }
+        });
+
+        async function handleHelpfulClick() {
+            if (!auth.currentUser) {
+                alert('로그인해주세요');
+                return;
+            }
+            const urlParams = new URLSearchParams(window.location.search);
+            const recipeId = urlParams.get('id');
+            if (!recipeId) {
+                alert('레시피 정보를 찾을 수 없습니다.');
+                return;
+            }
+            try {
+                // 1. 중복 체크: users/{userId}/favorites에서 recipeId로 조회
+                const userId = auth.currentUser.uid;
+                const userDocRef = doc(db, 'users', userId);
+                const favoriteColRef = collection(userDocRef, 'favorites');
+                const q = query(favoriteColRef, where('recipeId', '==', recipeId));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    alert('이미 칭찬하셨습니다.');
+                    return;
+                }
+                // 2. public_recipe_collection > rank_score +1
+                const recipeDocRef = doc(db, 'public_recipe_collection', recipeId);
+                await updateDoc(recipeDocRef, { rank_score: increment(1) });
+                // 3. users/{userId}/favorites에 정보 추가
+                const userSnap = await getDoc(userDocRef);
+                if (!userSnap.exists()) {
+                    await setDoc(userDocRef, {});
+                }
+                await addDoc(favoriteColRef, {
+                    recipeId: recipeId,
+                    likedAt: new Date(),
+                    type: 'like'
+                });
+                alert('도움이 되었어요!가 반영되었습니다.');
+            } catch (error) {
+                console.error('도움이 되었어요 처리 오류:', error);
+                alert('처리 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 레시피 저장하기 기능
+        async function handleSaveRecipe() {
+            if (!auth.currentUser) {
+                alert('로그인해주세요');
+                return;
+            }
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const recipeId = urlParams.get('id');
+            if (!recipeId) {
+                alert('레시피 정보를 찾을 수 없습니다.');
+                return;
+            }
+
+            try {
+                // 1. 중복 체크: users/{userId}/favorited_recipe에서 recipeId로 조회
+                const userId = auth.currentUser.uid;
+                const userDocRef = doc(db, 'users', userId);
+                const favoritedRecipeColRef = collection(userDocRef, 'favorited_recipe');
+                const q = query(favoritedRecipeColRef, where('recipeId', '==', recipeId));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    alert('이미 저장된 레시피입니다.');
+                    return;
+                }
+
+                // 2. 레시피 정보 가져오기
+                const recipeRef = collection(db, 'public_recipe_collection');
+                const recipeQuery = query(recipeRef, where('__name__', '==', recipeId));
+                const recipeSnapshot = await getDocs(recipeQuery);
+                
+                if (recipeSnapshot.empty) {
+                    alert('레시피 정보를 찾을 수 없습니다.');
+                    return;
+                }
+
+                const recipeData = recipeSnapshot.docs[0].data();
+
+                // 3. users/{userId}/favorited_recipe에 레시피 정보 저장
+                const userSnap = await getDoc(userDocRef);
+                if (!userSnap.exists()) {
+                    await setDoc(userDocRef, {});
+                }
+
+                await addDoc(favoritedRecipeColRef, {
+                    recipeId: recipeId,
+                    savedAt: new Date(),
+                    type: 'save',
+                    title: recipeData.my_recipe_title || '',
+                    description: recipeData.my_recipe_basic_description || '',
+                    difficulty: recipeData.my_recipe_difficulty || '',
+                    category: recipeData.my_recipe_category || '',
+                    tools: recipeData.my_recipe_tool || [],
+                    recommendedGroups: recipeData.my_recipe_recommended_groups || []
+                });
+
+                alert('레시피가 저장되었습니다.');
+                
+                // 4. 버튼 상태 업데이트
+                const saveBtn = document.getElementById('save-recipe-btn');
+                if (saveBtn) {
+                    saveBtn.innerHTML = '<i class="fas fa-bookmark"></i> 저장됨';
+                    saveBtn.classList.add('saved');
+                    saveBtn.disabled = true;
+                }
+            } catch (error) {
+                console.error('레시피 저장 오류:', error);
+                alert('저장 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 저장 상태 확인
+        async function checkSaveStatus(recipeId) {
+            if (!auth.currentUser) return;
+            
+            try {
+                const userId = auth.currentUser.uid;
+                const userDocRef = doc(db, 'users', userId);
+                const favoritedRecipeColRef = collection(userDocRef, 'favorited_recipe');
+                const q = query(favoritedRecipeColRef, where('recipeId', '==', recipeId));
+                const querySnapshot = await getDocs(q);
+                
+                const saveBtn = document.getElementById('save-recipe-btn');
+                if (saveBtn && !querySnapshot.empty) {
+                    saveBtn.innerHTML = '<i class="fas fa-bookmark"></i> 저장됨';
+                    saveBtn.classList.add('saved');
+                    saveBtn.disabled = true;
+                }
+            } catch (error) {
+                console.error('저장 상태 확인 오류:', error);
+            }
+        }
+
+        // 레시피 상세 정보 로드
+        async function loadRecipeDetail(recipeId) {
+            try {
+                const recipeRef = collection(db, 'public_recipe_collection');
+                const q = query(recipeRef, where('__name__', '==', recipeId));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    const recipeData = querySnapshot.docs[0].data();
+                    displayRecipeDetail(recipeData);
+                }
+            } catch (error) {
+                console.error('레시피 상세 정보 로드 오류:', error);
+            }
+        }
+
+        // 레시피 상세 정보 표시
+        function displayRecipeDetail(recipeData) {
+            console.log('레시피 데이터:', recipeData);
+            
+            // 1. 타이틀 업데이트
+            const title = document.querySelector('.main-title');
+            if (title && recipeData.my_recipe_title) {
+                title.textContent = recipeData.my_recipe_title;
+            }
+
+            // 2. 설명 업데이트
+            const description = document.querySelector('.main-desc');
+            if (description && recipeData.my_recipe_basic_description) {
+                description.textContent = recipeData.my_recipe_basic_description;
+            }
+
+            // 3. 난이도 및 카테고리 업데이트
+            updateDifficultyAndCategory(recipeData.my_recipe_difficulty, recipeData.my_recipe_category);
+
+            // 4. 추천 사용자 그룹 업데이트
+            updateRecommendedGroups(recipeData.my_recipe_recommended_groups);
+
+            // 5. 장점 및 특징 업데이트
+            updateAdvantagePoints(recipeData.my_recipe_advantage_points);
+
+            // 6. AI 도구 업데이트 (recipe_detail_descriptions 포함)
+            updateAITools(recipeData.my_recipe_tool, recipeData.recipe_detail_descriptions);
+        }
+
+        // 기존 updateDifficultyAndCategory, updateRecommendedGroups, updateAdvantagePoints 함수 대체
+        function updateDifficultyAndCategory(difficulty, category) {
+            const tagsContainer = document.getElementById('difficulty-category-tags');
+            tagsContainer.innerHTML = '';
+            const tags = [];
+            if (difficulty) {
+                const difficultyText = getDifficultyText(difficulty);
+                const difficultyColor = getDifficultyColor(difficulty);
+                tags.push({text: difficultyText, color: difficultyColor});
+            }
+            if (category) {
+                const categoryText = getCategoryText(category);
+                const categoryColor = getCategoryColor(category);
+                tags.push({text: categoryText, color: categoryColor});
+            }
+            const uniqueTags = Array.from(new Map(tags.map(t => [t.text, t])).values());
+            uniqueTags.forEach(tag => {
+                const tagSpan = document.createElement('span');
+                tagSpan.className = `tag tag-${tag.color}`;
+                tagSpan.textContent = tag.text;
+                tagsContainer.appendChild(tagSpan);
+            });
+        }
+        function updateRecommendedGroups(recommendedGroups) {
+            const groupsContainer = document.getElementById('recommended-group-tags');
+            groupsContainer.innerHTML = '';
+            if (recommendedGroups && Array.isArray(recommendedGroups)) {
+                const uniqueGroups = Array.from(new Set(recommendedGroups));
+                uniqueGroups.forEach(group => {
+                    const groupText = getGroupText(group);
+                    const groupColor = getGroupColor(group);
+                    const groupBadge = document.createElement('span');
+                    groupBadge.className = `tag tag-${groupColor}`;
+                    groupBadge.textContent = groupText;
+                    groupsContainer.appendChild(groupBadge);
+                });
+            }
+        }
+        function updateAdvantagePoints(advantagePoints) {
+            for (let i = 1; i <= 3; i++) {
+                const el = document.getElementById(`feature-point-${i}`);
+                el.innerHTML = '';
+                if (advantagePoints && advantagePoints[i-1]) {
+                    el.textContent = advantagePoints[i-1];
+                }
+            }
+        }
+
+        // AI 도구 업데이트
+        async function updateAITools(tools, recipeDetailDescriptions) {
+            const toolsContainer = document.querySelector('.ai-card').parentElement;
+            if (toolsContainer && tools && Array.isArray(tools)) {
+                // 기존 AI 도구 카드들 제거
+                const existingCards = toolsContainer.querySelectorAll('.ai-card');
+                existingCards.forEach(card => card.remove());
+                
+                // 새로운 AI 도구 카드들 생성 (비동기)
+                for (let index = 0; index < tools.length; index++) {
+                    const tool = tools[index];
+                    const toolDescription = findToolDescription(tool, recipeDetailDescriptions);
+                    const toolImages = findToolImages(tool, recipeDetailDescriptions);
+                    const toolCard = await createAIToolCard(tool, index + 1, toolDescription, toolImages);
+                    toolsContainer.appendChild(toolCard);
+                }
+            }
+        }
+
+        // AI 도구 카드 생성
+        async function createAIToolCard(tool, number, description, images) {
+            const card = document.createElement('div');
+            card.className = 'ai-card';
+
+            // 도구 정보 가져오기 (비동기)
+            let iconUrl = '';
+            let toolDesc = '';
+            let websiteUrl = '';
+            try {
+                const toolsRef = collection(db, 'ai-tools');
+                const toolDocId = tool.toLowerCase().replace(/\s+/g, '-');
+                const toolQuery = query(toolsRef, where('__name__', '==', toolDocId));
+                const toolSnapshot = await getDocs(toolQuery);
+                if (!toolSnapshot.empty) {
+                    const toolData = toolSnapshot.docs[0].data();
+                    iconUrl = toolData.imageUrl || toolData.logoFileName || toolData.icon || toolData.iconUrl || '';
+                    toolDesc = toolData.description || '';
+                    websiteUrl = toolData.websiteUrl || '';
+                }
+            } catch (e) { iconUrl = ''; toolDesc = ''; websiteUrl = ''; }
+
+            // 이미지 HTML 생성 (2개 고정)
+            let imagesHTML = '';
+            let hasValidImages = false;
+            for (let i = 0; i < 2; i++) {
+                let imgSrc = '';
+                if (images && images[i]) {
+                    if (typeof images[i] === 'string') {
+                        imgSrc = images[i];
+                    } else if (images[i] && images[i].data) {
+                        imgSrc = images[i].data;
+                    }
+                }
+                if (imgSrc && imgSrc.startsWith('data:image/')) {
+                    imagesHTML += `<div class=\"ai-card-reference-img\"><img src=\"${imgSrc}\" alt=\"${tool} 이미지 ${i + 1}\" data-imgsrc=\"${imgSrc}\" /></div>`;
+                    hasValidImages = true;
+                } else {
+                    imagesHTML += `<div class=\"ai-card-reference-img\">이미지</div>`;
+                }
+            }
+
+            // 카드 상단 헤더: 번호-로고-도구명 수평 정렬
+            card.innerHTML = `
+                <div class="ai-card-header" style="display:flex;align-items:center;gap:0.7rem;">
+                    <div class="ai-card-num ai-card-num-${number}">${number}</div>
+                    <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:#e5e7eb;border-radius:8px;overflow:hidden;">
+                        ${iconUrl ? `<img src="${iconUrl}" alt="${tool} 로고" style="width:28px;height:28px;object-fit:contain;" />` : ''}
+                    </div>
+                    <span class="ai-card-title">[${tool}] 사용 설명</span>
+                </div>
+                <div class="ai-card-desc">${toolDesc || getToolDescription(tool)}</div>
+                <div style="display: flex; gap: 2rem; align-items: flex-start; margin-bottom: 1rem;">
+                    <div class="ai-card-comment" style="flex: 1; min-height: 6.4rem;">
+                        <p style="color: #cbd5e1; font-size: 1rem; line-height: 1.6; margin: 0;">${description || '초보 이용 자들의 경우에 영어 프롬프트 추가가 힘들기 때문에 ~~~~~~~'}</p>
+                    </div>
+                    <div class="ai-card-btns-horizontal" style="flex-shrink: 0; margin: 0;">
+                        <button class="btn-primary" data-tool="${tool}" data-website="${websiteUrl}"><i class="fas fa-external-link-alt"></i> 사이트 방문 </button>
+                        <button class="btn-secondary" data-tool="${tool}"><i class="fas fa-info-circle"></i> 상세 페이지 </button>
+                    </div>
+                </div>
+                ${hasValidImages ? `
+                <div class="ai-card-reference">
+                    <div class="ai-card-reference-title">
+                        <i class="fas fa-image" style="color: #8b5cf6; font-size: 1.1rem;"></i>
+                        참고 이미지 및 스크린 캡쳐
+                    </div>
+                    <div class="ai-card-reference-images">
+                        ${imagesHTML}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            // 이미지 클릭 이벤트 바인딩 (addEventListener 방식)
+            card.querySelectorAll('.ai-card-reference-img img').forEach(img => {
+                img.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    window.showImgModal(this.getAttribute('data-imgsrc'));
+                });
+            });
+            // 버튼 이벤트 리스너 추가
+            const visitBtn = card.querySelector('.btn-primary');
+            const detailBtn = card.querySelector('.btn-secondary');
+            visitBtn.addEventListener('click', () => {
+                if (websiteUrl) {
+                    window.open(websiteUrl, '_blank');
+                } else {
+                    handleVisitWebsite(tool);
+                }
+            });
+            detailBtn.addEventListener('click', () => handleDetailPage(tool));
+            return card;
+        }
+
+        // 웹사이트 방문 처리
+        async function handleVisitWebsite(toolName) {
+            try {
+                // ai_tools 컬렉션에서 도구 URL 조회
+                const toolsRef = collection(db, 'ai-tools');
+                const toolQuery = query(toolsRef, where('__name__', '==', toolName.toLowerCase().replace(/\s+/g, '-')));
+                const toolSnapshot = await getDocs(toolQuery);
+                
+                if (!toolSnapshot.empty) {
+                    const toolData = toolSnapshot.docs[0].data();
+                    if (toolData.websiteUrl) {
+                        window.open(toolData.websiteUrl, '_blank');
+                    } else {
+                        alert('웹사이트 URL을 찾을 수 없습니다.');
+                    }
+                } else {
+                    // 도구명을 다른 형식으로도 시도
+                    const alternativeQueries = [
+                        toolName.toLowerCase(),
+                        toolName.toLowerCase().replace(/\s+/g, ''),
+                        toolName.toLowerCase().replace(/\s+/g, '_')
+                    ];
+                    
+                    let found = false;
+                    for (const queryName of alternativeQueries) {
+                        const altQuery = query(toolsRef, where('__name__', '==', queryName));
+                        const altSnapshot = await getDocs(altQuery);
+                        
+                        if (!altSnapshot.empty) {
+                            const toolData = altSnapshot.docs[0].data();
+                            if (toolData.websiteUrl) {
+                                window.open(toolData.websiteUrl, '_blank');
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!found) {
+                        alert('웹사이트 URL을 찾을 수 없습니다.');
+                    }
+                }
+            } catch (error) {
+                console.error('웹사이트 URL 조회 오류:', error);
+                alert('웹사이트 URL을 가져오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 상세 페이지 이동 처리
+        function handleDetailPage(toolName) {
+            // 도구명을 URL 친화적인 형태로 변환
+            const urlFriendlyName = toolName.toLowerCase().replace(/\s+/g, '-');
+            window.location.href = `detail_sp.html?id=${urlFriendlyName}`;
+        }
+
+        // recipe_detail_descriptions에서 특정 도구의 설명 찾기
+        function findToolDescription(toolName, recipeDetailDescriptions) {
+            if (!recipeDetailDescriptions || !Array.isArray(recipeDetailDescriptions)) {
+                return null;
+            }
+            
+            for (let i = 0; i < recipeDetailDescriptions.length; i++) {
+                const description = recipeDetailDescriptions[i];
+                if (description && description.description) {
+                    // 도구 이름이 설명에 포함되어 있는지 확인
+                    if (description.description.toLowerCase().includes(toolName.toLowerCase()) || 
+                        (description.tool_name && description.tool_name.toLowerCase() === toolName.toLowerCase())) {
+                        return description.description;
+                    }
+                }
+            }
+            
+            // 순서대로 매칭 (첫 번째 도구는 첫 번째 설명, 두 번째 도구는 두 번째 설명 등)
+            if (recipeDetailDescriptions.length > 0) {
+                return recipeDetailDescriptions[0]?.description || null;
+            }
+            
+            return null;
+        }
+
+        // recipe_detail_descriptions에서 특정 도구의 이미지 찾기
+        function findToolImages(toolName, recipeDetailDescriptions) {
+            if (!recipeDetailDescriptions || !Array.isArray(recipeDetailDescriptions)) {
+                return [];
+            }
+            
+            for (let i = 0; i < recipeDetailDescriptions.length; i++) {
+                const description = recipeDetailDescriptions[i];
+                if (description && description.images && Array.isArray(description.images)) {
+                    // 도구 이름이 설명에 포함되어 있는지 확인
+                    if (description.description.toLowerCase().includes(toolName.toLowerCase()) || 
+                        (description.tool_name && description.tool_name.toLowerCase() === toolName.toLowerCase())) {
+                        return description.images;
+                    }
+                }
+            }
+            
+            // 순서대로 매칭
+            if (recipeDetailDescriptions.length > 0) {
+                return recipeDetailDescriptions[0]?.images || [];
+            }
+            
+            return [];
+        }
+
+        // 텍스트 변환 함수들
+        function getDifficultyText(difficulty) {
+            const difficultyMap = {
+                'beginner': '초급',
+                'intermediate': '중급',
+                'advanced': '고급'
+            };
+            return difficultyMap[difficulty] || difficulty;
+        }
+
+        function getDifficultyColor(difficulty) {
+            const colorMap = {
+                'beginner': 'orange',
+                'intermediate': 'blue',
+                'advanced': 'red'
+            };
+            return colorMap[difficulty] || 'gray';
+        }
+
+        function getCategoryText(category) {
+            const categoryMap = {
+                'productivity': '생산성',
+                'marketing': '마케팅',
+                'design': '디자인',
+                'development': '개발'
+            };
+            return categoryMap[category] || category;
+        }
+
+        function getCategoryColor(category) {
+            const colorMap = {
+                'productivity': 'green',
+                'marketing': 'red',
+                'design': 'purple',
+                'development': 'blue'
+            };
+            return colorMap[category] || 'gray';
+        }
+
+        function getGroupText(group) {
+            const groupMap = {
+                'office-worker': '사무직',
+                'marketing': '마케팅',
+                'designer': '디자이너',
+                'developer': '개발자',
+                'manager': '매니저',
+                'executive': '임원',
+                'video-audio': '영상/음성 관련',
+                'business-support': '경영 지원',
+                'c-level': 'C level 임원'
+            };
+            return groupMap[group] || group;
+        }
+
+        function getGroupColor(group) {
+            const colorMap = {
+                'office-worker': 'blue',
+                'marketing': 'red',
+                'designer': 'purple',
+                'developer': 'blue',
+                'manager': 'green',
+                'executive': 'yellow',
+                'video-audio': 'red',
+                'business-support': 'green',
+                'c-level': 'yellow'
+            };
+            return colorMap[group] || 'gray';
+        }
+
+        function getToolDescription(tool) {
+            const toolDescriptions = {
+                'AdCreative.ai': '광고용 비주얼 및 카피 생성 AI 도구',
+                'Adobe Enhance Speech': '음성 녹음을 스튜디오 품질로 변환하는 AI 툴',
+                'Ai For Google Slides': 'Google Slides용 AI 프레젠테이션 도구'
+            };
+            return toolDescriptions[tool] || `${tool} AI 도구`;
+        }
+
+        // 리뷰 로드
+        async function loadReviews(recipeId) {
+            try {
+                if (!recipeId) return;
+                // public_recipe_collection/{recipeId}/recipe_reviews에서만 리뷰를 가져온다
+                const reviewsRef = collection(db, 'public_recipe_collection', recipeId, 'recipe_reviews');
+                const q = query(reviewsRef, orderBy('createdAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const reviewsContainer = document.querySelector('.review-section');
+                if (!reviewsContainer) return;
+                // 기존 리뷰 모두 제거 (샘플/하드코딩 리뷰 포함)
+                reviewsContainer.querySelectorAll('.review-card').forEach(card => card.remove());
+                // 리뷰 타이틀이 있으면 유지
+                // Firestore에서 불러온 리뷰만 표시
+                querySnapshot.forEach((doc) => {
+                    const reviewData = doc.data();
+                    // content 필드만 표시
+                    const reviewElement = createReviewElement(reviewData);
+                    reviewsContainer.appendChild(reviewElement);
+                });
+            } catch (error) {
+                console.error('리뷰 로드 오류:', error);
+            }
+        }
+
+        // 리뷰 요소 생성
+        function createReviewElement(reviewData) {
+            const reviewDiv = document.createElement('div');
+            reviewDiv.className = 'review-card';
+            
+            const stars = Array(5).fill().map((_, i) => 
+                i < reviewData.rating ? 
+                '<i class="fas fa-star review-star"></i>' : 
+                '<i class="far fa-star review-star empty"></i>'
+            ).join('');
+
+            const author = (reviewData.authorName && reviewData.authorName !== 'undefined') ? reviewData.authorName : '익명';
+            const dateStr = (reviewData.createdAt && reviewData.createdAt !== 'undefined') ? formatDate(reviewData.createdAt) : '';
+
+            reviewDiv.innerHTML = `
+                <div class="review-header">
+                    <span class="font-semibold">${author}</span>
+                    <div class="review-stars">
+                        ${stars}
+                    </div>
+                    <span class="text-gray-500 ml-2">${dateStr}</span>
+                </div>
+                <p class="text-gray-700">${reviewData.content}</p>
+            `;
+
+            return reviewDiv;
+        }
+
+        // 이름 마스킹 함수
+        function maskAuthorName(name) {
+            if (!name) return '익명';
+            if (name.length <= 1) return name;
+            return name[0] + '*'.repeat(name.length - 1);
+        }
+
+        // 날짜 포맷 함수
+        function formatDate(timestamp) {
+            if (!timestamp) return '';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('ko-KR');
+        }
+
+        // 전역 함수들
+        window.showReviewModal = function() {
+            const modal = document.getElementById('reviewModal');
+            modal.classList.add('show');
+            
+            // 별점 이벤트 리스너 추가
+            const stars = document.querySelectorAll('.star');
+            let selectedRating = 0;
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    selectedRating = rating;
+                    
+                    // 모든 별 초기화
+                    stars.forEach(s => s.classList.remove('filled'));
+                    
+                    // 선택된 별까지 채우기
+                    for (let i = 0; i < rating; i++) {
+                        stars[i].classList.add('filled');
+                    }
+                });
+            });
+        };
+
+        window.closeReviewModal = function() {
+            const modal = document.getElementById('reviewModal');
+            modal.classList.remove('show');
+            
+            // 입력 필드 초기화
+            document.getElementById('review-text').value = '';
+            document.querySelectorAll('.star').forEach(star => star.classList.remove('filled'));
+        };
+
+        window.submitReview = async function() {
+            const rating = document.querySelectorAll('.star.filled').length;
+            const content = document.getElementById('review-text').value.trim();
+            
+            if (rating === 0) {
+                alert('별점을 선택해주세요.');
+                return;
+            }
+            
+            if (content.length < 35) {
+                alert('리뷰는 35자 이상 입력해주세요.');
+                return;
+            }
+
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const recipeId = urlParams.get('id');
+                
+                if (!recipeId) {
+                    alert('레시피 정보를 찾을 수 없습니다.');
+                    return;
+                }
+                if (!window.auth || !window.auth.currentUser) {
+                    alert('리뷰 작성을 위해서 로그인해주세요');
+                    return;
+                }
+                const user = window.auth.currentUser;
+                const reviewData = {
+                    recipeId: recipeId,
+                    rating: rating,
+                    content: content,
+                    authorName: user.displayName || user.email,
+                    authorId: user.uid,
+                    createdAt: new Date()
+                };
+                // Firestore SDK 동적 import
+                const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+                const reviewId = self.crypto.randomUUID();
+                // 1. users/{userId}/recipe_reviews/{reviewId}
+                await setDoc(doc(db, 'users', user.uid, 'recipe_reviews', reviewId), reviewData);
+                // 2. public_recipe_collection/{recipeId}/recipe_reviews/{reviewId}
+                await setDoc(doc(db, 'public_recipe_collection', recipeId, 'recipe_reviews', reviewId), reviewData);
+                alert('리뷰가 성공적으로 등록되었습니다.');
+                closeReviewModal();
+                // 리뷰 목록 새로고침
+                await loadReviews(recipeId);
+            } catch (error) {
+                console.error('리뷰 등록 오류:', error);
+                alert('리뷰 등록에 실패했습니다.');
+            }
+        };
+
+        // 이미지 클릭 시 모달 표시
+        window.showImgModal = function(imgSrc) {
+            const modal = document.getElementById('imgModal');
+            const modalImg = document.getElementById('imgModalImg');
+            modalImg.src = imgSrc;
+            modal.style.display = 'flex';
+        }
+        window.closeImgModal = function() {
+            const modal = document.getElementById('imgModal');
+            const modalImg = document.getElementById('imgModalImg');
+            modalImg.src = '';
+            modal.style.display = 'none';
+        }
+        // 바깥 클릭 시 모달 닫기
+        document.getElementById('imgModal').addEventListener('click', function(e) {
+            if (e.target === this) closeImgModal();
+        });
+    </script>
+
+    <!-- 공유하기 모달 (detail_sp.html과 동일 구조) -->
+    <div id="shareModal" class="modal-overlay">
+      <div class="modal" style="position:relative;">
+        <div class="modal-close" onclick="closeShareModal()" style="position:absolute; top:1.2rem; right:1.2rem; cursor:pointer; z-index:2;">
+          <i class="fas fa-times" style="font-size:1.7rem;"></i>
+        </div>
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-bold text-white">공유하기</h2>
+        </div>
+        <div class="grid grid-cols-4 gap-4 mb-4">
+          <button onclick="shareEmail()" class="flex flex-col items-center">
+            <span class="bg-blue-400 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fas fa-envelope text-white text-xl"></i></span>
+            <span class="text-xs text-white">메일</span>
+          </button>
+          <button onclick="shareReddit()" class="flex flex-col items-center">
+            <span class="bg-orange-500 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fab fa-reddit text-white text-xl"></i></span>
+            <span class="text-xs text-white">Reddit</span>
+          </button>
+          <button onclick="shareWhatsApp()" class="flex flex-col items-center">
+            <span class="bg-green-500 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fab fa-whatsapp text-white text-xl"></i></span>
+            <span class="text-xs text-white">WhatsApp</span>
+          </button>
+          <button onclick="shareSms()" class="flex flex-col items-center">
+            <span class="bg-green-300 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fas fa-sms text-white text-xl"></i></span>
+            <span class="text-xs text-white">메시지</span>
+          </button>
+          <button onclick="shareX()" class="flex flex-col items-center">
+            <span class="bg-black rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fab fa-x-twitter text-white text-xl"></i></span>
+            <span class="text-xs text-white">X</span>
+          </button>
+          <button onclick="shareFacebook()" class="flex flex-col items-center">
+            <span class="bg-blue-700 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fab fa-facebook-f text-white text-xl"></i></span>
+            <span class="text-xs text-white">Facebook</span>
+          </button>
+          <button onclick="shareLine()" class="flex flex-col items-center">
+            <span class="bg-green-600 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fab fa-line text-white text-xl"></i></span>
+            <span class="text-xs text-white">Line</span>
+          </button>
+          <button onclick="shareKakao()" class="flex flex-col items-center">
+            <span class="bg-yellow-400 rounded-full w-12 h-12 flex items-center justify-center mb-1"><i class="fas fa-comment text-white text-xl"></i></span>
+            <span class="text-xs text-white">카카오톡</span>
+          </button>
+        </div>
+        <button onclick="copyShareLink()" class="w-full flex items-center bg-gray-700 text-white px-4 py-2 rounded mb-2">
+          <i class="fas fa-link mr-2"></i> 링크 복사
+        </button>
+      </div>
+    </div>
+
+    <style>
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .modal-overlay.show, .modal-overlay[style*='display: flex'] {
+      display: flex !important;
+    }
+    </style>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const shareBtn = document.getElementById('share-recipe-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+          const modal = document.getElementById('shareModal');
+          if (modal) {
+            modal.classList.add('show');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+          }
+        });
+      }
+    });
+    function closeShareModal() {
+      const modal = document.getElementById('shareModal');
+      if (modal) {
+        modal.classList.remove('show');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }
+    }
+    // ... 기존 공유 함수 ...
+    function copyShareLink() {
+      const url = window.location.href;
+      navigator.clipboard.writeText(url)
+        .then(() => {
+          alert('레시피가 복사되었습니다.');
+        })
+        .catch(err => alert('링크 복사 실패: ' + err));
+    }
+    </script>
+</body>
+</html> 
