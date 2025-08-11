@@ -6,7 +6,9 @@
   <title>서비스 판매 - AI Curator</title>
   <link href="assets/css/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="assets/css/optimized.css">
+  <link rel="stylesheet" href="assets/css/common.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <script src="js/bootstrap.js"></script>
   <script src="js/theme-manager.js"></script>
   
   <!-- 다국어 관련 스크립트 -->
@@ -25,57 +27,7 @@
     <script src="js/translate.js"></script>
 
   <style>
-    :root {
-      --primary: #4a35e8;
-      --dark-bg: #121620;
-      --card-bg: #1a1f2e;
-      --card-hover: #232939;
-      /* 다크 모드 기본값 */
-      --bg-primary: #121620;
-      --bg-secondary: #1a1f2e;
-      --text-primary: #ffffff;
-      --text-secondary: #a0aec0;
-      --border-color: #2d3748;
-      --hover-bg: #2d3748;
-      --input-bg: #2d3748;
-      --modal-bg: #1a1f2e;
-    }
-    
-    body {
-      font-family: 'Inter', sans-serif;
-      color: var(--text-primary);
-      background-color: var(--bg-primary);
-      transition: background-color 0.3s, color 0.3s;
-    }
-    
-    .btn-primary {
-      background-color: var(--primary);
-      color: white;
-      padding: 0.625rem 1.25rem;
-      border-radius: 0.375rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-    
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .btn-secondary {
-      background-color: transparent;
-      color: white;
-      padding: 0.625rem 1.25rem;
-      border-radius: 0.375rem;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      font-weight: 600;
-      transition: all 0.3s ease;
-    }
-    
-    .btn-secondary:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.5);
-    }
+    /* 이 페이지에서만 사용되는 고유한 스타일 */
     
     .card {
       background-color: var(--card-bg);
@@ -240,65 +192,6 @@
 </head>
 <body>
   <div id="header-container"></div>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      document.body.setAttribute('data-theme', savedTheme);
-    });
-
-    fetch('header.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('header-container').innerHTML = data;
-        const script = document.createElement('script');
-        script.src = 'js/header-menu.js';
-        script.onload = function() {
-          if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
-          if (window.initMobileMenuToggle) window.initMobileMenuToggle();
-          if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
-
-          // === 폼 이벤트 연결 추가 ===
-          // 로그인 폼
-          const loginForm = document.getElementById('loginForm');
-          if (loginForm) {
-            loginForm.addEventListener('submit', async (e) => {
-              e.preventDefault();
-              const email = document.getElementById('loginEmail').value;
-              const password = document.getElementById('loginPassword').value;
-              if (window.handleEmailLogin) {
-                await window.handleEmailLogin(email, password);
-              }
-            });
-          }
-          // 회원가입 폼
-          const signupForm = document.getElementById('signupForm');
-          if (signupForm) {
-            signupForm.addEventListener('submit', async (e) => {
-              e.preventDefault();
-              const fullName = document.getElementById('fullName').value;
-              const email = document.getElementById('signupEmail').value;
-              const password = document.getElementById('signupPassword').value;
-              if (window.handleEmailSignup) {
-                await window.handleEmailSignup(fullName, email, password);
-              }
-            });
-          }
-          // 소셜 로그인 버튼
-          const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
-          googleBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              e.preventDefault();
-              if (window.handleSocialLogin) {
-                window.handleSocialLogin('google');
-              }
-            });
-          });
-          // === 폼 이벤트 연결 끝 ===
-        };
-        document.body.appendChild(script);
-      });
-  </script>
 
   <div class="max-w-7xl mx-auto p-6 pt-32">
     <!-- 소개 -->
@@ -397,12 +290,5 @@
 
   <!-- Footer Container -->
   <div id="footer-container"></div>
-  <script>
-    fetch('footer.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('footer-container').innerHTML = data;
-      });
-  </script>
 </body>
 </html>

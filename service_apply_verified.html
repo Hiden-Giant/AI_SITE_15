@@ -7,8 +7,10 @@
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="assets/css/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/optimized.css">
+  <link rel="stylesheet" href="assets/css/common.css">
+  <script src="js/bootstrap.js"></script>
   <script src="js/theme-manager.js"></script>
+  <script src="js/common.js"></script>
 
   <!-- 다국어 관련 스크립트 -->
     <script src="lang/en.js"></script>
@@ -26,71 +28,23 @@
     <script src="js/translate.js"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-    :root {
-        --bg-primary: #0F1217;
-        --bg-secondary: #1a1f2e;
-        --text-primary: #ffffff;
-        --text-secondary: #a0aec0;
-        --border-color: #2d3748;
-        --card-bg: #1a1f2e;
-        --hover-bg: #2d3748;
-        --input-bg: #2d3748;
-        --modal-bg: #1a1f2e;
-        --gradient-start: #7C3AED;
-        --gradient-end: #DB2777;
-    }
-    [data-theme="light"] {
-        --bg-primary: #ffffff;
-        --bg-secondary: #f7fafc;
-        --text-primary: #1a202c;
-        --text-secondary: #4a5568;
-        --border-color: #e2e8f0;
-        --card-bg: #ffffff;
-        --hover-bg: #edf2f7;
-        --input-bg: #f7fafc;
-        --modal-bg: #ffffff;
-    }
-    body {
-        font-family: 'Noto Sans KR', sans-serif;
-        background-color: var(--bg-primary);
-        color: var(--text-primary);
-        transition: background-color 0.3s, color 0.3s;
-    }
-    .gradient-text {
-        background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-    }
-    .gradient-bg {
-        background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
-    }
+    /* 이 페이지에서만 사용되는 고유한 스타일 */
     .card-hover:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.3);
         transition: all 0.3s ease;
     }
+    
     .glass-effect {
         background: #1a1f2e;
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    .theme-toggle {
-        background: none;
-        border: none;
-        color: var(--text-primary);
-        cursor: pointer;
-        padding: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transition: color 0.3s ease;
-    }
-    .theme-toggle:hover {
-        color: var(--gradient-start);
-    }
-    .theme-toggle i {
-        font-size: 1.25rem;
+    
+    /* 모바일 최적화 */
+    @media (max-width: 768px) {
+        .card-hover:hover {
+            transform: none;
+        }
     }
     .btn-primary {
         background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
@@ -190,65 +144,6 @@
 </head>
 <body>
   <div id="header-container"></div>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      document.body.setAttribute('data-theme', savedTheme);
-    });
-
-    fetch('header.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('header-container').innerHTML = data;
-        const script = document.createElement('script');
-        script.src = 'js/header-menu.js';
-        script.onload = function() {
-          if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
-          if (window.initMobileMenuToggle) window.initMobileMenuToggle();
-          if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
-
-          // === 폼 이벤트 연결 추가 ===
-          // 로그인 폼
-          const loginForm = document.getElementById('loginForm');
-          if (loginForm) {
-            loginForm.addEventListener('submit', async (e) => {
-              e.preventDefault();
-              const email = document.getElementById('loginEmail').value;
-              const password = document.getElementById('loginPassword').value;
-              if (window.handleEmailLogin) {
-                await window.handleEmailLogin(email, password);
-              }
-            });
-          }
-          // 회원가입 폼
-          const signupForm = document.getElementById('signupForm');
-          if (signupForm) {
-            signupForm.addEventListener('submit', async (e) => {
-              e.preventDefault();
-              const fullName = document.getElementById('fullName').value;
-              const email = document.getElementById('signupEmail').value;
-              const password = document.getElementById('signupPassword').value;
-              if (window.handleEmailSignup) {
-                await window.handleEmailSignup(fullName, email, password);
-              }
-            });
-          }
-          // 소셜 로그인 버튼
-          const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
-          googleBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              e.preventDefault();
-              if (window.handleSocialLogin) {
-                window.handleSocialLogin('google');
-              }
-            });
-          });
-          // === 폼 이벤트 연결 끝 ===
-        };
-        document.body.appendChild(script);
-      });
-  </script>
 
 
 <div class="max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto p-6 pt-32">
@@ -422,13 +317,6 @@
 
   <!-- Footer Container -->
   <div id="footer-container"></div>
-  <script>
-    fetch('footer.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('footer-container').innerHTML = data;
-      });
-  </script>
 
   <!-- Firebase SDK 및 소셜 로그인 스크립트 -->
   <script type="module">
@@ -496,9 +384,13 @@
           }]
         });
       },
-      onApprove: function(data, actions) {
-        return actions.order.capture().then(function(details) {
-          alert('결제가 완료되었습니다: ' + details.payer.name.given_name);
+      onApprove: async function(data, actions) {
+        return actions.order.capture().then(async function(details) {
+          if (window.CommonUtils) {
+            window.CommonUtils.showSuccess('결제가 완료되었습니다: ' + details.payer.name.given_name);
+          } else {
+            alert('결제가 완료되었습니다: ' + details.payer.name.given_name);
+          }
           // 폼 데이터 수집
           const formData = new FormData(document.querySelector('form'));
           const formDataObj = {};
@@ -524,25 +416,24 @@
             paymentStatus: details.status
           };
 
-          // Firebase에 데이터 저장
-          const db = window.db;
-          const dbRef = window.dbRef;
-          const dbSet = window.dbSet;
-          
-          if (db && dbRef && dbSet) {
-            const newSubmissionRef = dbRef(db, 'submissions/' + Date.now());
-            dbSet(newSubmissionRef, formDataObj)
-              .then(() => {
-                alert('신청이 성공적으로 완료되었습니다.');
-                window.location.href = 'index.html'; // 메인 페이지로 리다이렉트
-              })
-              .catch((error) => {
-                console.error('데이터 저장 중 오류 발생:', error);
-                alert('데이터 저장 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
-              });
-          } else {
-            console.error('Firebase가 초기화되지 않았습니다.');
-            alert('시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+          // Firestore에 데이터 저장
+          try {
+            const db = window.db;
+            const { addDoc, collection } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+            await addDoc(collection(db, 'submissions'), formDataObj);
+            if (window.CommonUtils) {
+              window.CommonUtils.showSuccess('신청이 성공적으로 완료되었습니다.');
+            } else {
+              alert('신청이 성공적으로 완료되었습니다.');
+            }
+            window.location.href = 'index.html';
+          } catch (error) {
+            if (window.CommonUtils) {
+              window.CommonUtils.handleError(error, '데이터 저장');
+            } else {
+              console.error('데이터 저장 중 오류 발생:', error);
+              alert('데이터 저장 중 오류가 발생했습니다. 관리자에게 문의해주세요.');
+            }
           }
         });
       }

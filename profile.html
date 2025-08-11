@@ -6,8 +6,10 @@
     <title>프로필 - AI Curator</title>
     <link href="assets/css/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/optimized.css">
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <script src="js/theme-manager.js"></script>
+    <script src="js/common.js"></script>
 
     
     <!-- 다국어 관련 스크립트 -->
@@ -27,182 +29,9 @@
 
 
     
-    <!-- 테마 관련 CSS 변수1 -->
+    <!-- 이 페이지에서만 사용되는 고유한 스타일 -->
     <style>
-        :root {
-            /* 다크 모드 기본값 */
-            --bg-primary: #121620;
-            --bg-secondary: #1a1f2e;
-            --text-primary: #ffffff;
-            --text-secondary: #a0aec0;
-            --border-color: #2d3748;
-            --card-bg: #1a1f2e;
-            --hover-bg: #2d3748;
-            --input-bg: #2d3748;
-            --modal-bg: #1a1f2e;
-        }
-
-        [data-theme="light"] {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f7fafc;
-            --text-primary: #1a202c;
-            --text-secondary: #4a5568;
-            --border-color: #e2e8f0;
-            --card-bg: #ffffff;
-            --hover-bg: #edf2f7;
-            --input-bg: #f7fafc;
-            --modal-bg: #ffffff;
-        }
-
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .theme-toggle {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            padding: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .theme-toggle i {
-            font-size: 1.25rem;
-        }
-
-        .tool-card {
-            background: linear-gradient(135deg, #181e2a 80%, #232939 100%);
-            border-radius: 1.25rem;
-            box-shadow: 0 4px 24px 0 rgba(30,40,80,0.10);
-            border: 2px solid #232939;
-            padding: 1.5rem 1.5rem 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            transition: box-shadow 0.2s, border 0.2s;
-            min-width: 260px;
-            min-height: 520px;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .tool-card:hover {
-            box-shadow: 0 8px 32px 0 rgba(30,40,80,0.18);
-            border: 2px solid #4F46E5;
-        }
-        
-        .tool-thumbnail {
-            height: 100px;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #29304a;
-            border-radius: 1rem !important;
-            overflow: hidden;
-            margin-bottom: 0.1rem;
-        }
-        
-        .tool-thumbnail img {
-            width: 70px;
-            height: 68px;
-            object-fit: cover;
-            border-radius: 0.75rem;
-            background: #29304a;
-            display: block;
-            margin: 0 auto;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-        }
-        
-        .tool-card:hover .tool-thumbnail img {
-            transform: scale(1.05);
-        }
-        
-        .tool-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 0;
-        }
-        
-        .tool-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.5rem;
-        }
-        
-        .tool-title {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: #fff;
-            margin-top: 0;
-            margin-bottom: 0.25rem;
-        }
-        
-        .bookmark-icon {
-            color: #4F46E5;
-            font-size: 1.3rem;
-            margin-left: 0.5rem;
-            margin-top: 0.1rem;
-        }
-        
-        .tool-description {
-            color: #a0aec0;
-            font-size: 0.98rem;
-            margin-bottom: 0.75rem;
-            min-height: 40px;
-        }
-        
-        .tag {
-            background-color: #232939;
-            color: #7dd3fc;
-            font-size: 0.78rem;
-            padding: 0.18rem 0.7rem;
-            border-radius: 0.5rem;
-            margin-right: 0.25rem;
-            margin-bottom: 0.25rem;
-            display: inline-block;
-        }
-        
-        .tool-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 1.2rem;
-        }
-        
-        .remove-btn {
-            background: #ef4444;
-            color: #fff;
-            border: none;
-            border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            font-weight: 500;
-            height: 40px; /* 고정 높이 설정 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* 레시피 요약 보기 버튼과 동일한 높이 설정 */
-        .btn-primary {
-            height: 40px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
-        .remove-btn:hover {
-            background: #b91c1c;
-        }
-
+        /* 프로필 페이지 전용 스타일 (공통 CSS로 대체할 수 없는 것들만) */
         .profile-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -222,154 +51,27 @@
             letter-spacing: -1px;
         }
 
-        .glass-effect {
-            background: rgba(26, 31, 46, 0.85); /* 반투명 효과 */
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px); /* 블러 효과 강화 */
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
-        }
-
-        /* 화이트 테마 카드/썸네일/입력/태그 스타일 */
-        [data-theme="light"] .tool-card {
-            background: none !important;
-            border: 1.5px solid #9CB6D7 !important;
-            color: #1a202c !important;
-        }
-        [data-theme="light"] .tool-thumbnail {
-            background: #f3f4f6 !important;
-            border: 1.5px solid #9CB6D7 !important;
-        }
-        [data-theme="light"] input[type="text"],
-        [data-theme="light"] input[type="email"] {
-            background: none !important;
-            border: 1.5px solid #9CB6D7 !important;
-            color: #1a202c !important;
-        }
-        [data-theme="light"] .tag {
-            background: #f3f4f6 !important;
-            color: #4a5568 !important;
-            border: 1px solid #9CB6D7 !important;
-        }
-        /* 태그 색상 total_page.html 스타일(blue 계열) */
-        .tag.bg-blue-600 { background: #2563eb !important; color: #fff !important; border: none !important; }
-        .tag.bg-green-600 { background: #16a34a !important; color: #fff !important; border: none !important; }
-        .tag.bg-purple-600 { background: #7c3aed !important; color: #fff !important; border: none !important; }
-        .tag.bg-red-600 { background: #dc2626 !important; color: #fff !important; border: none !important; }
-        .tag.bg-yellow-600 { background: #ca8a04 !important; color: #fff !important; border: none !important; }
-        .tag.bg-pink-600 { background: #db2777 !important; color: #fff !important; border: none !important; }
-        .tag.bg-indigo-600 { background: #4f46e5 !important; color: #fff !important; border: none !important; }
-        .tag.bg-teal-600 { background: #0d9488 !important; color: #fff !important; border: none !important; }
-        [data-theme="light"] .profile-settings-title {
-            color: #2563eb !important;
-        }
-        /* 태그 영역 2줄 제한 */
-        .tool-card .tag-list-clamp {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-             line-clamp: 2;  
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-height: 3.8em; /* 2줄 높이로 제한 (태그 크기에 따라 조정) */
-        }
-
-        /* AI 레시피 카드 스타일 */
-        .recipe-card {
-            background: var(--card-bg);
+        /* 프로필 설정 제목 스타일 */
+        .profile-settings-title {
             color: var(--text-primary);
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            word-wrap: break-word;
-            height: 380px; /* 균형감 있는 높이로 조정 */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .recipe-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            background: var(--card-hover);
-            border-color: #3b82f6;
-        }
-        .recipe-card:active {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        .recipe-tool-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-            overflow: hidden;
-            flex-shrink: 0;
-            position: relative;
-        }
-        
-        .recipe-tool-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            border-radius: 4px;
-            max-width: 100%;
-            max-height: 100%;
-        }
-        
-        .recipe-tool-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            min-width: 0;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-        
-        .recipe-tool-name {
-            font-size: 8px;
-            color: var(--text-secondary);
-            margin-top: 3px;
-            max-width: 45px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            text-align: center;
-        }
-        .recipe-arrow {
-            font-size: 12px;
-            color: #9CA3AF;
-            flex-shrink: 0;
-        }
-        .recipe-user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            flex-shrink: 0;
         }
 
-        /* 화이트 테마 레시피 카드 스타일 */
-        [data-theme="light"] .recipe-card {
-            background: #ffffff !important;
-            border: 1.5px solid #9CB6D7 !important;
-            color: #1a202c !important;
+        /* 즐겨찾기 탭 스타일 */
+        #favoriteToolsTab,
+        #favoriteRecipesTab {
+            transition: all 0.3s ease;
         }
-        [data-theme="light"] .recipe-card:hover {
-            background: #f8fafc !important;
-            border-color: #3b82f6 !important;
+
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
+            .profile-stats {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+            
+            .stat-item {
+                padding: 0.75rem 0.5rem;
+            }
         }
     </style>
     <script>
@@ -396,75 +98,56 @@
 <body class="bg-[var(--dark-bg)] text-white">
     <!-- header.html 포함 -->
     <div id="header-container"></div>
-    <script>
-        // 테마 적용 (공통)
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.body.setAttribute('data-theme', savedTheme);
-        });
-        // 헤더 fetch 및 삽입 (공통)
-        fetch('header.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('header-container').innerHTML = data;
-                const script = document.createElement('script');
-                script.src = 'js/header-menu.js';
-                script.onload = function() {
-                    if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
-                    if (window.initMobileMenuToggle) window.initMobileMenuToggle();
-                    if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
-                };
-                document.body.appendChild(script);
-            });
-    </script>
+    <script src="js/bootstrap.js"></script>
 
     <!-- Profile Section -->
-    <main class="container mx-auto px-4 py-8 mt-24">
+    <main class="container mx-auto px-4 py-8 mt-24" role="main" aria-label="사용자 프로필">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- Left Column - Profile Info -->
             <div class="md:col-span-1">
-                <div class="bg-[var(--card-bg)] rounded-lg p-6">
+                <div class="bg-[var(--card-bg)] rounded-lg p-6" role="region" aria-label="프로필 정보">
                     <div class="flex items-center mb-6">
-                        <div class="w-20 h-20 bg-indigo-500 rounded-full flex items-center justify-center text-2xl font-bold mr-4">
-                            <span id="profileInitialLarge">U</span>
+                        <div class="w-20 h-20 bg-indigo-500 rounded-full flex items-center justify-center text-2xl font-bold mr-4" role="img" aria-label="프로필 아바타">
+                            <span id="profileInitialLarge" aria-hidden="true">U</span>
                         </div>
                         <div>
-                            <h2 class="text-xl font-semibold" id="profileNameDisplay">사용자</h2>
-                            <p class="text-gray-400" id="profileEmail">loading...</p>
+                            <h1 class="text-xl font-semibold" id="profileNameDisplay">사용자</h1>
+                            <p class="text-gray-400" id="profileEmail" aria-label="사용자 이메일">loading...</p>
                         </div>
                     </div>
 
-                    <div class="profile-stats">
-                        <div class="stat-item">
-                            <div class="text-2xl font-bold text-indigo-500" id="favoriteToolsCount">0</div>
+                    <div class="profile-stats" role="region" aria-label="프로필 통계">
+                        <div class="stat-item" role="group" aria-label="즐겨찾기한 AI 도구 수">
+                            <div class="text-2xl font-bold text-indigo-500" id="favoriteToolsCount" aria-live="polite">0</div>
                             <div class="text-sm text-gray-400">AI 도구</div>
                         </div>
-                        <div class="stat-item">
-                            <div class="text-2xl font-bold text-indigo-500" id="favoriteRecipesCount">0</div>
+                        <div class="stat-item" role="group" aria-label="즐겨찾기한 AI 레시피 수">
+                            <div class="text-2xl font-bold text-indigo-500" id="favoriteRecipesCount" aria-live="polite">0</div>
                             <div class="text-sm text-gray-400">AI 레시피</div>
                         </div>
-                        <div class="stat-item">
+                        <div class="stat-item" role="group" aria-label="리뷰 수">
                             <div class="text-2xl font-bold text-indigo-500">0</div>
                             <div class="text-sm text-gray-400">리뷰</div>
                         </div>
                     </div>
 
-                    <div class="mt-6">
-                        <h3 class="profile-settings-title text-lg font-semibold mb-4">계정 설정</h3>
-                        <div class="space-y-4">
+                    <div class="mt-6" role="region" aria-label="계정 설정">
+                        <h2 class="profile-settings-title text-lg font-semibold mb-4">계정 설정</h2>
+                        <form class="space-y-4" role="form" aria-label="프로필 수정 폼">
                             <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-1">이름</label>
-                                <input type="text" id="displayName" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2">
+                                <label for="displayName" class="block text-sm font-medium text-gray-400 mb-1">이름</label>
+                                <input type="text" id="displayName" name="displayName" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" aria-describedby="displayNameHelp">
+                                <div id="displayNameHelp" class="sr-only">사용자 표시 이름을 입력하세요</div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-1">이메일</label>
-                                <input type="email" id="email" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" disabled>
+                                <label for="email" class="block text-sm font-medium text-gray-400 mb-1">이메일</label>
+                                <input type="email" id="email" name="email" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" disabled aria-describedby="emailHelp">
+                                <div id="emailHelp" class="sr-only">이메일은 변경할 수 없습니다</div>
                             </div>
-                            <button id="saveChanges" class="w-full bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
+                            <button type="submit" id="saveChanges" class="w-full bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors" aria-label="변경사항 저장">
                                 변경사항 저장
                             </button>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -472,27 +155,27 @@
             <!-- Right Column - Favorite Tools -->
             <div class="md:col-span-2">
                 <!-- 탭 네비게이션 -->
-                <div class="flex space-x-1 mb-6 bg-gray-700 rounded-lg p-1">
-                    <button id="favoriteToolsTab" class="flex-1 py-2 px-4 rounded-md bg-indigo-500 text-white font-medium transition-colors">
+                <div class="flex space-x-1 mb-6 bg-gray-700 rounded-lg p-1" role="tablist" aria-label="즐겨찾기 탭">
+                    <button id="favoriteToolsTab" class="flex-1 py-2 px-4 rounded-md bg-indigo-500 text-white font-medium transition-colors" role="tab" aria-selected="true" aria-controls="favoriteToolsSection">
                         즐겨찾기한 AI 도구
                     </button>
-                    <button id="favoriteRecipesTab" class="flex-1 py-2 px-4 rounded-md bg-gray-600 text-gray-300 font-medium hover:bg-gray-500 transition-colors">
+                    <button id="favoriteRecipesTab" class="flex-1 py-2 px-4 rounded-md bg-gray-600 text-gray-300 font-medium hover:bg-gray-500 transition-colors" role="tab" aria-selected="false" aria-controls="favoriteRecipesSection">
                         즐겨찾기한 AI 레시피
                     </button>
                 </div>
 
                 <!-- AI 도구 탭 -->
-                <div id="favoriteToolsSection">
+                <div id="favoriteToolsSection" role="tabpanel" aria-labelledby="favoriteToolsTab">
                     <h2 class="text-2xl font-bold mb-6">즐겨찾기한 AI 도구</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="favoriteToolsContainer">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="favoriteToolsContainer" aria-live="polite" aria-label="즐겨찾기한 AI 도구 목록">
                         <!-- Favorite tools will be dynamically added here -->
                     </div>
                 </div>
 
                 <!-- AI 레시피 탭 -->
-                <div id="favoriteRecipesSection" class="hidden">
+                <div id="favoriteRecipesSection" class="hidden" role="tabpanel" aria-labelledby="favoriteRecipesTab" aria-hidden="true">
                     <h2 class="text-2xl font-bold mb-6">즐겨찾기한 AI 레시피</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6" id="favoriteRecipesContainer">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6" id="favoriteRecipesContainer" aria-live="polite" aria-label="즐겨찾기한 AI 레시피 목록">
                         <!-- Favorite recipes will be dynamically added here -->
                     </div>
                 </div>
@@ -502,13 +185,6 @@
 
     <!-- footer.html 포함 -->
     <div id="footer-container"></div>
-    <script>
-        fetch('footer.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('footer-container').innerHTML = data;
-            });
-    </script>
 
     <!-- 모바일 메뉴 (숨김 상태로 시작) -->
     <div id="mobileMenu" class="fixed top-0 right-0 w-64 h-full bg-gray-900 z-50 shadow-lg transform translate-x-full transition-transform duration-300 md:hidden">
@@ -624,22 +300,11 @@
             signOut,
             onAuthStateChanged 
         } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, collection, getDocs, doc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-        import { firebaseConfig } from '../config.js';
+        import { getFirestore, collection, getDocs, doc, deleteDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
-        // Firebase 초기화
-        let app;
-        try {
-            app = initializeApp(firebaseConfig);
-        } catch (error) {
-            if (error.code !== 'app/duplicate-app') {
-                console.error('Firebase 초기화 오류:', error);
-                throw error;
-            }
-        }
-
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // AuthManager를 통한 통합 초기화 사용
+        const auth = window.auth;
+        const db = window.db;
 
         // 탭 전환 함수
         function switchTab(tabName) {
@@ -649,328 +314,266 @@
             const recipesSection = document.getElementById('favoriteRecipesSection');
 
             if (tabName === 'tools') {
+                // AI 도구 탭 활성화
                 toolsTab.className = 'flex-1 py-2 px-4 rounded-md bg-indigo-500 text-white font-medium transition-colors';
+                toolsTab.setAttribute('aria-selected', 'true');
                 recipesTab.className = 'flex-1 py-2 px-4 rounded-md bg-gray-600 text-gray-300 font-medium hover:bg-gray-500 transition-colors';
+                recipesTab.setAttribute('aria-selected', 'false');
+                
                 toolsSection.classList.remove('hidden');
+                toolsSection.setAttribute('aria-hidden', 'false');
                 recipesSection.classList.add('hidden');
+                recipesSection.setAttribute('aria-hidden', 'true');
+                
+                // 포커스 이동
+                toolsTab.focus();
             } else {
+                // AI 레시피 탭 활성화
                 toolsTab.className = 'flex-1 py-2 px-4 rounded-md bg-gray-600 text-gray-300 font-medium hover:bg-gray-500 transition-colors';
+                toolsTab.setAttribute('aria-selected', 'false');
                 recipesTab.className = 'flex-1 py-2 px-4 rounded-md bg-indigo-500 text-white font-medium transition-colors';
+                recipesTab.setAttribute('aria-selected', 'true');
+                
                 toolsSection.classList.add('hidden');
+                toolsSection.setAttribute('aria-hidden', 'true');
                 recipesSection.classList.remove('hidden');
+                recipesSection.setAttribute('aria-hidden', 'false');
+                
+                // 포커스 이동
+                recipesTab.focus();
             }
         }
 
-        // 로그인 상태 감지
-        onAuthStateChanged(auth, (user) => {
-            const authButtons = document.getElementById('authButtons');
-            const profileMenu = document.getElementById('profileMenu');
-            if (user) {
-                // 헤더 토글: 로그인 시
-                if (authButtons) authButtons.style.display = 'none';
-                if (profileMenu) profileMenu.style.display = 'flex';
-                // 사용자 프로필 정보 표시 (안전하게)
-                const profileNameDisplay = document.getElementById('profileNameDisplay');
-                const profileEmail = document.getElementById('profileEmail');
-                const profileInitialLarge = document.getElementById('profileInitialLarge');
-                const displayNameInput = document.getElementById('displayName');
-                const emailInput = document.getElementById('email');
-                
-                if (profileNameDisplay) {
-                    profileNameDisplay.textContent = user.displayName || user.email.split('@')[0];
+        // 로그인 상태 감지: AuthManager 준비 후 리스너 부착
+        function attachAuthListener() {
+            try {
+                onAuthStateChanged(getAuth(), (user) => {
+                    const authButtons = document.getElementById('authButtons');
+                    const profileMenu = document.getElementById('profileMenu');
+                    if (user) {
+                        // 헤더 토글: 로그인 시
+                        if (authButtons) authButtons.style.display = 'none';
+                        if (profileMenu) profileMenu.style.display = 'flex';
+                        // 사용자 프로필 정보 표시 (안전하게)
+                        const profileNameDisplay = document.getElementById('profileNameDisplay');
+                        const profileEmail = document.getElementById('profileEmail');
+                        const profileInitialLarge = document.getElementById('profileInitialLarge');
+                        const displayNameInput = document.getElementById('displayName');
+                        const emailInput = document.getElementById('email');
+                        
+                        if (profileNameDisplay) {
+                            profileNameDisplay.textContent = user.displayName || user.email.split('@')[0];
+                        }
+                        if (profileEmail) {
+                            profileEmail.textContent = user.email;
+                        }
+                        if (profileInitialLarge) {
+                            profileInitialLarge.textContent = (user.displayName || user.email)[0].toUpperCase();
+                        }
+                        if (displayNameInput) {
+                            displayNameInput.value = user.displayName || '';
+                        }
+                        if (emailInput) {
+                            emailInput.value = user.email;
+                        }
+                        
+                        // 탭 이벤트 리스너 설정 (안전하게)
+                        const toolsTab = document.getElementById('favoriteToolsTab');
+                        const recipesTab = document.getElementById('favoriteRecipesTab');
+                        
+                        if (toolsTab) {
+                            toolsTab.addEventListener('click', () => switchTab('tools'));
+                        }
+                        if (recipesTab) {
+                            recipesTab.addEventListener('click', () => switchTab('recipes'));
+                        }
+                        
+                        // 즐겨찾기 도구/레시피 로드 함수 호출
+                        loadFavoriteTools(user);
+                        loadFavoriteRecipes(user);
+                        
+                        // 변경사항 저장 버튼 이벤트 리스너
+                        setupSaveChangesListener(user);
+                    } else {
+                        // 헤더 토글: 로그아웃 시
+                        if (authButtons) authButtons.style.display = 'flex';
+                        if (profileMenu) profileMenu.style.display = 'none';
+                        // 로그인되지 않은 경우 홈페이지로 리다이렉트
+                        window.location.href = 'index.html';
+                    }
+                });
+            } catch (e) {
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(e, '프로필 인증 리스너 연결');
+                } else {
+                    console.error('프로필 인증 리스너 연결 실패:', e);
                 }
-                if (profileEmail) {
-                    profileEmail.textContent = user.email;
-                }
-                if (profileInitialLarge) {
-                    profileInitialLarge.textContent = (user.displayName || user.email)[0].toUpperCase();
-                }
-                if (displayNameInput) {
-                    displayNameInput.value = user.displayName || '';
-                }
-                if (emailInput) {
-                    emailInput.value = user.email;
-                }
+            }
+        }
 
-                // 탭 이벤트 리스너 설정 (안전하게 설정)
-                const toolsTab = document.getElementById('favoriteToolsTab');
-                const recipesTab = document.getElementById('favoriteRecipesTab');
-                
-                if (toolsTab) {
-                    toolsTab.addEventListener('click', () => switchTab('tools'));
-                }
-                if (recipesTab) {
-                    recipesTab.addEventListener('click', () => switchTab('recipes'));
-                }
-
-                // 즐겨찾기 도구 표시 (Firestore에서 불러오기)
+        // 즐겨찾기 도구 로드 함수
+        async function loadFavoriteTools(user) {
+            try {
+                const favoritesCol = collection(db, `users/${user.uid}/favorites`);
+                const favoriteSnapshot = await getDocs(favoritesCol);
+                const favoriteToolsCountElem = document.getElementById('favoriteToolsCount');
                 const favoriteToolsContainer = document.getElementById('favoriteToolsContainer');
-                favoriteToolsContainer.innerHTML = '';
-                function createToolCard(tool, toolId) {
-                    return `
-                        <div class="tool-card">
-                            <div class="tool-thumbnail">
-                                <img src="${getValidImageUrl(tool)}" alt="${tool.name}" onerror="window.handleImageError(this)">
-                            </div>
-                            <div class="tool-content">
-                                <div class="tool-header">
-                                    <div class="tool-title">${tool.name}</div>
-                                    <i class="fas fa-bookmark bookmark-icon" title="즐겨찾기됨"></i>
-                                </div>
-                                <p class="tool-description">${tool.description}</p>
-                                <div class="flex flex-wrap gap-2 mb-2 tag-list-clamp">
-                                    ${(tool.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
-                                </div>
-                                <!-- 버튼 추가 영역 -->
-                                <div class="flex gap-2 mb-2">
-                                    <a href="${tool.websiteUrl || '#'}" target="_blank" class="flex-1 bg-indigo-500 text-white px-2 py-1 rounded hover:bg-indigo-600 text-center">웹사이트 방문</a>
-                                    <button class="flex-1 bg-gray-700 text-white px-2 py-1 rounded hover:bg-gray-600" onclick="shareTool('${tool.name}', '${tool.websiteUrl || ''}')">공유하기</button>
-                                </div>
-                                <button class="btn-primary w-full mt-2" onclick="location.href='detail_sp.html?id=${toolId}'">상세 정보 페이지 이동</button>
-                                <div class="tool-footer">
-                                    <span class="text-sm font-medium text-gray-300">${tool.type}</span>
-                                    <span class="text-sm text-gray-400">${tool.reviewCount || 0} reviews</span>
-                                    <button class="remove-btn" onclick="removeFavoriteTool('${toolId}')">삭제</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                
+                if (favoriteToolsCountElem) {
+                    favoriteToolsCountElem.textContent = favoriteSnapshot.size;
                 }
-
-                // AI 레시피 카드 생성 함수
-                function createRecipeCard(recipeData, docId) {
-                    const card = document.createElement('div');
-                    card.className = 'recipe-card p-4 sm:p-6';
-                    // 카드 크기 제한 제거 - CSS에서 통일된 크기 적용
-                    
-                    // 카드 클릭 이벤트 추가
-                    card.style.cursor = 'pointer';
-                    card.addEventListener('click', function(e) {
-                        // 버튼 클릭 시에는 상세 페이지로 이동하지 않음
-                        if (e.target.closest('button')) {
-                            return;
-                        }
-                        // 상세 페이지로 이동
-                        window.location.href = `ai_comb_detail.html?id=${docId}`;
-                    });
-                    
-                    // 사용자 아바타 (첫 글자 사용)
-                    const userName = recipeData.user_id ? recipeData.user_id.substring(0, 1) : 'U';
-                    const avatarColor = getAvatarColor(recipeData.user_id);
-                    
-                    // Firestore 데이터 구조에 맞춰 필드명 수정
-                    const recipeTitle = recipeData.title || recipeData.my_recipe_title || 'Untitled Recipe';
-                    const recipeDescription = recipeData.description || recipeData.my_recipe_basic_description || '';
-                    const tools = recipeData.tools || recipeData.my_recipe_tool || [];
-                    
-                    // 도구 아이콘과 이름 생성 (최대 4개까지 표시, 초과 시 3개만 표시)
-                    const maxTools = tools.length > 4 ? 3 : 4;
-                    const displayTools = tools.slice(0, maxTools);
-                    let toolElements = displayTools.map((tool, index) => {
-                        const toolImage = window.toolImagesCache ? window.toolImagesCache[tool] : null;
-                        const bgColor = getToolColor(tool);
-                        
-                        let toolIcon;
-                        if (toolImage) {
-                            // DB에서 가져온 이미지가 있는 경우
-                            toolIcon = `
-                                <div class="recipe-tool-icon ${bgColor}" style="padding: 2px;">
-                                    <img src="${toolImage}" alt="${tool}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; max-width: 100%; max-height: 100%;" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'${getToolIcon(tool)}\\'></i>';">
-                                </div>
-                            `;
-                        } else {
-                            // 기본 아이콘 사용
-                            const iconClass = getToolIcon(tool);
-                            toolIcon = `
-                                <div class="recipe-tool-icon ${bgColor}">
-                                    <i class="${iconClass}"></i>
-                                </div>
-                            `;
-                        }
-                        
-                        return `
-                            <div class="recipe-tool-container">
-                                ${toolIcon}
-                                <div class="recipe-tool-name">${tool}</div>
-                            </div>
-                            ${index < displayTools.length - 1 ? '<i class="fas fa-arrow-right recipe-arrow mx-1"></i>' : ''}
-                        `;
-                    }).join('');
-
-                    // 4개를 초과하는 도구가 있을 경우 추가 표시
-                    const additionalToolsCount = tools.length - maxTools;
-                    if (tools.length > 4) {
-                        toolElements += `
-                            <i class="fas fa-arrow-right recipe-arrow mx-1"></i>
-                            <div class="recipe-tool-container">
-                                <div class="recipe-tool-icon bg-gray-500 flex items-center justify-center">
-                                    <span class="text-xs font-bold">+${additionalToolsCount}</span>
-                                </div>
-                                <div class="recipe-tool-name">추가</div>
-                            </div>
-                        `;
+                
+                if (favoriteSnapshot.empty) {
+                    if (favoriteToolsContainer) {
+                        favoriteToolsContainer.innerHTML = '<div class="text-gray-400 text-center py-8"><i class="fas fa-bookmark text-4xl mb-4 opacity-50"></i><p class="text-lg">저장한 도구가 없습니다.</p></div>';
                     }
-
-                    card.innerHTML = `
-                        <div class="flex-1">
-                            <div class="text-left mb-10">
-                                <h3 class="text-lg font-semibold mb-3 line-clamp-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; color: var(--text-primary);">${recipeTitle}</h3>
-                                <p class="text-sm text-gray-400 line-clamp-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;">${recipeDescription}</p>
-                            </div>
-                            
-                            <div class="flex items-center justify-center mb-6 overflow-hidden">
-                                ${toolElements}
-                            </div>
-                            
-                            <div class="flex items-center justify-center space-x-4 text-sm mb-4">
-                                <div class="flex items-center">
-                                    <i class="fas fa-heart text-red-500 mr-1"></i>
-                                    <span>${recipeData.likes_count || 0}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-comment text-blue-500 mr-1"></i>
-                                    <span>${recipeData.comments_count || 0}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-bookmark text-yellow-500 mr-1"></i>
-                                    <span>${recipeData.bookmarks_count || 0}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex justify-center space-x-2 mt-auto">
-                            <button class="btn-primary text-sm px-4 py-2 flex-1" onclick="event.stopPropagation(); showRecipeSummary('${docId}', ${JSON.stringify(recipeData).replace(/"/g, '&quot;')})">
-                                레시피 요약
-                            </button>
-                            <button class="remove-btn text-sm px-4 py-2 flex-1" onclick="event.stopPropagation(); removeFavoriteRecipe('${docId}')">
-                                삭제
-                            </button>
-                        </div>
-                    `;
-
-                    return card;
-                }
-
-                // Firestore에서 즐겨찾기 도구 불러오기
-                (async () => {
-                    try {
-                        const favoritesCol = collection(db, `users/${user.uid}/favorites`);
-                        const favoriteSnapshot = await getDocs(favoritesCol);
-                        const favoriteToolsCountElem = document.getElementById('favoriteToolsCount');
-                        const favoriteToolsContainer = document.getElementById('favoriteToolsContainer');
-                        
-                        if (favoriteToolsCountElem) {
-                            favoriteToolsCountElem.textContent = favoriteSnapshot.size;
-                        }
-                        
-                        if (favoriteSnapshot.empty) {
-                            if (favoriteToolsContainer) {
-                                favoriteToolsContainer.innerHTML = '<div class="text-gray-400">저장한 도구가 없습니다.</div>';
-                            }
-                        } else {
-                            favoriteSnapshot.forEach(docSnap => {
-                                const tool = docSnap.data();
-                                if (favoriteToolsContainer) {
-                                    favoriteToolsContainer.innerHTML += createToolCard({
-                                        name: tool.name,
-                                        description: tool.description,
-                                        image: tool.imageUrl,
-                                        rating: tool.rating || 0,
-                                        reviewCount: tool.reviewCount || 0,
-                                        tags: tool.tags || [],
-                                        type: tool.priceType || '',
-                                        websiteUrl: tool.websiteUrl || '',
-                                        logoUrl: tool.logoUrl || '',
-                                        logoFileName: tool.logoFileName || ''
-                                    }, docSnap.id);
-                                }
-                            });
-                        }
-                    } catch (error) {
-                        console.error('즐겨찾기 도구 로드 오류:', error);
-                        const favoriteToolsCountElem = document.getElementById('favoriteToolsCount');
-                        const favoriteToolsContainer = document.getElementById('favoriteToolsContainer');
-                        
-                        if (favoriteToolsCountElem) {
-                            favoriteToolsCountElem.textContent = '0';
-                        }
+                } else {
+                    favoriteToolsContainer.innerHTML = '';
+                    favoriteSnapshot.forEach(docSnap => {
+                        const tool = docSnap.data();
                         if (favoriteToolsContainer) {
-                            favoriteToolsContainer.innerHTML = '<div class="text-gray-400">도구를 불러오는 중 오류가 발생했습니다.</div>';
+                            favoriteToolsContainer.innerHTML += createToolCard({
+                                name: tool.name,
+                                description: tool.description,
+                                image: tool.imageUrl,
+                                rating: tool.rating || 0,
+                                reviewCount: tool.reviewCount || 0,
+                                tags: tool.tags || [],
+                                type: tool.priceType || '',
+                                websiteUrl: tool.websiteUrl || '',
+                                logoUrl: tool.logoUrl || '',
+                                logoFileName: tool.logoFileName || ''
+                            }, docSnap.id);
+                        }
+                    });
+                }
+            } catch (error) {
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, '즐겨찾기 도구 로드');
+                } else {
+                    console.error('즐겨찾기 도구 로드 오류:', error);
+                }
+                const favoriteToolsCountElem = document.getElementById('favoriteToolsCount');
+                const favoriteToolsContainer = document.getElementById('favoriteToolsContainer');
+                
+                if (favoriteToolsCountElem) {
+                    favoriteToolsCountElem.textContent = '0';
+                }
+                if (favoriteToolsContainer) {
+                    favoriteToolsContainer.innerHTML = '<div class="text-gray-400 text-center py-8"><i class="fas fa-exclamation-triangle text-4xl mb-4 opacity-50"></i><p class="text-lg">도구를 불러오는 중 오류가 발생했습니다.</p></div>';
+                }
+            }
+        }
+
+        // 즐겨찾기 레시피 로드 함수
+        async function loadFavoriteRecipes(user) {
+            try {
+                const favoriteRecipesContainer = document.getElementById('favoriteRecipesContainer');
+                const favoriteRecipesCountElem = document.getElementById('favoriteRecipesCount');
+                
+                // 로딩 상태 표시
+                favoriteRecipesContainer.innerHTML = `
+                    <div class="col-span-full text-center py-8">
+                        <div class="loading-skeleton w-16 h-16 rounded-full mx-auto mb-4"></div>
+                        <div class="loading-skeleton w-32 h-4 mx-auto mb-2"></div>
+                        <div class="loading-skeleton w-24 h-3 mx-auto"></div>
+                    </div>
+                `;
+                
+                // AI 도구 정보와 공개 레시피 정보 로드
+                await Promise.all([
+                    loadToolImages(),
+                    loadPublicRecipes()
+                ]);
+                
+                // 컬렉션 존재 여부 확인을 위한 안전한 접근
+                try {
+                    const favoriteRecipesCol = collection(db, `users/${user.uid}/favorited_recipe`);
+                    const favoriteRecipesSnapshot = await getDocs(favoriteRecipesCol);
+                    
+                    if (favoriteRecipesCountElem) {
+                        favoriteRecipesCountElem.textContent = favoriteRecipesSnapshot.size;
+                    }
+                    
+                    if (favoriteRecipesSnapshot.empty) {
+                        favoriteRecipesContainer.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><i class="fas fa-bookmark text-4xl mb-4 opacity-50"></i><p class="text-lg">저장한 레시피가 없습니다.</p></div>';
+                    } else {
+                        favoriteRecipesContainer.innerHTML = '';
+                        
+                        // 레시피 카드들을 순차적으로 생성 (비동기 처리)
+                        for (const docSnap of favoriteRecipesSnapshot.docs) {
+                            const recipeData = docSnap.data();
+                            recipeData.docId = docSnap.id;
+                            
+                            // public_recipe_collection에서 상세 정보 가져오기
+                            if (window.publicRecipesCache && window.publicRecipesCache[docSnap.id]) {
+                                const publicRecipe = window.publicRecipesCache[docSnap.id];
+                                recipeData = { ...recipeData, ...publicRecipe };
+                            }
+                            
+                            const recipeCard = await createRecipeCard(recipeData, docSnap.id);
+                            favoriteRecipesContainer.appendChild(recipeCard);
                         }
                     }
-                })();
+                } catch (firestoreError) {
+                    // 권한 오류 또는 컬렉션이 존재하지 않는 경우
+                    console.log('즐겨찾기 레시피 컬렉션이 존재하지 않거나 접근 권한이 없습니다. 새로 생성합니다.');
+                    if (favoriteRecipesCountElem) {
+                        favoriteRecipesCountElem.textContent = '0';
+                    }
+                    favoriteRecipesContainer.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><i class="fas fa-bookmark text-4xl mb-4 opacity-50"></i><p class="text-lg">저장한 레시피가 없습니다.</p><p class="text-sm mt-2">AI 레시피를 즐겨찾기에 추가하면 여기에 표시됩니다.</p></div>';
+                }
+            } catch (error) {
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, '즐겨찾기 레시피 로드');
+                } else {
+                    console.error('즐겨찾기 레시피 로드 오류:', error);
+                }
+                const favoriteRecipesContainer = document.getElementById('favoriteRecipesContainer');
+                const favoriteRecipesCountElem = document.getElementById('favoriteRecipesCount');
+                
+                if (favoriteRecipesCountElem) {
+                    favoriteRecipesCountElem.textContent = '0';
+                }
+                if (favoriteRecipesContainer) {
+                    favoriteRecipesContainer.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><i class="fas fa-exclamation-triangle text-4xl mb-4 opacity-50"></i><p class="text-lg">레시피를 불러오는 중 오류가 발생했습니다.</p><p class="text-sm mt-2">잠시 후 다시 시도해주세요.</p></div>';
+                }
+            }
+        }
 
-                // Firestore에서 즐겨찾기 레시피 불러오기
-                (async () => {
+        // 변경사항 저장 리스너 설정
+        function setupSaveChangesListener(user) {
+            const saveChangesBtn = document.getElementById('saveChanges');
+            if (saveChangesBtn) {
+                saveChangesBtn.addEventListener('click', async () => {
                     try {
-                        // AI 도구 정보 로드
-                        await loadToolImages();
-                        
-                        const favoriteRecipesContainer = document.getElementById('favoriteRecipesContainer');
-                        const favoriteRecipesCountElem = document.getElementById('favoriteRecipesCount');
-                        
-                        // 컬렉션 존재 여부 확인을 위한 안전한 접근
-                        try {
-                            const favoriteRecipesCol = collection(db, `users/${user.uid}/favorited_recipe`);
-                            const favoriteRecipesSnapshot = await getDocs(favoriteRecipesCol);
-                            
-                            favoriteRecipesCountElem.textContent = favoriteRecipesSnapshot.size;
-                            
-                            if (favoriteRecipesSnapshot.empty) {
-                                favoriteRecipesContainer.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><i class="fas fa-bookmark text-4xl mb-4 opacity-50"></i><p class="text-lg">저장한 레시피가 없습니다.</p></div>';
-                            } else {
-                                favoriteRecipesSnapshot.forEach(docSnap => {
-                                    const recipeData = docSnap.data();
-                                    recipeData.docId = docSnap.id;
-                                    const recipeCard = createRecipeCard(recipeData, docSnap.id);
-                                    favoriteRecipesContainer.appendChild(recipeCard);
-                                });
-                            }
-                        } catch (firestoreError) {
-                            // 권한 오류 또는 컬렉션이 존재하지 않는 경우
-                            console.log('즐겨찾기 레시피 컬렉션이 존재하지 않거나 접근 권한이 없습니다. 새로 생성합니다.');
-                            favoriteRecipesCountElem.textContent = '0';
-                            favoriteRecipesContainer.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><i class="fas fa-bookmark text-4xl mb-4 opacity-50"></i><p class="text-lg">저장한 레시피가 없습니다.</p><p class="text-sm mt-2">AI 레시피를 즐겨찾기에 추가하면 여기에 표시됩니다.</p></div>';
+                        const displayNameInput = document.getElementById('displayName');
+                        const newDisplayName = displayNameInput ? displayNameInput.value : '';
+                        // Firestore에 이름만 업데이트하려면 users/{uid} 문서에 setDoc 사용 가능
+                        // 여기서는 RTDB 예시이므로 필요시 Firestore로 변경
+                        // await setDoc(doc(db, 'users', user.uid), { displayName: newDisplayName }, { merge: true });
+                        if (window.CommonUtils) {
+                            window.CommonUtils.showSuccess('프로필이 업데이트되었습니다.');
+                        } else {
+                            alert('프로필이 업데이트되었습니다.');
                         }
                     } catch (error) {
-                        console.error('즐겨찾기 레시피 로드 오류:', error);
-                        const favoriteRecipesContainer = document.getElementById('favoriteRecipesContainer');
-                        const favoriteRecipesCountElem = document.getElementById('favoriteRecipesCount');
-                        
-                        if (favoriteRecipesCountElem) {
-                            favoriteRecipesCountElem.textContent = '0';
-                        }
-                        if (favoriteRecipesContainer) {
-                            favoriteRecipesContainer.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><p class="text-lg">레시피를 불러오는 중 오류가 발생했습니다.</p><p class="text-sm mt-2">잠시 후 다시 시도해주세요.</p></div>';
-                        }
-                    }
-                })();
-
-                // 변경사항 저장 버튼 이벤트 리스너
-                const saveChangesBtn = document.getElementById('saveChanges');
-                if (saveChangesBtn) {
-                    saveChangesBtn.addEventListener('click', async () => {
-                        try {
-                            const displayNameInput = document.getElementById('displayName');
-                            const newDisplayName = displayNameInput ? displayNameInput.value : '';
-                            // Firestore에 이름만 업데이트하려면 users/{uid} 문서에 setDoc 사용 가능
-                            // 여기서는 RTDB 예시이므로 필요시 Firestore로 변경
-                            // await setDoc(doc(db, 'users', user.uid), { displayName: newDisplayName }, { merge: true });
-                            alert('프로필이 업데이트되었습니다.');
-                        } catch (error) {
+                        if (window.CommonUtils) {
+                            window.CommonUtils.handleError(error, '프로필 업데이트');
+                        } else {
                             console.error('프로필 업데이트 실패:', error);
                             alert('프로필 업데이트 중 오류가 발생했습니다.');
                         }
-                    });
-                }
-            } else {
-                // 헤더 토글: 로그아웃 시
-                if (authButtons) authButtons.style.display = 'flex';
-                if (profileMenu) profileMenu.style.display = 'none';
-                // 로그인되지 않은 경우 홈페이지로 리다이렉트
-                window.location.href = 'index.html';
+                    }
+                });
             }
-        });
+        }
+
+        if (window.authManager && window.authManager.isInitialized) {
+            attachAuthListener();
+        } else {
+            window.addEventListener('authManagerReady', attachAuthListener, { once: true });
+        }
 
         // 로그아웃 함수
         window.handleLogout = async function() {
@@ -978,8 +581,12 @@
                 await signOut(auth);
                 window.location.href = 'index.html';
             } catch (error) {
-                console.error('로그아웃 실패:', error);
-                alert('로그아웃 중 오류가 발생했습니다.');
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, '로그아웃');
+                } else {
+                    console.error('로그아웃 실패:', error);
+                    alert('로그아웃 중 오류가 발생했습니다.');
+                }
             }
         };
 
@@ -1000,13 +607,14 @@
                             window.toolImagesCache[data.name] = data.imageUrl;
                         }
                         
-                        // 도구 정보 저장
+                        // 도구 정보 저장 (아이콘 포함)
                         window.toolInfoCache[data.name] = {
                             description: data.description || `${data.name}은 다양한 작업을 지원하는 AI 도구입니다.`,
                             category: data.category || '',
                             difficulty: data.difficulty || '',
                             websiteUrl: data.websiteUrl || '',
-                            tags: data.tags || []
+                            tags: data.tags || [],
+                            icon: data.icon || 'fas fa-cog' // 아이콘 정보 추가
                         };
                     }
                 });
@@ -1017,6 +625,38 @@
                 // 오류가 발생해도 기본 캐시 객체는 생성
                 window.toolImagesCache = {};
                 window.toolInfoCache = {};
+            }
+        }
+
+        // public_recipe_collection에서 레시피 로드 함수
+        async function loadPublicRecipes() {
+            try {
+                const recipesRef = collection(db, 'public_recipe_collection');
+                const recipesSnapshot = await getDocs(recipesRef);
+                
+                window.publicRecipesCache = {};
+                
+                recipesSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.my_recipe_title) {
+                        window.publicRecipesCache[doc.id] = {
+                            id: doc.id,
+                            title: data.my_recipe_title,
+                            description: data.my_recipe_basic_description || '',
+                            category: data.my_recipe_category || '',
+                            tools: data.my_recipe_tool || [],
+                            user_id: data.user_id || '',
+                            created_at: data.created_at || '',
+                            recipe_type: data.recipe_type || 'basic',
+                            recipe_share: data.recipe_share || 'Public'
+                        };
+                    }
+                });
+                
+                console.log(`${Object.keys(window.publicRecipesCache).length}개의 공개 레시피를 로드했습니다.`);
+            } catch (error) {
+                console.error('공개 레시피 로드 오류:', error);
+                window.publicRecipesCache = {};
             }
         }
 
@@ -1042,83 +682,226 @@
             return colors[Math.abs(hash) % colors.length];
         }
 
-        // 도구 아이콘 매핑 함수
-        function getToolIcon(toolName) {
-            const iconMap = {
+        // DB 기반 도구 아이콘 가져오기 함수
+        async function getToolIconFromDB(toolName) {
+            try {
+                // 이미 로드된 도구 정보가 있으면 사용
+                if (window.toolInfoCache && window.toolInfoCache[toolName]) {
+                    return window.toolInfoCache[toolName].icon || 'fas fa-cog';
+                }
+                
+                // DB에서 도구 정보 조회
+                const toolDoc = await getDoc(doc(db, 'ai-tools', toolName));
+                if (toolDoc.exists()) {
+                    const toolData = toolDoc.data();
+                    return toolData.icon || 'fas fa-cog';
+                }
+                
+                return 'fas fa-cog'; // 기본값
+            } catch (error) {
+                console.error('도구 아이콘 로드 실패:', error);
+                return 'fas fa-cog';
+            }
+        }
+
+        // 도구 정보가 없는 경우 기본 아이콘 매핑 (폴백)
+        function getFallbackToolIcon(toolName) {
+            const fallbackIcons = {
                 'ChatGPT': 'fas fa-comments',
-                'Notion AI': 'fas fa-note-sticky',
-                'Midjourney': 'fas fa-palette',
-                'Claude': 'fas fa-robot',
-                'Google Sheets': 'fas fa-table',
-                'Zapier': 'fas fa-bolt',
-                'Whisper': 'fas fa-microphone-lines',
-                'Descript': 'fas fa-edit',
-                'Adobe Podcast': 'fas fa-podcast',
-                'Hugging Face': 'fas fa-face-smile',
-                'Grammarly': 'fas fa-check',
-                'Copy.ai': 'fas fa-copy',
-                'DALL-E': 'fas fa-image',
-                'Upscayl': 'fas fa-magic',
-                'Photoshop': 'fas fa-paint-brush',
-                'GitHub Copilot': 'fas fa-code',
-                'Canva': 'fas fa-palette',
-                'Figma': 'fas fa-paint-brush',
-                'Slack': 'fas fa-comments',
                 'Discord': 'fas fa-comments',
+                'Slack': 'fas fa-comments',
                 'Zoom': 'fas fa-video',
                 'Google Meet': 'fas fa-video',
                 'Microsoft Teams': 'fas fa-users',
-                'Trello': 'fas fa-tasks',
-                'Asana': 'fas fa-tasks',
                 'Notion': 'fas fa-sticky-note',
-                'Airtable': 'fas fa-table',
-                'Typeform': 'fas fa-poll',
-                'SurveyMonkey': 'fas fa-poll',
-                'Mailchimp': 'fas fa-envelope',
-                'HubSpot': 'fas fa-chart-line',
-                'Salesforce': 'fas fa-chart-line',
-                'Stripe': 'fas fa-credit-card',
-                'PayPal': 'fas fa-credit-card',
-                'Shopify': 'fas fa-shopping-cart',
-                'WooCommerce': 'fas fa-shopping-cart',
-                'WordPress': 'fas fa-wordpress',
-                'Squarespace': 'fas fa-square',
-                'Wix': 'fas fa-wix',
-                'Webflow': 'fas fa-globe',
-                'Framer': 'fas fa-paint-brush',
-                'Webflow': 'fas fa-globe',
-                'Bubble': 'fas fa-bubble',
-                'Glide': 'fas fa-mobile',
-                'Adalo': 'fas fa-mobile',
-                'Outseta': 'fas fa-users',
-                'Memberstack': 'fas fa-users',
-                'Kajabi': 'fas fa-graduation-cap',
-                'Teachable': 'fas fa-graduation-cap',
-                'Thinkific': 'fas fa-graduation-cap',
-                'Podia': 'fas fa-graduation-cap',
-                'ConvertKit': 'fas fa-envelope',
-                'ActiveCampaign': 'fas fa-envelope',
-                'Klaviyo': 'fas fa-envelope',
-                'Drip': 'fas fa-envelope',
-                'Kajabi': 'fas fa-graduation-cap',
-                'Teachable': 'fas fa-graduation-cap',
-                'Thinkific': 'fas fa-graduation-cap',
-                'Podia': 'fas fa-graduation-cap',
-                'ConvertKit': 'fas fa-envelope',
-                'ActiveCampaign': 'fas fa-envelope',
-                'Klaviyo': 'fas fa-envelope',
-                'Drip': 'fas fa-envelope',
-                'Kajabi': 'fas fa-graduation-cap',
-                'Teachable': 'fas fa-graduation-cap',
-                'Thinkific': 'fas fa-graduation-cap',
-                'Podia': 'fas fa-graduation-cap',
-                'ConvertKit': 'fas fa-envelope',
-                'ActiveCampaign': 'fas fa-envelope',
-                'Klaviyo': 'fas fa-envelope',
-                'Drip': 'fas fa-envelope'
+                'Canva': 'fas fa-palette',
+                'Figma': 'fas fa-paint-brush',
+                'Photoshop': 'fas fa-paint-brush',
+                'GitHub Copilot': 'fas fa-code',
+                'Midjourney': 'fas fa-palette',
+                'DALL-E': 'fas fa-image'
             };
             
-            return iconMap[toolName] || 'fas fa-cog';
+            return fallbackIcons[toolName] || 'fas fa-cog';
+        }
+
+        // 도구 아이콘 가져오기 (통합 함수)
+        async function getToolIcon(toolName) {
+            try {
+                // 1. DB에서 먼저 시도
+                const dbIcon = await getToolIconFromDB(toolName);
+                if (dbIcon && dbIcon !== 'fas fa-cog') {
+                    return dbIcon;
+                }
+                
+                // 2. 폴백 아이콘 사용
+                return getFallbackToolIcon(toolName);
+            } catch (error) {
+                console.error('도구 아이콘 가져오기 실패:', error);
+                // 3. 최종 폴백
+                return getFallbackToolIcon(toolName);
+            }
+        }
+
+        // AI 도구 카드 생성 함수
+        function createToolCard(tool, toolId) {
+            return `
+                <div class="tool-card card-component" role="article" aria-label="${tool.name} AI 도구">
+                    <div class="tool-thumbnail">
+                        <img src="${getValidImageUrl(tool)}" alt="${tool.name}" onerror="window.handleImageError(this)" loading="lazy">
+                    </div>
+                    <div class="tool-content">
+                        <div class="tool-header">
+                            <div class="tool-title">${tool.name}</div>
+                            <i class="fas fa-bookmark bookmark-icon" title="즐겨찾기됨" aria-hidden="true"></i>
+                        </div>
+                        <p class="tool-description">${tool.description}</p>
+                        <div class="tag-container tag-list-clamp">
+                            ${(tool.tags || []).map(tag => `<span class="tag tag-component">${tag}</span>`).join('')}
+                        </div>
+                        <!-- 버튼 추가 영역 -->
+                        <div class="flex gap-2 mb-2">
+                            <a href="${tool.websiteUrl || '#'}" target="_blank" rel="noopener noreferrer" class="btn-component primary small flex-1" aria-label="${tool.name} 웹사이트 방문">
+                                웹사이트 방문
+                            </a>
+                            <button class="btn-component secondary small flex-1" onclick="shareTool('${tool.name}', '${tool.websiteUrl || ''}')" aria-label="${tool.name} 공유하기">
+                                공유하기
+                            </button>
+                        </div>
+                        <button class="btn-component primary w-full mt-2" onclick="location.href='detail_sp.html?id=${toolId}'" aria-label="${tool.name} 상세 정보 보기">
+                            상세 정보 페이지 이동
+                        </button>
+                        <div class="tool-footer">
+                            <span class="text-sm font-medium text-gray-300">${tool.type}</span>
+                            <span class="text-sm text-gray-400">${tool.reviewCount || 0} reviews</span>
+                            <button class="btn-component error small" onclick="removeFavoriteTool('${toolId}')" aria-label="${tool.name} 즐겨찾기에서 삭제">
+                                삭제
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // AI 레시피 카드 생성 함수
+        async function createRecipeCard(recipeData, docId) {
+            const card = document.createElement('div');
+            card.className = 'recipe-card p-4 sm:p-6';
+            card.setAttribute('role', 'article');
+            card.setAttribute('aria-label', `${recipeData.title || recipeData.my_recipe_title || 'AI 레시피'}`);
+            
+            // 카드 클릭 이벤트 추가
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', function(e) {
+                // 버튼 클릭 시에는 상세 페이지로 이동하지 않음
+                if (e.target.closest('button')) {
+                    return;
+                }
+                // 상세 페이지로 이동
+                window.location.href = `ai_comb_detail.html?id=${docId}`;
+            });
+            
+            // 사용자 아바타 (첫 글자 사용)
+            const userName = recipeData.user_id ? recipeData.user_id.substring(0, 1) : 'U';
+            const avatarColor = getAvatarColor(recipeData.user_id);
+            
+            // Firestore 데이터 구조에 맞춰 필드명 수정
+            const recipeTitle = recipeData.title || recipeData.my_recipe_title || 'Untitled Recipe';
+            const recipeDescription = recipeData.description || recipeData.my_recipe_basic_description || '';
+            const tools = recipeData.tools || recipeData.my_recipe_tool || [];
+            
+            // 도구 아이콘과 이름 생성 (최대 4개까지 표시, 초과 시 3개만 표시)
+            const maxTools = tools.length > 4 ? 3 : 4;
+            const displayTools = tools.slice(0, maxTools);
+            
+            // 도구 아이콘들을 비동기로 생성
+            let toolElements = '';
+            for (let i = 0; i < displayTools.length; i++) {
+                const tool = displayTools[i];
+                const toolImage = window.toolImagesCache ? window.toolImagesCache[tool] : null;
+                const bgColor = getToolColor(tool);
+                
+                // DB에서 아이콘 정보 가져오기
+                const iconClass = await getToolIcon(tool);
+                
+                let toolIcon;
+                if (toolImage) {
+                    // DB에서 가져온 이미지가 있는 경우
+                    toolIcon = `
+                        <div class="recipe-tool-icon ${bgColor}" style="padding: 2px;">
+                            <img src="${toolImage}" alt="${tool}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; max-width: 100%; max-height: 100%;" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'${iconClass}\\'></i>';" loading="lazy">
+                        </div>
+                    `;
+                } else {
+                    // 기본 아이콘 사용
+                    toolIcon = `
+                        <div class="recipe-tool-icon ${bgColor}">
+                            <i class="${iconClass}"></i>
+                        </div>
+                    `;
+                }
+                
+                toolElements += `
+                    <div class="recipe-tool-container">
+                        ${toolIcon}
+                        <div class="recipe-tool-name">${tool}</div>
+                    </div>
+                    ${i < displayTools.length - 1 ? '<i class="fas fa-arrow-right recipe-arrow mx-1"></i>' : ''}
+                `;
+            }
+
+            // 4개를 초과하는 도구가 있을 경우 추가 표시
+            const additionalToolsCount = tools.length - maxTools;
+            if (tools.length > 4) {
+                toolElements += `
+                    <i class="fas fa-arrow-right recipe-arrow mx-1"></i>
+                    <div class="recipe-tool-container">
+                        <div class="recipe-tool-icon bg-gray-500 flex items-center justify-center">
+                            <span class="text-xs font-bold">+${additionalToolsCount}</span>
+                        </div>
+                        <div class="recipe-tool-name">추가</div>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="flex-1">
+                    <div class="text-left mb-10">
+                        <h3 class="text-lg font-semibold mb-3 line-clamp-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; color: var(--text-primary);">${recipeTitle}</h3>
+                        <p class="text-sm text-gray-400 line-clamp-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4;">${recipeDescription}</p>
+                    </div>
+                    
+                    <div class="flex items-center justify-center mb-6 overflow-hidden">
+                        ${toolElements}
+                    </div>
+                    
+                    <div class="flex items-center justify-center space-x-4 text-sm mb-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-heart text-red-500 mr-1" aria-hidden="true"></i>
+                            <span>${recipeData.likes_count || 0}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-comment text-blue-500 mr-1" aria-hidden="true"></i>
+                            <span>${recipeData.comments_count || 0}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-bookmark text-yellow-500 mr-1" aria-hidden="true"></i>
+                            <span>${recipeData.bookmarks_count || 0}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center space-x-2 mt-auto">
+                    <button class="btn-component primary text-sm px-4 py-2 flex-1" onclick="event.stopPropagation(); showRecipeSummary('${docId}', ${JSON.stringify(recipeData).replace(/"/g, '&quot;')})" aria-label="레시피 요약 보기">
+                        레시피 요약
+                    </button>
+                    <button class="btn-component error text-sm px-4 py-2 flex-1" onclick="event.stopPropagation(); removeFavoriteRecipe('${docId}')" aria-label="즐겨찾기에서 삭제">
+                        삭제
+                    </button>
+                </div>
+            `;
+
+            return card;
         }
 
         // 레시피 요약 모달 표시 함수
@@ -1205,7 +988,11 @@
                 await deleteDoc(favDocRef);
                 window.location.reload();
             } catch (e) {
-                alert('삭제 중 오류가 발생했습니다.');
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(e, '즐겨찾기 도구 삭제');
+                } else {
+                    alert('삭제 중 오류가 발생했습니다.');
+                }
             }
         }
 
@@ -1221,11 +1008,15 @@
                 await deleteDoc(favDocRef);
                 window.location.reload();
             } catch (e) {
-                console.error('레시피 삭제 오류:', e);
-                if (e.code === 'permission-denied') {
-                    alert('삭제 권한이 없습니다. 관리자에게 문의하세요.');
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(e, '즐겨찾기 레시피 삭제');
                 } else {
-                    alert('삭제 중 오류가 발생했습니다.');
+                    console.error('레시피 삭제 오류:', e);
+                    if (e.code === 'permission-denied') {
+                        alert('삭제 권한이 없습니다. 관리자에게 문의하세요.');
+                    } else {
+                        alert('삭제 중 오류가 발생했습니다.');
+                    }
                 }
             }
         }
@@ -1390,8 +1181,6 @@
     </script>
 
   
-
-
     <!-- profile.html에서만 header 우측 메뉴 커스텀 -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -1411,18 +1200,30 @@
                     // Firebase auth 인스턴스 가져오기
                     const { getAuth, signOut } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
                     const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
-                    import('../config.js').then(({ firebaseConfig }) => {
+                    import('./js/config.js').then(({ firebaseConfig }) => {
                         const app = initializeApp(firebaseConfig);
                         const auth = getAuth(app);
                         signOut(auth).then(() => {
-                            alert('로그아웃되었습니다.');
+                            if (window.CommonUtils) {
+                                window.CommonUtils.showSuccess('로그아웃되었습니다.');
+                            } else {
+                                alert('로그아웃되었습니다.');
+                            }
                             window.location.href = 'index.html';
                         }).catch((error) => {
-                            alert('로그아웃 중 오류가 발생했습니다.');
+                            if (window.CommonUtils) {
+                                window.CommonUtils.handleError(error, '로그아웃');
+                            } else {
+                                alert('로그아웃 중 오류가 발생했습니다.');
+                            }
                         });
                     });
                 } catch (error) {
-                    alert('로그아웃 중 오류가 발생했습니다.');
+                    if (window.CommonUtils) {
+                        window.CommonUtils.handleError(error, '로그아웃');
+                    } else {
+                        alert('로그아웃 중 오류가 발생했습니다.');
+                    }
                 }
             };
         }

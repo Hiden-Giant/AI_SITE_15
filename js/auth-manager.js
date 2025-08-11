@@ -54,11 +54,24 @@ class AuthManager {
             this.isInitialized = true;
             console.log('AuthManager 초기화 완료');
 
-            // 초기화 완료 이벤트 발생
+            // 초기화 완료 이벤트 발생 (단일 진입점 이벤트)
             window.dispatchEvent(new CustomEvent('authManagerReady'));
 
+            // 하위 호환: firebaseInitialized 이벤트도 함께 디스패치
+            try {
+                window.dispatchEvent(new CustomEvent('firebaseInitialized', {
+                    detail: { app: this.app, db: this.db, auth: this.auth }
+                }));
+            } catch (e) {
+                // no-op
+            }
+
         } catch (error) {
-            console.error('AuthManager 초기화 실패:', error);
+            if (window.CommonUtils) {
+                window.CommonUtils.handleError(error, 'AuthManager 초기화', false);
+            } else {
+                console.error('AuthManager 초기화 실패:', error);
+            }
         }
     }
 
@@ -73,7 +86,11 @@ class AuthManager {
             const result = await signInWithPopup(this.auth, provider);
             await this.handleSuccessfulAuth(result.user);
         } catch (error) {
-            console.error('소셜 로그인 실패:', error);
+            if (window.CommonUtils) {
+                window.CommonUtils.handleError(error, '소셜 로그인');
+            } else {
+                console.error('소셜 로그인 실패:', error);
+            }
             throw error;
         }
     }
@@ -106,7 +123,11 @@ class AuthManager {
 
             await this.handleSuccessfulAuth(user);
         } catch (error) {
-            console.error('이메일 회원가입 실패:', error);
+            if (window.CommonUtils) {
+                window.CommonUtils.handleError(error, '이메일 회원가입');
+            } else {
+                console.error('이메일 회원가입 실패:', error);
+            }
             throw error;
         }
     }
@@ -117,7 +138,11 @@ class AuthManager {
             const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
             await this.handleSuccessfulAuth(userCredential.user);
         } catch (error) {
-            console.error('이메일 로그인 실패:', error);
+            if (window.CommonUtils) {
+                window.CommonUtils.handleError(error, '이메일 로그인');
+            } else {
+                console.error('이메일 로그인 실패:', error);
+            }
             throw error;
         }
     }
@@ -128,7 +153,11 @@ class AuthManager {
             await signOut(this.auth);
             console.log('로그아웃 성공');
         } catch (error) {
-            console.error('로그아웃 실패:', error);
+            if (window.CommonUtils) {
+                window.CommonUtils.handleError(error, '로그아웃');
+            } else {
+                console.error('로그아웃 실패:', error);
+            }
             throw error;
         }
     }

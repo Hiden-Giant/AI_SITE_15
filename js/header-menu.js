@@ -150,7 +150,10 @@ window.initMobileMenuToggle = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     // new MobileMenuToggle(); // 자동 바인딩 제거
-    new SimpleThemeToggle();
+    if (!window.__themeToggleInitialized) {
+      new SimpleThemeToggle();
+      window.__themeToggleInitialized = true;
+    }
     // 프로필 메뉴도 fetch 후 명시적으로 호출
 });
 

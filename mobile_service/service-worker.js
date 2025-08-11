@@ -1,12 +1,14 @@
-const CACHE_NAME = 'ai-site-cache-v1';
+const CACHE_NAME = 'ai-site-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/filter_search.html',
-  '/styles.css',
-  '/script.js',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  // 실제 경로로 수정
+  '/assets/css/tailwind.min.css',
+  '/assets/css/optimized.css',
+  // 아이콘 실제 경로
+  '/icon/icon-192.png',
+  '/icon/icon-512.png'
 ];
 
 // 설치 단계: 캐시 초기화

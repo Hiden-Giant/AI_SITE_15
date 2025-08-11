@@ -33,7 +33,11 @@ class DBManager {
             window.dispatchEvent(new CustomEvent('dbManagerReady', { detail: { success: true } }));
         } catch (error) {
             this.error = error;
-            console.error('DBManager 초기화 실패:', error);
+            if (window.CommonUtils) {
+                window.CommonUtils.handleError(error, 'DBManager 초기화', false);
+            } else {
+                console.error('DBManager 초기화 실패:', error);
+            }
             window.dispatchEvent(new CustomEvent('dbManagerReady', { detail: { success: false, error: error.message } }));
             throw error;
         } finally {
@@ -105,7 +109,11 @@ class DBManager {
             return this.allTools;
         } catch (error) {
             this.error = error;
-            console.error("AI 도구 Firestore 로드 중 오류:", error);
+            if (window.CommonUtils) {
+                window.CommonUtils.handleError(error, 'AI 도구 로드');
+            } else {
+                console.error("AI 도구 Firestore 로드 중 오류:", error);
+            }
             throw error;
         } finally {
             this.isLoading = false;
@@ -374,15 +382,13 @@ class DBManager {
         return filteredTools;
     }
 
-    // 도구 저장하기
+    // 도구 저장하기 (Firestore)
     async saveTool(userId, toolId) {
         try {
             this.isLoading = true;
             this.error = null;
-            const userSavedRef = ref(this.db, `users/${userId}/savedTools/${toolId}`);
-            await set(userSavedRef, {
-                savedAt: new Date().toISOString()
-            });
+            const savedDocRef = doc(this.db, 'users', userId, 'savedTools', toolId);
+            await setDoc(savedDocRef, { savedAt: new Date().toISOString() }, { merge: true });
             return true;
         } catch (error) {
             this.error = error;
@@ -393,37 +399,29 @@ class DBManager {
         }
     }
 
-    // 저장된 도구 목록 가져오기
+    // 저장된 도구 목록 가져오기 (Firestore)
     async getSavedTools(userId) {
         try {
             this.isLoading = true;
             this.error = null;
-            const userSavedRef = ref(this.db, `users/${userId}/savedTools`);
-            const snapshot = await get(userSavedRef);
-            
-            if (!snapshot.exists()) {
-                return [];
-            }
+            const savedColRef = collection(this.db, 'users', userId, 'savedTools');
+            const savedSnap = await getDocs(savedColRef);
+            if (savedSnap.empty) return [];
 
             const savedTools = [];
             const promises = [];
-
-            snapshot.forEach((childSnapshot) => {
-                const toolId = childSnapshot.key;
-                const promise = this.getToolDetails(toolId).then(toolDetails => {
+            savedSnap.forEach((docSnap) => {
+                const toolId = docSnap.id;
+                const savedAt = (docSnap.data() || {}).savedAt;
+                const p = this.getToolDetails(toolId).then((toolDetails) => {
                     if (toolDetails) {
-                        savedTools.push({
-                            ...toolDetails,
-                            savedAt: childSnapshot.val().savedAt
-                        });
+                        savedTools.push({ ...toolDetails, savedAt });
                     }
                 });
-                promises.push(promise);
+                promises.push(p);
             });
-
             await Promise.all(promises);
             return savedTools;
-
         } catch (error) {
             this.error = error;
             console.error('저장된 도구 목록 로드 중 오류:', error);

@@ -6,8 +6,11 @@
   <title>질문 추천 - AI Curator</title>
              <link href="assets/css/tailwind.min.css" rel="stylesheet">
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-     <link rel="stylesheet" href="assets/css/optimized.css">
+     <link rel="stylesheet" href="assets/css/common.css">
+     <link rel="stylesheet" href="assets/css/components.css">
+  <script src="js/bootstrap.js"></script>
   <script src="js/theme-manager.js"></script>
+  <script src="js/common.js"></script>
   
   
   
@@ -28,281 +31,121 @@
 
 
     
+  <!-- 페이지별 고유 스타일만 유지 -->
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+    /* 이 페이지에서만 사용되는 고유한 스타일 */
+    .question-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
     
-    /* 테마 관련 CSS 변수 */
-    :root {
-      /* 다크 모드 기본값 */
-      --bg-primary: #0F1217;
-      --bg-secondary: #1a1f2e;
-      --text-primary: #ffffff;
-      --text-secondary: #a0aec0;
-      --border-color: #2d3748;
-      --card-bg: #1a1f2e;
-      --hover-bg: #2d3748;
-      --input-bg: #2d3748;
-      --modal-bg: #1a1f2e;
-      --gradient-start: #7C3AED;
-      --gradient-end: #DB2777;
+    .progress-indicator {
+      margin-bottom: 2rem;
     }
-
-    [data-theme="light"] {  
-      --bg-primary: #ffffff;
-      --bg-secondary: #f7fafc;
-      --text-primary: #1a202c;
-      --text-secondary: #4a5568;
-      --border-color: #e2e8f0;
-      --card-bg: #ffffff;
-      --hover-bg: #edf2f7;
-      --input-bg: #f7fafc;
-      --modal-bg: #ffffff;
+    
+    .question-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      text-align: center;
     }
-
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      background-color: var(--bg-primary);
-      color: var(--text-primary);
-      transition: background-color 0.3s, color 0.3s;
+    
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
     }
-
-    .gradient-text {
-      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .gradient-bg {
-      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
-    }
-
-    .theme-toggle {
-      background: none;
-      border: none;
-      color: var(--text-primary);
-      cursor: pointer;
-      padding: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: color 0.3s ease;
-    }
-
-    .theme-toggle:hover {
-      color: var(--gradient-start);
-    }
-
-    .theme-toggle i {
-      font-size: 1.25rem;
-    }
-
-    .glass-effect {
-      background: #1a1f2e;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    /* 태그 스타일 개선 */
-    .tag {
-      background: var(--hover-bg);
-      color: var(--text-secondary);
-      padding: 0.25rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.875rem;
-      display: inline-block;
-    }
-    [data-theme="light"] .tag {
-      background: #f3f4f6 !important;
-      color: #4a5568 !important;
-      border: 1px solid #9CB6D7 !important;
-    }
-
-    /* 카드 섹션 스타일 */
-    .card-section .additional-card,
-    .card-section .popular-card {
-      background: var(--card-bg) !important;
-      border: 1.5px solid var(--border-color) !important;
-      color: var(--text-primary) !important;
-    }
-    [data-theme="light"] .card-section .additional-card,
-    [data-theme="light"] .card-section .popular-card {
-      background: none !important;
-      border: 1.5px solid #9CB6D7 !important;
-      color: #1a202c !important;
-    }
-
-    /* 기존 스타일 유지 */
+    
     .option-card {
-      background: var(--card-bg);
-      border: 1.5px solid var(--border-color);
-      color: var(--text-primary);
-      transition: all 0.3s;
-    }
-    [data-theme="light"] .option-card {
-      background: none !important;
-      border: 1.5px solid #9CB6D7 !important;
-      color: #1a202c !important;
-    }
-    .option-card.selected,
-    .option-card.selected.border-indigo-500 {
-      border-color: #6366f1 !important;
-      background: var(--hover-bg);
-    }
-    [data-theme="light"] .option-card.selected,
-    [data-theme="light"] .option-card.selected.border-indigo-500 {
-      background: #f3f4f6 !important;
-      border-color: #6366f1 !important;
-    }
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;  
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
     
-    #popular-tools-slider {
-      transition: transform 0.3s ease-in-out;
+    .option-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     }
     
-    .overflow-hidden {
-      overflow: hidden;
+    .option-card.selected {
+      transform: scale(1.02);
     }
-
-    /* 추가 AI 도구 추천 카드 스타일 */
-    .additional-card {
-      padding: 0.75rem !important;
+    
+    .option-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
     }
-
-    .additional-card h3 {
-      font-size: 1rem !important;
-      margin-bottom: 0.5rem !important;
+    
+    .option-description {
+      color: var(--text-secondary);
+      line-height: 1.5;
     }
-
-    .additional-card p {
-      font-size: 0.875rem !important;
-      margin-bottom: 0.5rem !important;
+    
+    .navigation-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2rem;
     }
-
-    .additional-card .tag {
-      font-size: 0.75rem !important;
-      padding: 0.25rem 0.75rem !important;
+    
+    .btn-nav {
+      padding: 0.75rem 2rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
-
-    .additional-card .rating {
-      font-size: 0.875rem !important;
+    
+    .btn-nav:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
-
-    /* 최신 인기 AI Tools 추천 카드 스타일 */
-    .popular-card {
-      padding: 1rem !important;
+    
+    .btn-nav:not(:disabled):hover {
+      transform: translateY(-1px);
     }
-
-    .popular-card h3 {
-      font-size: 1.125rem !important;
-      margin-bottom: 0.5rem !important;
+    
+    .result-section {
+      animation: fadeIn 0.5s ease-in;
     }
-
-    .popular-card p {
-      font-size: 0.875rem !important;
-      margin-bottom: 0.5rem !important;
-      line-height: 1.4 !important;
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-
-    .popular-card .tag {
-      font-size: 0.75rem !important;
-      padding: 0.25rem 0.75rem !important;
-    }
-
-    .popular-card .rating {
-      font-size: 0.875rem !important;
-    }
-
-    /* 슬라이더 버튼 위치 조정 */
-    .slider-nav-button {
-      top: 45% !important;
-      transform: translateY(-50%) !important;
-      background: rgba(31, 41, 55, 0.8) !important;
-      z-index: 10 !important;
-    }
-
-    .slider-nav-button.prev {
-      left: -1rem !important;
-    }
-
-    .slider-nav-button.next {
-      right: -1rem !important;
-    }
-
-    .card-section .top-recommend-card {
-      background: var(--card-bg) !important;
-      border: 1.5px solid var(--border-color) !important;
-      color: var(--text-primary) !important;
-    }
-    [data-theme="light"] .card-section .top-recommend-card {
-      background: none !important;
-      border: 1.5px solid #9CB6D7 !important;
-      color: #1a202c !important;
-    }
-
-    [data-theme="light"] footer {
-      background-color: #fff !important;
-      color: #222 !important;
-    }
-    [data-theme="light"] footer h3,
-    [data-theme="light"] footer a,
-    [data-theme="light"] footer p,
-    [data-theme="light"] footer li,
-    [data-theme="light"] footer span {
-      color: #222 !important;
-    }
-    [data-theme="light"] footer .border-gray-800 {
-      border-color: #e5e7eb !important;
-    }
-    [data-theme="dark"] footer {
-      background-color: #181c23 !important;
-      color: #fff !important;
-    }
-    [data-theme="dark"] footer h3,
-    [data-theme="dark"] footer a,
-    [data-theme="dark"] footer p,
-    [data-theme="dark"] footer li,
-    [data-theme="dark"] footer span {
-      color: #fff !important;
-    }
-    [data-theme="dark"] footer .border-gray-800 {
-      border-color: #23272f !important;
+    
+    /* 모바일 최적화 */
+    @media (max-width: 768px) {
+      .option-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+      
+      .question-title {
+        font-size: 1.25rem;
+      }
+      
+      .option-title {
+        font-size: 1rem;
+      }
+      
+      .navigation-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .btn-nav {
+        width: 100%;
+        max-width: 300px;
+      }
     }
   </style>
- <!-- Firebase SDK -->
- <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-  import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-  import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-  import { firebaseConfig } from './js/config.js';
-
-  // DOMContentLoaded 이벤트를 기다림
-  document.addEventListener('DOMContentLoaded', async () => {
-      try {
-          // Firebase 초기화
-          const app = initializeApp(firebaseConfig);
-          const db = getFirestore(app);
-          const auth = getAuth(app);
-
-          // 전역 객체에 할당
-          window.app = app;
-          window.db = db;
-          window.auth = auth;
-
-          // 초기화 완료 이벤트 발생
-          window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
-              detail: { app, db, auth } 
-          }));
-      } catch (error) {
-          console.error('Firebase 초기화 오류:', error);
-      }
-  });
-</script>
 
 <!-- 공통 모듈 -->
 <script type="module" src="js/auth-manager.js"></script>
@@ -310,65 +153,6 @@
 </head>
 <body>
 <div id="header-container"></div>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      document.body.setAttribute('data-theme', savedTheme);
-  });
-
-  fetch('header.html')
-      .then(response => response.text())
-      .then(data => {
-          document.getElementById('header-container').innerHTML = data;
-          const script = document.createElement('script');
-          script.src = 'js/header-menu.js';
-          script.onload = function() {
-              if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
-              if (window.initMobileMenuToggle) window.initMobileMenuToggle();
-              if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
-
-              // === 폼 이벤트 연결 추가 ===
-              // 로그인 폼
-              const loginForm = document.getElementById('loginForm');
-              if (loginForm) {
-                  loginForm.addEventListener('submit', async (e) => {
-                      e.preventDefault();
-                      const email = document.getElementById('loginEmail').value;
-                      const password = document.getElementById('loginPassword').value;
-                      if (window.handleEmailLogin) {
-                          await window.handleEmailLogin(email, password);
-                      }
-                  });
-              }
-              // 회원가입 폼
-              const signupForm = document.getElementById('signupForm');
-              if (signupForm) {
-                  signupForm.addEventListener('submit', async (e) => {
-                      e.preventDefault();
-                      const fullName = document.getElementById('fullName').value;
-                      const email = document.getElementById('signupEmail').value;
-                      const password = document.getElementById('signupPassword').value;
-                      if (window.handleEmailSignup) {
-                          await window.handleEmailSignup(fullName, email, password);
-                      }
-                  });
-              }
-              // 소셜 로그인 버튼
-              const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
-              googleBtns.forEach(btn => {
-                  btn.addEventListener('click', (e) => {
-                      e.preventDefault();
-                      if (window.handleSocialLogin) {
-                          window.handleSocialLogin('google');
-                      }
-                  });
-              });
-              // === 폼 이벤트 연결 끝 ===
-          };
-          document.body.appendChild(script);
-      });
-</script>
 
 <script type="module">
   // 전역 변수 초기화
@@ -386,7 +170,11 @@
       allTools = await window.dbManager.loadAITools();
       console.log('AI 도구 데이터 로드 완료:', allTools.length);
     } catch (error) {
-      console.error('AI 도구 데이터 로드 실패:', error);
+      if (window.CommonUtils) {
+        window.CommonUtils.handleError(error, 'AI 도구 데이터 로드');
+      } else {
+        console.error('AI 도구 데이터 로드 실패:', error);
+      }
     }
   });
   
@@ -862,7 +650,11 @@
           return (b.rating || 0) - (a.rating || 0);
         });
       } catch (error) {
-        console.error('Error in calculateRecommendations:', error);
+        if (window.CommonUtils) {
+          window.CommonUtils.handleError(error, '추천 결과 계산');
+        } else {
+          console.error('Error in calculateRecommendations:', error);
+        }
         return [];
       }
     }
@@ -879,7 +671,11 @@
         const shuffled = [...availableTools].sort(() => Math.random() - 0.5);
         return shuffled.slice(0, Math.min(count, shuffled.length));
       } catch (error) {
-        console.error('Error in getRandomTools:', error);
+        if (window.CommonUtils) {
+          window.CommonUtils.handleError(error, '랜덤 도구 선택');
+        } else {
+          console.error('Error in getRandomTools:', error);
+        }
         return [];
       }
     }
@@ -1009,7 +805,11 @@
             toolsData = await window.dbManager.loadAITools();
             console.log('DBManager에서 데이터 로드 완료:', toolsData.length);
           } catch (error) {
-            console.error('DBManager 데이터 로드 오류:', error);
+            if (window.CommonUtils) {
+              window.CommonUtils.handleError(error, 'DBManager 데이터 로드');
+            } else {
+              console.error('DBManager 데이터 로드 오류:', error);
+            }
             toolsData = aiToolsDatabase; // 폴백 데이터 사용
           }
 
@@ -1223,7 +1023,11 @@
           initializeSlider();
 
         } catch (error) {
-          console.error("추천 결과 표시 중 오류:", error);
+          if (window.CommonUtils) {
+            window.CommonUtils.handleError(error, '추천 결과 표시');
+          } else {
+            console.error("추천 결과 표시 중 오류:", error);
+          }
           resultContainer.innerHTML = `
             <div class="text-center py-12">
               <p class="text-xl text-gray-300 mb-4">추천 결과를 표시하는 중 문제가 발생했습니다.</p>
@@ -1306,6 +1110,6 @@
       </div>
     </div>
   </main>
-  ...
+  <div id="footer-container"></div>
 </body>
 </html>

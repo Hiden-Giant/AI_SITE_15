@@ -377,30 +377,15 @@ body {
     color: transparent;
 }
 
-/* 유틸리티 클래스 */
-.text-gray-300 { color: #d1d5db !important; }
-.text-gray-400 { color: #9ca3af !important; }
-.hover\:bg-gray-800:hover { background-color: #1f2937 !important; }
-
-/* 색상 유틸리티 */
-.bg-blue-600 { background-color: #2563eb !important; }
-.text-blue-100 { color: #dbeafe !important; }
-.bg-green-600 { background-color: #16a34a !important; }
-.text-green-100 { color: #dcfce7 !important; }
-.bg-purple-600 { background-color: #9333ea !important; }
-.text-purple-100 { color: #f3e8ff !important; }
-.bg-pink-600 { background-color: #db2777 !important; }
-.text-pink-100 { color: #fce7f3 !important; }
-.bg-yellow-600 { background-color: #d97706 !important; }
-.text-yellow-100 { color: #fef9c3 !important; }
-.bg-red-600 { background-color: #dc2626 !important; }
-.text-red-100 { color: #fee2e2 !important; }
-.bg-indigo-600 { background-color: #4f46e5 !important; }
-.text-indigo-100 { color: #e0e7ff !important; }
-.bg-teal-600 { background-color: #0d9488 !important; }
-.text-teal-100 { color: #ccfbf1 !important; }
-.bg-orange-600 { background-color: #ea580c !important; }
-.text-orange-100 { color: #ffedd5 !important; }
+/* 
+ * Tailwind CSS와 중복되는 유틸리티 클래스들 제거
+ * 이 클래스들은 tailwind.min.css에서 제공됨
+ * 
+ * 제거된 클래스들:
+ * - .text-gray-300, .text-gray-400
+ * - .bg-blue-600, .text-blue-100 등 모든 색상 유틸리티
+ * - .hover:bg-gray-800 등 호버 상태 클래스
+ */
 
 /* 반응형 디자인 */
 @media (max-width: 768px) {

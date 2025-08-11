@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI 도구 상세 정보 및 리뷰를 확인하세요">
+    <meta name="keywords" content="AI, AI 도구, AI Curator, 인공지능">
+    <meta name="author" content="AI Curator">
+    <meta name="robots" content="index, follow">
     <title>AI 도구 상세 - AI Curator</title>
     <link href="assets/css/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/optimized.css">
+    <link rel="stylesheet" href="assets/css/common.css">
+    <script src="js/bootstrap.js"></script>
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <script src="js/theme-manager.js"></script>
 
@@ -56,7 +61,7 @@
         }
 
         .tab-button.active {
-            background-color: var(--highlight);
+            background-color: var(--button-primary);
             color: white;
         }
 
@@ -68,7 +73,7 @@
         .tab-content {
             display: none;
             padding: 2rem;
-            background-color: var(--secondary-bg);
+            background-color: var(--bg-secondary);
             border-radius: 12px;
             margin-top: 1rem;
         }
@@ -91,11 +96,11 @@
         }
 
         .pros i {
-            color: #10B981;
+            color: var(--success-color);
         }
 
         .cons i {
-            color: #EF4444;
+            color: var(--error-color);
         }
 
         .theme-toggle {
@@ -235,6 +240,19 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* 스크린 리더 전용 클래스 */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
         /* 에러 메시지 스타일 */
         .error-message {
             display: none;
@@ -261,49 +279,37 @@
             border: 1px solid rgba(59,130,246,0.10);
         }
     </style>
-<!-- Firebase SDK -->
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import { getFirestore, doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-    import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-    import { firebaseConfig } from './js/config.js';
-  
-    // DOMContentLoaded 이벤트를 기다림
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            // Firebase 초기화
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            const auth = getAuth(app);
-  
-            // 전역 객체에 할당
-            window.app = app;
-            window.db = db;
-            window.auth = auth;
-  
-            // 초기화 완료 이벤트 발생
-            window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
-                detail: { app, db, auth } 
-            }));
-        } catch (error) {
-            console.error('Firebase 초기화 오류:', error);
-        }
-    });
-  </script>
+<!-- Firebase SDK: 페이지별 직접 초기화 제거, AuthManager 이벤트만 구독 -->
+<script>
+  (function() {
+    function onReady() {
+      // authManagerReady 또는 firebaseInitialized 어느 것이든 수신 시 1회만 처리
+      if (window.__authBootstrapDone__) return;
+      if (window.auth && window.db) {
+        window.__authBootstrapDone__ = true;
+      }
+    }
+    window.addEventListener('authManagerReady', onReady, { once: false });
+    window.addEventListener('firebaseInitialized', onReady, { once: false });
+  })();
+</script>
   
   
-  <!-- 공통 모듈 -->
+  <!-- 공통 모듈: AuthManager 단일 진입점 + DBManager -->
   <script type="module" src="js/auth-manager.js"></script>
   <script type="module" src="js/db-manager.js"></script>
+  <script src="js/common.js"></script>
   </head>
   <body>
   <!-- 로딩 스피너 -->
-  <div id="loadingSpinner" class="loading-spinner">
-      <div class="spinner"></div>
+  <div id="loadingSpinner" class="loading-spinner" role="status" aria-label="페이지 로딩 중">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="loading-text">로딩 중...</div>
+      <span class="sr-only">로딩 중...</span>
   </div>
 
   <!-- 에러 메시지 -->
-  <div id="errorMessage" class="error-message"></div>
+  <div id="errorMessage" class="error-message" role="alert" aria-live="polite"></div>
 
   <div id="header-container"></div>
   <script>
@@ -344,62 +350,7 @@
     // 페이지 로드 시 로딩 표시
     document.addEventListener('DOMContentLoaded', function() {
         showLoading();
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        document.body.setAttribute('data-theme', savedTheme);
     });
-  
-    fetch('header.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('header-container').innerHTML = data;
-            const script = document.createElement('script');
-            script.src = 'js/header-menu.js';
-            script.onload = function() {
-                if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
-                if (window.initMobileMenuToggle) window.initMobileMenuToggle();
-                if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
-  
-                // === 폼 이벤트 연결 추가 ===
-                // 로그인 폼
-                const loginForm = document.getElementById('loginForm');
-                if (loginForm) {
-                    loginForm.addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        const email = document.getElementById('loginEmail').value;
-                        const password = document.getElementById('loginPassword').value;
-                        if (window.handleEmailLogin) {
-                            await window.handleEmailLogin(email, password);
-                        }
-                    });
-                }
-                // 회원가입 폼
-                const signupForm = document.getElementById('signupForm');
-                if (signupForm) {
-                    signupForm.addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        const fullName = document.getElementById('fullName').value;
-                        const email = document.getElementById('signupEmail').value;
-                        const password = document.getElementById('signupPassword').value;
-                        if (window.handleEmailSignup) {
-                            await window.handleEmailSignup(fullName, email, password);
-                        }
-                    });
-                }
-                // 소셜 로그인 버튼
-                const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
-                googleBtns.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        if (window.handleSocialLogin) {
-                            window.handleSocialLogin('google');
-                        }
-                    });
-                });
-                // === 폼 이벤트 연결 끝 ===
-            };
-            document.body.appendChild(script);
-        });
   </script>
   
   <script type="module">
@@ -418,7 +369,11 @@
         allTools = await window.dbManager.loadAITools();
         console.log('AI 도구 데이터 로드 완료:', allTools.length);
       } catch (error) {
-        console.error('AI 도구 데이터 로드 실패:', error);
+        if (window.CommonUtils) {
+            window.CommonUtils.handleError(error, 'AI 도구 데이터 로드');
+        } else {
+            console.error('AI 도구 데이터 로드 실패:', error);
+        }
       }
     });
     
@@ -452,15 +407,31 @@
 
                 if (!toolId) {
                     console.error('도구 ID가 없습니다.');
-                    document.getElementById('loginModal').classList.remove('show');
+                    const loginModal = document.getElementById('loginModal');
+                    if (loginModal) loginModal.classList.remove('show');
                     return;
                 }
 
-                // 도구 상세 정보 로드
-                await loadToolDetails(toolId);
-                setupTabs();
+                const run = async () => {
+                    await loadToolDetails(toolId);
+                    setupTabs();
+                };
 
-           
+                if (window.dbManager && window.dbManager.isInitialized) {
+                    await run();
+                } else {
+                    window.addEventListener('dbManagerReady', async (e) => {
+                        if (e.detail && e.detail.success) {
+                            await run();
+                        } else {
+                            if (window.CommonUtils) {
+                                window.CommonUtils.handleError(new Error(e.detail && e.detail.error || 'DBManager 초기화 실패'), 'DBManager 초기화');
+                            } else {
+                                console.error('DBManager 초기화 실패:', e.detail && e.detail.error);
+                            }
+                        }
+                    }, { once: true });
+                }
 
                 // 저장된 toolId 확인
                 const storedToolId = sessionStorage.getItem('pendingToolId');
@@ -475,8 +446,12 @@
                     }
                 }
             } catch (error) {
-                console.error('초기화 중 오류 발생:', error);
-                alert('페이지 로드 중 오류가 발생했습니다.');
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, '페이지 초기화');
+                } else {
+                    console.error('초기화 중 오류 발생:', error);
+                    alert('페이지 로드 중 오류가 발생했습니다.');
+                }
             }
         });
 
@@ -490,11 +465,18 @@
                 if (toolData) {
                     displayToolDetails(toolData, toolId);
                 } else {
-                    showError('해당 AI 도구를 찾을 수 없습니다.');
+                    if (window.CommonUtils) {
+                        window.CommonUtils.showError('해당 AI 도구를 찾을 수 없습니다.');
+                    } else {
+                        showError('해당 AI 도구를 찾을 수 없습니다.');
+                    }
                 }
             } catch (error) {
-                showError('데이터를 불러오는 중 오류가 발생했습니다.');
-                console.error('도구 정보 로드 중 오류:', error);
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, '도구 상세 정보 로드');
+                } else {
+                    showError('데이터를 불러오는 중 오류가 발생했습니다.');
+                }
             } finally {
                 hideLoading();
             }
@@ -946,11 +928,11 @@
                   <a id="website-link" href="#" target="_blank" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium transition-colors duration-200">
                     <i class="fas fa-external-link-alt mr-2"></i>웹사이트 방문
                   </a>
-                  <button id="save-btn-detail" data-toolid="" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium transition-colors duration-200">
-                    <i class="far fa-bookmark mr-2"></i>저장하기
+                  <button id="save-btn-detail" data-toolid="" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium transition-colors duration-200" aria-label="AI 도구를 즐겨찾기에 저장">
+                    <i class="far fa-bookmark mr-2" aria-hidden="true"></i>저장하기
                   </button>
-                  <button id="share-btn-detail" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium transition-colors duration-200">
-                    <i class="fas fa-share-alt mr-2"></i>공유하기
+                  <button id="share-btn-detail" class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white font-medium transition-colors duration-200" aria-label="AI 도구 정보 공유하기">
+                    <i class="fas fa-share-alt mr-2" aria-hidden="true"></i>공유하기
                   </button>
                 </div>
               </div>
@@ -1015,13 +997,6 @@
 
     <!-- footer.html 포함 -->
     <div id="footer-container"></div>
-    <script>
-        fetch('footer.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('footer-container').innerHTML = data;
-            });
-    </script>
 
     <!-- 공유하기 모달 -->
     <div id="shareModal" class="modal-overlay" style="display:none;">

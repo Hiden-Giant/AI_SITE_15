@@ -8,7 +8,10 @@
     <meta name="description" content="AI 도구 조합을 통한 워크플로우를 공유하고 발견할 수 있는 페이지입니다. ChatGPT, Notion AI, Midjourney 등 다양한 AI 도구들의 효과적인 조합을 확인하고 나만의 워크플로우를 만들어보세요.">
     <link href="assets/css/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/components.css">
     <script src="js/theme-manager.js"></script>
+    <script src="js/common.js"></script>
     <!-- 공통 인증 모듈 -->
     <script type="module" src="js/auth-manager.js"></script>
     <script>
@@ -37,40 +40,7 @@
 
     
     <style>
-        /* 테마 변수 정의 */
-        :root {
-            --bg-primary: #121620;
-            --bg-secondary: #1a1f2e;
-            --text-primary: #ffffff;
-            --text-secondary: #a0aec0;
-            --border-color: #374151;
-            --hover-bg: #2d3748;
-            --card-bg: #1a1f2e;
-            --card-hover: #232939;
-            --modal-bg: #1a1f2e;
-            --input-bg: #2d3748;
-            --transition: all 0.3s ease;
-        }
-
-        [data-theme="light"] {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8fafc;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-color: #e2e8f0;
-            --hover-bg: #f1f5f9;
-            --card-bg: #ffffff;
-            --card-hover: #f8fafc;
-            --modal-bg: #ffffff;
-            --input-bg: #f8fafc;
-        }
-
-        body {
-            background-color: var(--bg-primary) !important;
-            color: var(--text-primary);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
+        /* 이 페이지에서만 사용되는 고유한 스타일 */
         .workflow-card {
             background: var(--card-bg);
             color: var(--text-primary);
@@ -83,16 +53,19 @@
             overflow: hidden;
             word-wrap: break-word;
         }
+        
         .workflow-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
             background: var(--card-hover);
             border-color: #3b82f6;
         }
+        
         .workflow-card:active {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
+        
         .tool-icon {
             width: 36px;
             height: 36px;
@@ -136,11 +109,13 @@
             white-space: nowrap;
             text-align: center;
         }
+        
         .arrow {
             font-size: 12px;
             color: #9CA3AF;
             flex-shrink: 0;
         }
+        
         .user-avatar {
             width: 32px;
             height: 32px;
@@ -152,9 +127,11 @@
             font-weight: bold;
             flex-shrink: 0;
         }
+        
         .filter-dropdown {
             position: relative;
         }
+        
         .filter-dropdown select {
             appearance: none;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
@@ -165,124 +142,55 @@
             color: var(--text-primary);
             border-color: var(--border-color);
         }
-
-        /* 필터 섹션 스타일 */
+        
         .filter-section {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
         }
-
-        /* 제목과 텍스트 색상 */
-        h1, h2, h3, h4, h5, h6 {
-            color: var(--text-primary);
-        }
-
-        p, span, label {
-            color: var(--text-secondary);
-        }
-
-        /* 버튼 스타일 */
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
-            padding: 0.625rem 1.25rem;
-            border-radius: 0.375rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-primary:hover {
-            background-color: #2563eb;
-            transform: translateY(-2px);
-        }
-
-        /* 모달 스타일 오버라이드 */
-        .modal-overlay {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            background-color: rgba(0, 0, 0, 0.5) !important;
-            z-index: 10000 !important;
-            display: none !important;
-        }
-
-        .modal-overlay.show {
-            display: flex !important;
-        }
-
-        .modal {
-            background: var(--bg-secondary) !important;
-            border: 1px solid var(--border-color) !important;
-            color: var(--text-primary) !important;
-            max-width: 400px !important;
-            width: 90% !important;
-            max-height: 90vh !important;
-            overflow-y: auto !important;
-        }
-
-        /* 레시피 요약 모달 스타일 */
-        #recipeSummaryModal {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        #recipeSummaryModal .bg-white {
-            background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
-        }
-
-        #recipeSummaryModal .text-gray-800 {
-            color: var(--text-primary) !important;
-        }
-
-        #recipeSummaryModal .text-gray-600 {
-            color: var(--text-secondary) !important;
-        }
-
-        .input-field {
-            border: 1px solid var(--border-color) !important;
-            border-radius: 6px !important;
-            padding: 0.75rem !important;
-            transition: var(--transition) !important;
-            background-color: var(--input-bg) !important;
-            color: var(--text-primary) !important;
-        }
-
-        .input-field:focus {
-            outline: none !important;
-            border-color: #3b82f6 !important;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-        }
-
+        
         /* 검색 입력창 스타일 */
         #searchInput:focus {
             outline: none;
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
-
+        
         /* 검색 아이콘 색상 */
         #searchInput:focus + i {
             color: #3b82f6;
         }
-
+        
         /* X 버튼 스타일 */
         #clearSearchBtn {
             transition: all 0.2s ease;
             cursor: pointer;
         }
-
+        
         #clearSearchBtn:hover {
             color: #ef4444 !important;
             transform: scale(1.1);
         }
-
+        
         #clearSearchBtn:active {
             transform: scale(0.95);
+        }
+        
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
+            .workflow-card {
+                margin-bottom: 1rem;
+            }
+            
+            .tool-icon {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .tool-name {
+                font-size: 6px;
+                max-width: 35px;
+            }
         }
     </style>
     <!-- 불필요한 스타일 제거 --></head>
@@ -290,101 +198,7 @@
 
     <!-- 공통 헤더 -->
     <div id="header-container"></div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.body.setAttribute('data-theme', savedTheme);
-        });
-
-        fetch('header.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('header-container').innerHTML = data;
-                const script = document.createElement('script');
-                script.src = 'js/header-menu.js';
-                script.onload = function() {
-                    if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
-                    if (window.initMobileMenuToggle) window.initMobileMenuToggle();
-                    if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
-
-                    // === 폼 이벤트 연결 추가 ===
-                    // AuthManager가 준비될 때까지 대기
-                    function waitForAuthManager() {
-                        if (window.authManager && window.authManager.isInitialized) {
-                            console.log('AuthManager 준비됨, 이벤트 리스너 연결');
-                            
-                            // 로그인 폼
-                            const loginForm = document.getElementById('loginForm');
-                            if (loginForm) {
-                                loginForm.addEventListener('submit', async (e) => {
-                                    e.preventDefault();
-                                    const email = document.getElementById('loginEmail').value;
-                                    const password = document.getElementById('loginPassword').value;
-                                    try {
-                                        if (window.handleEmailLogin) {
-                                            await window.handleEmailLogin(email, password);
-                                            console.log('로그인 성공');
-                                        }
-                                    } catch (error) {
-                                        console.error('로그인 실패:', error);
-                                        alert('로그인에 실패했습니다: ' + (window.authManager ? window.authManager.getErrorMessage(error) : error.message));
-                                    }
-                                });
-                            }
-                            
-                            // 회원가입 폼
-                            const signupForm = document.getElementById('signupForm');
-                            if (signupForm) {
-                                signupForm.addEventListener('submit', async (e) => {
-                                    e.preventDefault();
-                                    const fullName = document.getElementById('fullName').value;
-                                    const email = document.getElementById('signupEmail').value;
-                                    const password = document.getElementById('signupPassword').value;
-                                    try {
-                                        if (window.handleEmailSignup) {
-                                            await window.handleEmailSignup(fullName, email, password);
-                                            console.log('회원가입 성공');
-                                        }
-                                    } catch (error) {
-                                        console.error('회원가입 실패:', error);
-                                        alert('회원가입에 실패했습니다: ' + (window.authManager ? window.authManager.getErrorMessage(error) : error.message));
-                                    }
-                                });
-                            }
-                            
-                            // 소셜 로그인 버튼
-                            const googleBtns = document.querySelectorAll('button[data-provider="google"]');
-                            googleBtns.forEach(btn => {
-                                btn.addEventListener('click', async (e) => {
-                                    e.preventDefault();
-                                    try {
-                                        if (window.handleSocialLogin) {
-                                            await window.handleSocialLogin('google');
-                                            console.log('소셜 로그인 성공');
-                                        }
-                                    } catch (error) {
-                                        console.error('소셜 로그인 실패:', error);
-                                        alert('소셜 로그인에 실패했습니다: ' + error.message);
-                                    }
-                                });
-                            });
-                        } else {
-                            console.log('AuthManager 아직 준비되지 않음, 1초 후 재시도');
-                            setTimeout(waitForAuthManager, 1000);
-                        }
-                    }
-                    
-                    // AuthManager 준비 이벤트 리스너
-                    window.addEventListener('authManagerReady', waitForAuthManager);
-                    
-                    // 즉시 시도
-                    waitForAuthManager();
-                    // === 폼 이벤트 연결 끝 ===
-                };
-                document.body.appendChild(script);
-            });
-    </script>
+    <script src="js/bootstrap.js"></script>
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -754,37 +568,26 @@
             });
     </script>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getFirestore, collection, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { firebaseConfig } from './js/config.js';
-
-        // DOMContentLoaded 이벤트를 기다림
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Firebase 초기화
-                const app = initializeApp(firebaseConfig);
-                const db = getFirestore(app);
-                const auth = getAuth(app);
-
-                // 전역 객체에 할당
-                window.app = app;
-                window.db = db;
-                window.auth = auth;
-
-                // 초기화 완료 이벤트 발생
-                window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
-                    detail: { app, db, auth } 
-                }));
-
+    <!-- Firebase 초기화 통합: AuthManager 준비 시 동작 시작 -->
+    <script>
+        let db = null;
+        let auth = null;
+        function __acl_onReady() {
+            if (!db && window.db) {
+                db = window.db;
+                auth = window.auth;
                 // 레시피 데이터 로드
-                await loadRecipeData();
-            } catch (error) {
-                console.error('Firebase 초기화 오류:', error);
+                if (window.loadRecipeData) {
+                    window.loadRecipeData();
+                }
             }
-        });
+        }
+        window.addEventListener('authManagerReady', __acl_onReady);
+        window.addEventListener('firebaseInitialized', __acl_onReady);
+    </script>
+
+    <script type="module">
+        import { collection, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
         // AI 도구 정보 캐시
         let toolImagesCache = {};
@@ -793,11 +596,12 @@
         // 검색 관련 변수
         let allRecipes = [];
         let filteredRecipes = [];
+        window.__recipesById = {};
 
         // AI 도구 정보 로드 함수
         async function loadToolImages() {
             try {
-                const toolsRef = collection(db, 'ai-tools');
+                const toolsRef = collection(window.db, 'ai-tools');
                 const toolsSnapshot = await getDocs(toolsRef);
                 
                 toolsSnapshot.forEach((doc) => {
@@ -821,7 +625,11 @@
                 
                 console.log(`${Object.keys(toolInfoCache).length}개의 AI 도구 정보를 로드했습니다.`);
             } catch (error) {
-                console.error('AI 도구 정보 로드 오류:', error);
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, 'AI 도구 정보 로드');
+                } else {
+                    console.error('AI 도구 정보 로드 오류:', error);
+                }
             }
         }
 
@@ -831,7 +639,7 @@
                 // 먼저 AI 도구 이미지들을 로드
                 await loadToolImages();
                 
-                const recipesRef = collection(db, 'public_recipe_collection');
+                const recipesRef = collection(window.db, 'public_recipe_collection');
                 const q = query(recipesRef, orderBy('created_at', 'desc'), limit(20));
                 const querySnapshot = await getDocs(q);
                 
@@ -861,9 +669,16 @@
                 // 검색 이벤트 리스너 설정
                 setupSearchListener();
             } catch (error) {
-                console.error('레시피 데이터 로드 오류:', error);
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, '레시피 데이터 로드');
+                } else {
+                    console.error('레시피 데이터 로드 오류:', error);
+                }
             }
         }
+
+        // 전역에서 호출할 수 있도록 노출
+        window.loadRecipeData = loadRecipeData;
 
         // 레시피 렌더링 함수
         function renderRecipes(recipes) {
@@ -884,6 +699,7 @@
             }
 
             recipes.forEach((recipeData) => {
+                window.__recipesById[recipeData.docId] = recipeData;
                 const workflowCard = createWorkflowCard(recipeData, recipeData.docId);
                 workflowsContainer.appendChild(workflowCard);
             });
@@ -1012,10 +828,10 @@
                 
                 let toolIcon;
                 if (toolImage) {
-                    // DB에서 가져온 이미지가 있는 경우
+                    // DB에서 가져온 이미지가 있는 경우 (에러 시 이미지만 숨김)
                     toolIcon = `
                         <div class="tool-icon ${bgColor}" style="padding: 2px;">
-                            <img src="${toolImage}" alt="${tool}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; max-width: 100%; max-height: 100%;" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\\'${getToolIcon(tool)}\\'></i>';">
+                            <img src="${toolImage}" alt="${tool}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 4px; max-width: 100%; max-height: 100%;" onerror="this.style.display='none';">
                         </div>
                     `;
                 } else {
@@ -1087,7 +903,7 @@
                 </div>
                 
                 <div class="flex justify-center">
-                    <button class="btn-primary text-xs px-3 py-2 w-full" onclick="event.stopPropagation(); showRecipeSummary('${docId}', ${JSON.stringify(recipeData).replace(/"/g, '&quot;')})">
+                    <button class="btn-primary text-xs px-3 py-2 w-full" onclick="event.stopPropagation(); showRecipeSummary('${docId}')">
                         레시피 요약 보기
                     </button>
                 </div>
@@ -1160,10 +976,12 @@
         }
 
         // 레시피 요약 표시 함수
-        window.showRecipeSummary = function(docId, recipeData) {
+        window.showRecipeSummary = function(docId) {
             const modal = document.getElementById('recipeSummaryModal');
             const title = document.getElementById('recipeSummaryTitle');
             const content = document.getElementById('recipeSummaryContent');
+            const recipeData = window.__recipesById ? window.__recipesById[docId] : null;
+            if (!recipeData) return;
             
             // 제목 설정
             title.textContent = recipeData.my_recipe_title || '레시피 요약';

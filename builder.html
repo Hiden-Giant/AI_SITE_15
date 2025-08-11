@@ -3,120 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 도구 찾기</title>
+    <title data-i18n="builder_page_title">AI 도구 찾기</title>
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="assets/css/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/optimized.css">
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <script src="js/bootstrap.js"></script>
     <script src="js/theme-manager.js"></script>
+    <script src="js/common.js"></script>
 
-    <!-- 다국어 관련 스크립트 -->
-    <script src="lang/en.js"></script>
-    <script src="lang/ko.js"></script>
-    <script src="lang/ja.js"></script>
-    <script src="lang/zh.js"></script>
-    <script src="lang/ru.js"></script>
-    <script src="lang/es.js"></script>
-    <script src="lang/pt.js"></script>
-    <script src="lang/ar.js"></script>
-    <script src="lang/vi.js"></script>
-    <script src="lang/id.js"></script>
-    <script src="lang/fr.js"></script>
-    <script src="lang/hi.js"></script>
+    <!-- 다국어 관련 스크립트 - 선택된 언어만 로드 -->
     <script src="js/translate.js"></script>
 
-    <!-- 테마 관련 CSS 변수 -->
+    <!-- 이 페이지에서만 사용되는 고유한 스타일 -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-        
-        :root {
-            /* 다크 모드 기본값 */
-            --bg-primary: #0F1217;
-            --bg-secondary: #1a1f2e;
-            --text-primary: #ffffff;
-            --text-secondary: #a0aec0;
-            --border-color: #2d3748;
-            --card-bg: #1a1f2e;
-            --hover-bg: #2d3748;
-            --input-bg: #2d3748;
-            --modal-bg: #1a1f2e;
-            --gradient-start: #7C3AED;
-            --gradient-end: #DB2777;
-            --primary: #4a35e8;
-            --dark-bg: #121620;
-            --card-hover: #232939;
-        }
-        
-        [data-theme="light"] {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f7fafc;
-            --text-primary: #1a202c;
-            --text-secondary: #4a5568;
-            --border-color: #e2e8f0;
-            --card-bg: #ffffff;
-            --hover-bg: #edf2f7;
-            --input-bg: #f7fafc;
-            --modal-bg: #ffffff;
-        }
-        
-        body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #0B1120;
-            color: #f8fafc;
-            transition: background-color 0.3s, color 0.3s;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        main {
-            flex: 1;
-        }
-
-        footer {
-            margin-top: auto;
-        }
-
-        .gradient-text {
-            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            font-weight: 500;
-            transition: opacity 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-        
-        .theme-toggle {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            padding: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: color 0.3s ease;
-        }
-        
-        .theme-toggle:hover {
-            color: var(--gradient-start);
-        }
-        
-        .theme-toggle i {
-            font-size: 1.25rem;
-        }
-
         .line-clamp-3 {
             display: -webkit-box;
             -webkit-line-clamp: 3;
@@ -193,9 +94,11 @@
             margin: 0 auto;
         }
 
-        /* 도구 카드 스타일 */
+        /* 도구 카드 스타일 - common.css의 card-component 클래스 기반 */
         .tool-card {
-            background: linear-gradient(to bottom, rgba(18, 22, 32, 0.95), rgba(18, 22, 32, 1));
+            /* card-component 클래스의 기본 스타일 상속 */
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
             border-radius: 0.5rem;
             overflow: hidden;
             transition: all 0.3s ease;
@@ -208,8 +111,9 @@
         }
 
         .tool-card:hover {
-            background-color: rgba(55, 65, 81, 0.5);
+            background-color: var(--card-hover);
             transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
         .tool-card img {
@@ -227,7 +131,7 @@
         }
 
         .tool-card .card-description {
-            color: #9CA3AF;
+            color: var(--text-secondary);
             font-size: 0.75rem;
             margin-bottom: 0.5rem;
             flex-grow: 1;
@@ -281,42 +185,7 @@
             display: block;
         }
 
-        /* 모달 스타일 */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        
-        .modal-overlay.show {
-            display: flex;
-        }
-        
-        .modal {
-            background-color: #1a1f2e;
-            border-radius: 1rem;
-            padding: 2rem;
-            width: 100%;
-            max-width: 28rem;
-            position: relative;
-            margin: 2rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            color: #9ca3af;
-            cursor: pointer;
-        }
+        /* 모달 스타일 - common.css의 modal-component 클래스 사용 */
 
         /* 상세 정보 영역 스타일 */
         .detail-section {
@@ -511,22 +380,7 @@
             background-color: #f3f4f6;
         }
 
-        /* 입력 필드 스타일 */
-        .input-field {
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            background-color: #1B2438;
-            border: 1px solid #2D3748;
-            color: white;
-            transition: all 0.2s;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-color: #4F46E5;
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
-        }
+        /* 입력 필드 스타일 - common.css의 input-component 클래스 사용 */
 
         /* 구분선 스타일 */
         .divider {
@@ -554,136 +408,94 @@
             position: relative;
         }
 
-        /* 글래스모피즘 효과 */
-        .glass-effect {
-            background: rgba(26, 31, 46, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
+        /* 글래스모피즘 효과 - common.css의 glass-effect 클래스 사용 */
 
-        /* 카드 섹션 스타일 */
+        /* 테마별 스타일 - CSS 변수 활용 */
         .card-section .tool-card,
         .card-section .category-card,
         .card-section .method-card {
-            background: var(--card-bg) !important;
-            border: 1.5px solid var(--border-color) !important;
-            color: var(--text-primary) !important;
+            background: var(--card-bg);
+            border: 1.5px solid var(--border-color);
+            color: var(--text-primary);
         }
 
         /* 라이트 테마 스타일 */
         [data-theme="light"] .card-section .tool-card,
         [data-theme="light"] .card-section .category-card,
         [data-theme="light"] .card-section .method-card {
-            background: none !important;
-            border: 1.5px solid #9CB6D7 !important;
-            color: #1a202c !important;
-        }
-
-        [data-theme="light"] body,
-        [data-theme="light"] main,
-        [data-theme="light"] .container.mx-auto,
-        [data-theme="light"] .result-count-box,
-        [data-theme="light"] .tab-content,
-        [data-theme="light"] .detail-section,
-        [data-theme="light"] .modal,
-        [data-theme="light"] .search-container,
-        [data-theme="light"] .search-input-wrapper,
-        [data-theme="light"] .filter-card,
-        [data-theme="light"] .tool-card,
-        [data-theme="light"] .pricing-card,
-        [data-theme="light"] .review-card {
-            background-color: #fff !important;
-            color: #1a202c !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
-
-        [data-theme="light"] .tab-content,
-        [data-theme="light"] .detail-section {
-            background-color: #f7fafc !important;
+            background: var(--card-bg);
+            border: 1.5px solid var(--border-hover);
+            color: var(--text-primary);
         }
 
         [data-theme="light"] .result-count-box {
-            background: linear-gradient(135deg, #e0e7ef 0%, #f7fafc 100%) !important;
-            color: #1a202c !important;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            color: var(--text-primary);
         }
 
         [data-theme="light"] .filter-card.selected {
-            background-color: #e0e7ef !important;
-            border-color: #4F46E5 !important;
+            background-color: var(--highlight);
+            border-color: var(--highlight);
+            color: white;
         }
 
         [data-theme="light"] .tool-card {
-            background: #fff !important;
-            border: 1.5px solid #9CB6D7 !important;
-            color: #1a202c !important;
+            background: var(--card-bg);
+            border: 1.5px solid var(--border-color);
+            color: var(--text-primary);
         }
 
         [data-theme="light"] .tool-card:hover {
-            background-color: #f3f4f6 !important;
+            background-color: var(--card-hover);
         }
 
         [data-theme="light"] .search-input {
-            background-color: #f7fafc !important;
-            color: #1a202c !important;
-            border: 1px solid #e2e8f0 !important;
-        }
-
-        [data-theme="light"] .input-field {
-            background-color: #f7fafc !important;
-            color: #1a202c !important;
-            border: 1px solid #e2e8f0 !important;
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
         }
 
         [data-theme="light"] .tab-button {
-            background-color: #f7fafc !important;
-            color: #4a5568 !important;
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
         }
 
         [data-theme="light"] .tab-button.active {
-            background-color: #4F46E5 !important;
-            color: #fff !important;
+            background-color: var(--highlight);
+            color: white;
         }
 
-        [data-theme="light"] .pros-cons-item {
-            background-color: #f3f4f6 !important;
-            color: #1a202c !important;
-        }
-
-        [data-theme="light"] .pricing-card {
-            background-color: #f3f4f6 !important;
-            color: #1a202c !important;
-        }
-
+        [data-theme="light"] .pros-cons-item,
+        [data-theme="light"] .pricing-card,
         [data-theme="light"] .review-card {
-            background-color: #f3f4f6 !important;
-            color: #1a202c !important;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
         }
 
         [data-theme="light"] .category-tag {
-            background: #e0e7ef !important;
-            color: #1a202c !important;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
 
         [data-theme="light"] .text-gray-400,
         [data-theme="light"] .text-gray-500,
         [data-theme="light"] .text-gray-300 {
-            color: #4a5568 !important;
+            color: var(--text-secondary);
         }
 
         [data-theme="light"] .bg-blue-900\/50 {
-            background-color: #e0e7ef !important;
-            color: #2563eb !important;
+            background-color: var(--bg-tertiary);
+            color: var(--highlight);
         }
 
         [data-theme="light"] .text-blue-300 {
-            color: #2563eb !important;
+            color: var(--highlight);
         }
 
         [data-theme="light"] .glass-effect {
-            background: #fff !important;
-            border-bottom: 1.5px solid #e2e8f0 !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            background: var(--glass-bg);
+            border-bottom: 1.5px solid var(--glass-border);
+            box-shadow: var(--card-shadow);
         }
 
         [data-theme="light"] .tool-card,
@@ -693,7 +505,7 @@
         [data-theme="light"] .tool-card .text-white,
         [data-theme="light"] .tool-card .text-gray-400,
         [data-theme="light"] .tool-card .text-gray-300 {
-            color: #1a202c !important;
+            color: var(--text-primary);
         }
 
         [data-theme="light"] .tool-card .fa-star,
@@ -702,22 +514,25 @@
         [data-theme="light"] .review-card .fa-star,
         [data-theme="light"] .review-card .fa-star-half-alt,
         [data-theme="light"] .review-card .far.fa-star {
-            color: #FBBF24 !important;
+            color: #FBBF24;
         }
 
         [data-theme="light"] .filter-card {
-            border: 1.5px solid #9CB6D7 !important;
+            border: 1.5px solid var(--border-color);
         }
+
+        /* 다크 테마 스타일 */
         [data-theme="dark"] select,
         [data-theme="dark"] .bg-white {
-            background-color: #1a1f2e !important;
-            color: #f8fafc !important;
-            border-color: #2d3748 !important;
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+            border-color: var(--border-color);
         }
+
         [data-theme="dark"] .text-gray-800,
         [data-theme="dark"] .text-gray-700,
         [data-theme="dark"] .text-gray-600 {
-            color: #f8fafc !important;
+            color: var(--text-primary);
         }
         .recipe-tool-card {
             min-height: 100px;
@@ -759,13 +574,18 @@
             justify-content: center;
             cursor: pointer;
             transition: background 0.2s, color 0.2s;
+            /* 터치 친화적 크기 */
+            min-width: 24px;
+            min-height: 24px;
         }
-        .recipe-tool-card .remove-btn:hover {
+        .recipe-tool-card .remove-btn:hover,
+        .recipe-tool-card .remove-btn:active {
             background: #fee2e2;
             color: #ef4444;
             border-color: #ef4444;
         }
-        .recipe-tool-card .move-btn:hover {
+        .recipe-tool-card .move-btn:hover,
+        .recipe-tool-card .move-btn:active {
             background: #e0e7ff;
             color: #2563eb;
             border-color: #2563eb;
@@ -1059,140 +879,166 @@
             color: #4F46E5;
             font-weight: 700;
         }
+
+        /* === 모바일 최적화 === */
+        @media (max-width: 768px) {
+            .search-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .search-input-wrapper {
+                max-width: 100%;
+            }
+            
+            .tool-card {
+                min-height: 120px;
+                padding: 0.75rem;
+            }
+            
+            .tool-card img {
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+            
+            .recipe-tool-card {
+                min-height: 120px;
+                padding: 1rem;
+            }
+            
+            .recipe-tool-card .card-controls {
+                top: 6px;
+                right: 8px;
+            }
+            
+            .recipe-tool-card .remove-btn,
+            .recipe-tool-card .move-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 0.8rem;
+            }
+            
+            .recipe-info-section {
+                padding: 1.5rem;
+            }
+            
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .btn-component.large {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .tool-card {
+                min-height: 140px;
+                padding: 1rem;
+            }
+            
+            .recipe-tool-card {
+                min-height: 140px;
+                padding: 1.25rem;
+            }
+            
+            .recipe-info-section {
+                padding: 1rem;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-component {
+                padding: 0.875rem 1.25rem;
+                font-size: 0.875rem;
+            }
+            
+            .input-component {
+                padding: 0.875rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* 터치 디바이스 최적화 */
+        @media (hover: none) and (pointer: coarse) {
+            .tool-card:hover {
+                transform: none;
+            }
+            
+            .recipe-tool-card:hover {
+                transform: none;
+            }
+            
+            .filter-card:hover {
+                transform: none;
+            }
+            
+            .btn-component:hover {
+                transform: none;
+            }
+            
+            /* 터치 시 활성화 효과 */
+            .tool-card:active {
+                transform: scale(0.98);
+            }
+            
+            .recipe-tool-card:active {
+                transform: scale(0.98);
+            }
+            
+            .filter-card:active {
+                transform: scale(0.98);
+            }
+            
+            .btn-component:active {
+                transform: scale(0.95);
+            }
+        }
     </style>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getFirestore, doc, getDoc, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { firebaseConfig } from './js/config.js';
-        import { dbManager } from './js/db-manager.js';
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const app = initializeApp(firebaseConfig);
-                const db = getFirestore(app);
-                const auth = getAuth(app);
-
-                window.app = app;
-                window.db = db;
-                window.auth = auth;
-                window.doc = doc;
-                window.getDoc = getDoc;
-
-                // DBManager 초기화
-                await dbManager.init(app);
-                
-                window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
-                    detail: { app, db, auth } 
-                }));
-            } catch (error) {
-                console.error('Firebase 초기화 오류:', error);
-            }
-        });
-    </script>
-
-    <!-- 공통 모듈 -->
+    <!-- 공통 모듈만 로드: auth-manager가 firebase 초기화 담당 -->
     <script type="module" src="js/auth-manager.js"></script>
 </head>
 <body>
     <div id="header-container"></div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.body.setAttribute('data-theme', savedTheme);
-        });
-
-        fetch('header.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('header-container').innerHTML = data;
-                const script = document.createElement('script');
-                script.src = 'js/header-menu.js';
-                script.onload = function() {
-                    if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
-                    if (window.initMobileMenuToggle) window.initMobileMenuToggle();
-                    if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
-
-                    // === 폼 이벤트 연결 추가 ===
-                    // 로그인 폼
-                    const loginForm = document.getElementById('loginForm');
-                    if (loginForm) {
-                        loginForm.addEventListener('submit', async (e) => {
-                            e.preventDefault();
-                            const email = document.getElementById('loginEmail').value;
-                            const password = document.getElementById('loginPassword').value;
-                            if (window.handleEmailLogin) {
-                                await window.handleEmailLogin(email, password);
-                            }
-                        });
-                    }
-                    // 회원가입 폼
-                    const signupForm = document.getElementById('signupForm');
-                    if (signupForm) {
-                        signupForm.addEventListener('submit', async (e) => {
-                            e.preventDefault();
-                            const fullName = document.getElementById('fullName').value;
-                            const email = document.getElementById('signupEmail').value;
-                            const password = document.getElementById('signupPassword').value;
-                            if (window.handleEmailSignup) {
-                                await window.handleEmailSignup(fullName, email, password);
-                            }
-                        });
-                    }
-                    // 소셜 로그인 버튼
-                    const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
-                    googleBtns.forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            if (window.handleSocialLogin) {
-                                window.handleSocialLogin('google');
-                            }
-                        });
-                    });
-                    // === 폼 이벤트 연결 끝 ===
-                };
-                document.body.appendChild(script);
-            });
-    </script>
-    </head>
-    
-    <div id="header-container"></div>
-    <script>
-        fetch('header.html').then(r=>r.text()).then(d=>{document.getElementById('header-container').innerHTML=d});
-    </script>
     <main class="container mx-auto px-4 py-8">
         <div class="mb-12">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">커스텀 레시피 빌더</h2>
-            <p class="text-gray-600 mb-8">원하는 AI 도구들을 조합하여 나만의 워크플로우를 만드세요.</p>
+            <h2 class="text-3xl font-bold text-gray-800 mb-6" data-i18n="builder_title">커스텀 레시피 빌더</h2>
+            <p class="text-gray-600 mb-8" data-i18n="builder_subtitle">원하는 AI 도구들을 조합하여 나만의 워크플로우를 만드세요.</p>
         </div>
         <!-- AI 도구 선택 영역 -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-16">
             <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-6">
-                <i class="fas fa-robot text-blue-500 mr-2"></i>AI 도구 선택
+                <i class="fas fa-robot text-blue-500 mr-2"></i><span data-i18n="builder_tool_selection">AI 도구 선택</span>
             </h3>
             <div class="mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">카테고리</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" data-i18n="builder_category">카테고리</label>
                         <select id="toolCategoryFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="">전체</option>
-                            <option value="text-generation">텍스트 생성</option>
-                            <option value="image-generation">이미지 생성</option>
-                            <option value="audio-generation">음성/오디오</option>
-                            <option value="video-generation">비디오 제작</option>
-                            <option value="coding-assistant">코드 작성</option>
-                            <option value="data-analysis">데이터 분석</option>
-                            <option value="marketing">마케팅</option>
+                            <option value="" data-i18n="builder_category_all">전체</option>
+                            <option value="text-generation" data-i18n="builder_category_text">텍스트 생성</option>
+                            <option value="image-generation" data-i18n="builder_category_image">이미지 생성</option>
+                            <option value="audio-generation" data-i18n="builder_category_audio">음성/오디오</option>
+                            <option value="video-generation" data-i18n="builder_category_video">비디오 제작</option>
+                            <option value="coding-assistant" data-i18n="builder_category_coding">코드 작성</option>
+                            <option value="data-analysis" data-i18n="builder_category_data">데이터 분석</option>
+                            <option value="marketing" data-i18n="builder_category_marketing">마케팅</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            <i class="fas fa-search text-blue-500 mr-2"></i>키워드 검색
+                            <i class="fas fa-search text-blue-500 mr-2"></i><span data-i18n="builder_keyword_search">키워드 검색</span>
                         </label>
-                        <input type="text" id="toolKeywordFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="도구명, 설명, 기능 등을 검색하세요">
+                        <input type="text" id="toolKeywordFilter" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" data-i18n-placeholder="builder_keyword_placeholder" placeholder="도구명, 설명, 기능 등을 검색하세요">
                     </div>
                 </div>
             </div>
@@ -1200,15 +1046,15 @@
             <!-- 페이징 컨트롤 -->
             <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div class="text-sm text-gray-600 dark:text-gray-400">
-                    <span id="paginationInfo">0-0 / 0개 도구</span>
+                    <span id="paginationInfo" data-i18n="builder_pagination_info">0-0 / 0개 도구</span>
                 </div>
                 <div class="flex gap-2">
                     <button id="prevPage" class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fas fa-chevron-left mr-1"></i>이전
+                        <i class="fas fa-chevron-left mr-1"></i><span data-i18n="builder_prev">이전</span>
                     </button>
                     <div id="pageNumbers" class="flex gap-1"></div>
                     <button id="nextPage" class="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                        다음<i class="fas fa-chevron-right ml-1"></i>
+                        <span data-i18n="builder_next">다음</span><i class="fas fa-chevron-right ml-1"></i>
                     </button>
                 </div>
             </div>
@@ -1217,14 +1063,14 @@
         <!-- 레시피 미리보기 영역 -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 mb-16">
                 <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-6">
-                    <i class="fas fa-eye text-green-500 mr-2"></i>레시피 미리보기
+                    <i class="fas fa-eye text-green-500 mr-2"></i><span data-i18n="builder_recipe_preview">레시피 미리보기</span>
                 </h3>
 
                 <!-- 선택된 도구 목록 (4개씩 2줄) -->
                 <div id="recipePreview" class="mb-6">
                     <div class="text-center text-gray-500 dark:text-gray-400 py-8" id="emptyPreview">
                         <i class="fas fa-plus-circle text-4xl mb-4"></i>
-                        <p>AI 도구를 선택하여 레시피를 만들어보세요</p>
+                        <p data-i18n="builder_empty_preview">AI 도구를 선택하여 레시피를 만들어보세요</p>
                     </div>
                     <div id="selectedToolsContainer" style="display: none;">
                         <!-- 선택된 도구들이 여기에 4개씩 2줄로 배치됩니다 -->
@@ -1234,11 +1080,11 @@
                 <!-- 레시피 작성 타입 선택 버튼 -->
                 <div class="mb-8">
                     <div class="flex gap-4">
-                        <button id="integratedMode" class="flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 bg-blue-500 text-white hover:bg-blue-600">
-                            <i class="fas fa-layer-group mr-2"></i>도구 조합 통합 작성
+                        <button id="integratedMode" class="btn-component primary flex-1">
+                            <i class="fas fa-layer-group mr-2"></i><span data-i18n="builder_integrated_mode">도구 조합 통합 작성</span>
                         </button>
-                        <button id="detailedMode" class="flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-300 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-500">
-                            <i class="fas fa-tools mr-2"></i>상세 도구 사용 작성
+                        <button id="detailedMode" class="btn-component secondary flex-1">
+                            <i class="fas fa-tools mr-2"></i><span data-i18n="builder_detailed_mode">상세 도구 사용 작성</span>
                         </button>
                     </div>
                 </div>
@@ -1248,52 +1094,52 @@
                     <!-- 제목 입력 영역 -->
                     <div class="mb-8">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            <i class="fas fa-edit text-blue-500 mr-2"></i>레시피 제목
+                            <i class="fas fa-edit text-blue-500 mr-2"></i><span data-i18n="builder_recipe_title">레시피 제목</span>
                         </label>
-                                                    <input type="text" id="recipeTitle" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="레시피 제목을 입력하세요">
+                        <input type="text" id="recipeTitle" class="input-component w-full" data-i18n-placeholder="builder_recipe_title_placeholder" placeholder="레시피 제목을 입력하세요">
                     </div>
 
                     <!-- 카테고리, 난의도, 타입 선택 영역 -->
                     <div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                <i class="fas fa-tags text-orange-500 mr-2"></i>레시피 카테고리
+                                <i class="fas fa-tags text-orange-500 mr-2"></i><span data-i18n="builder_recipe_category">레시피 카테고리</span>
                             </label>
-                            <select id="recipeCategory" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">카테고리를 선택하세요</option>
-                                <option value="text-generation">텍스트 생성</option>
-                                <option value="image-generation">이미지 생성</option>
-                                <option value="audio-generation">음성/오디오</option>
-                                <option value="video-generation">비디오 제작</option>
-                                <option value="coding-assistant">코드 작성</option>
-                                <option value="data-analysis">데이터 분석</option>
-                                <option value="marketing">마케팅</option>
-                                <option value="productivity">생산성</option>
-                                <option value="design">디자인</option>
-                                <option value="education">교육</option>
-                                <option value="business">비즈니스</option>
-                                <option value="other">기타</option>
+                            <select id="recipeCategory" class="input-component w-full">
+                                <option value="" data-i18n="builder_recipe_category_select">카테고리를 선택하세요</option>
+                                <option value="text-generation" data-i18n="builder_recipe_category_text">텍스트 생성</option>
+                                <option value="image-generation" data-i18n="builder_recipe_category_image">이미지 생성</option>
+                                <option value="audio-generation" data-i18n="builder_recipe_category_audio">음성/오디오</option>
+                                <option value="video-generation" data-i18n="builder_recipe_category_video">비디오 제작</option>
+                                <option value="coding-assistant" data-i18n="builder_recipe_category_coding">코드 작성</option>
+                                <option value="data-analysis" data-i18n="builder_recipe_category_data">데이터 분석</option>
+                                <option value="marketing" data-i18n="builder_recipe_category_marketing">마케팅</option>
+                                <option value="productivity" data-i18n="builder_recipe_category_productivity">생산성</option>
+                                <option value="design" data-i18n="builder_recipe_category_design">디자인</option>
+                                <option value="education" data-i18n="builder_recipe_category_education">교육</option>
+                                <option value="business" data-i18n="builder_recipe_category_business">비즈니스</option>
+                                <option value="other" data-i18n="builder_recipe_category_other">기타</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                <i class="fas fa-share-alt text-green-500 mr-2"></i>레시피 난의도
+                                <i class="fas fa-share-alt text-green-500 mr-2"></i><span data-i18n="builder_recipe_difficulty">레시피 난의도</span>
                             </label>
-                            <select id="recipeDifficulty" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">전체</option>
-                                <option value="beginner">초급</option>
-                                <option value="intermediate">중급</option>
-                                <option value="advanced">고급</option>
+                            <select id="recipeDifficulty" class="input-component w-full">
+                                <option value="" data-i18n="builder_recipe_difficulty_all">전체</option>
+                                <option value="beginner" data-i18n="builder_recipe_difficulty_beginner">초급</option>
+                                <option value="intermediate" data-i18n="builder_recipe_difficulty_intermediate">중급</option>
+                                <option value="advanced" data-i18n="builder_recipe_difficulty_advanced">고급</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                <i class="fas fa-share-alt text-green-500 mr-2"></i>레시피 타입
+                                <i class="fas fa-share-alt text-green-500 mr-2"></i><span data-i18n="builder_recipe_type">레시피 타입</span>
                             </label>
-                            <select id="recipeShareType" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="Private" selected>비공개 레시피</option>
-                                <option value="Public">전체 공개 레시피</option>
-                                <option value="partly_public">부분 공유 레시피</option>
+                            <select id="recipeShareType" class="input-component w-full">
+                                <option value="Private" selected data-i18n="builder_recipe_type_private">비공개 레시피</option>
+                                <option value="Public" data-i18n="builder_recipe_type_public">전체 공개 레시피</option>
+                                <option value="partly_public" data-i18n="builder_recipe_type_partly">부분 공유 레시피</option>
                             </select>
                         </div>
                     </div>
@@ -1301,28 +1147,28 @@
                     <!-- 레시피 기본 설명 영역 -->
                     <div class="mb-12 description-section">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            <i class="fas fa-align-left text-green-500 mr-2"></i>레시피 기본 설명
+                            <i class="fas fa-align-left text-green-500 mr-2"></i><span data-i18n="builder_recipe_basic_description">레시피 기본 설명</span>
                         </label>
-                        <textarea id="recipeBasicDescription" rows="5" class="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="레시피의 전체적인 목적과 사용 방법에 대한 기본 설명을 입력하세요"></textarea>
+                        <textarea id="recipeBasicDescription" rows="5" class="input-component w-full resize-none" data-i18n-placeholder="builder_recipe_basic_description_placeholder" placeholder="레시피의 전체적인 목적과 사용 방법에 대한 기본 설명을 입력하세요"></textarea>
                     </div>
                     
                     <!-- 통합 설명 영역 (도구 조합 통합 작성 모드) -->
                     <div id="integratedDescriptionSection" class="description-section mb-12">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            <i class="fas fa-layer-group text-purple-500 mr-2"></i>도구 조합 통합 설명
+                            <i class="fas fa-layer-group text-purple-500 mr-2"></i><span data-i18n="builder_recipe_integrated_description">도구 조합 통합 설명</span>
                         </label>
-                        <textarea id="recipeTotalDescription" rows="4" class="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="선택한 도구들을 어떻게 조합하여 사용하는지에 대한 상세한 설명을 입력하세요"></textarea>
+                        <textarea id="recipeTotalDescription" rows="4" class="input-component w-full resize-none" data-i18n-placeholder="builder_recipe_integrated_description_placeholder" placeholder="선택한 도구들을 사용하는지에 대한 상세한 설명을 입력하세요"></textarea>
                     </div>
                     
                     <!-- 도구 조합 장점 및 핵심 포인트 영역 -->
                     <div class="mb-12 description-section">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            <i class="fas fa-users text-purple-500 mr-2"></i>도구 조합 장점 및 핵심 포인트
+                            <i class="fas fa-users text-purple-500 mr-2"></i><span data-i18n="builder_recipe_advantages">도구 조합 장점 및 핵심 포인트</span>
                         </label>
                         <div class="space-y-4">
-                            <input type="text" id="advantagePoint1" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="첫 번째 장점 또는 핵심 포인트를 입력하세요">
-                            <input type="text" id="advantagePoint2" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="두 번째 장점 또는 핵심 포인트를 입력하세요">
-                            <input type="text" id="advantagePoint3" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="세 번째 장점 또는 핵심 포인트를 입력하세요">
+                            <input type="text" id="advantagePoint1" class="input-component w-full" data-i18n-placeholder="builder_recipe_advantage_1" placeholder="첫 번째 장점 또는 핵심 포인트를 입력하세요">
+                            <input type="text" id="advantagePoint2" class="input-component w-full" data-i18n-placeholder="builder_recipe_advantage_2" placeholder="두 번째 장점 또는 핵심 포인트를 입력하세요">
+                            <input type="text" id="advantagePoint3" class="input-component w-full" data-i18n-placeholder="builder_recipe_advantage_3" placeholder="세 번째 장점 또는 핵심 포인트를 입력하세요">
                         </div>
                     </div>
 
@@ -1330,56 +1176,56 @@
                     <!-- 레시피 이용 추천 그룹 선택 영역 -->
                     <div class="mb-12">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            <i class="fas fa-users text-purple-500 mr-2"></i>레시피 이용 추천 그룹 (최대 3개 선택)
+                            <i class="fas fa-users text-purple-500 mr-2"></i><span data-i18n="builder_recipe_recommended_groups">레시피 이용 추천 그룹 (최대 3개 선택)</span>
                         </label>
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="office-worker" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">회사원</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_office_worker">회사원</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="university-student" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">대학생</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_university_student">대학생</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="professional" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">전문직</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_professional">전문직</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="video-audio" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">영상/음성 관련</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_video_audio">영상/음성 관련</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="marketing" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">마케팅 직군</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_marketing">마케팅 직군</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="management-support" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">경영지원 직군</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_management_support">경영지원 직군</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="researcher" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">연구원</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_researcher">연구원</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="student" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">중고생</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_student">중고생</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="developer" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">개발직군</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_developer">개발직군</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="medical" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">의료 관련</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_medical">의료 관련</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="design" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">디자인 직군</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_design">디자인 직군</span>
                             </label>
                             <label class="flex items-center space-x-1 cursor-pointer">
                                 <input type="checkbox" name="recommendedGroups" value="c-level" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">C level 임원</span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300" data-i18n="builder_group_c_level">C level 임원</span>
                             </label>
                         </div>
                     </div>
@@ -1389,7 +1235,7 @@
                 <!-- 상세 도구 설명 영역 (상세 도구 사용 작성 모드) -->
                 <div id="detailedToolsSection" class="recipe-info-section" style="display: none;">
                     <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">
-                        <i class="fas fa-wrench text-orange-500 mr-2"></i>도구별 상세 설명
+                        <i class="fas fa-wrench text-orange-500 mr-2"></i><span data-i18n="builder_detailed_tools_title">도구별 상세 설명</span>
                     </h4>
                     <div id="detailedToolsList"></div>
                 </div>
@@ -1397,31 +1243,30 @@
                 <!-- 이미지 업로드 영역 -->
                 <div class="mt-12">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        <i class="fas fa-image text-purple-500 mr-2"></i>참고 이미지 및 스크린 캡쳐
+                        <i class="fas fa-image text-purple-500 mr-2"></i><span data-i18n="builder_image_upload">참고 이미지 및 스크린 캡쳐</span>
                     </label>
                     <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-3 text-center">
                         <div class="flex items-center justify-center mb-2">
                             <i class="fas fa-cloud-upload-alt text-xl text-gray-400 mr-2"></i>
-                            <span class="text-gray-500 dark:text-gray-400 text-sm">Drop images here</span>
+                            <span class="text-gray-500 dark:text-gray-400 text-sm" data-i18n="builder_drop_images">Drop images here</span>
                         </div>
                         <input type="file" id="recipeImages" multiple accept="image/*" class="hidden">
-                        <button type="button" onclick="document.getElementById('recipeImages').click()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-sm transition-colors duration-300">
-                            이미지 선택
+                        <button type="button" onclick="document.getElementById('recipeImages').click()" class="btn-component primary small">
+                            <span data-i18n="builder_select_images">이미지 선택</span>
                         </button>
                     </div>
                     <div id="imagePreview" class="grid grid-cols-4 gap-2 mt-3"></div>
                 </div>
 
                 <div class="mt-12">
-                    <button id="saveRecipe" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-lg transition-colors duration-300 disabled:opacity-50" disabled="">
-                        <i class="fas fa-save mr-2"></i>레시피 저장
+                    <button id="saveRecipe" class="btn-component primary large w-full" disabled="">
+                        <i class="fas fa-save mr-2"></i><span data-i18n="builder_save_recipe">레시피 저장</span>
                     </button>
                 </div>
             </div>
         </div>
     </main>
     <div id="footer-container"></div>
-    <script>fetch('footer.html').then(r=>r.text()).then(d=>{document.getElementById('footer-container').innerHTML=d});</script>
     <script type="module">
 import { dbManager } from './js/db-manager.js';
 
@@ -2045,14 +1890,22 @@ window.addEventListener('dbManagerReady', async (e) => {
             filteredTools = allTools; // 초기 필터링된 도구 목록 설정
             renderToolSelector(filteredTools);
         } catch (error) {
-            console.error('도구 로드 오류:', error);
+            if (window.CommonUtils) {
+                window.CommonUtils.handleError(error, '도구 로드');
+            } else {
+                console.error('도구 로드 오류:', error);
+            }
             const container = document.getElementById('toolSelector');
             if (container) {
                 container.innerHTML = '<div class="text-red-400 text-center py-8">도구를 불러오는 중 오류가 발생했습니다.</div>';
             }
         }
     } else {
-        console.error('DBManager 초기화 실패:', e.detail.error);
+        if (window.CommonUtils) {
+            window.CommonUtils.handleError(new Error(e.detail.error || 'DBManager 초기화 실패'), 'DBManager 초기화');
+        } else {
+            console.error('DBManager 초기화 실패:', e.detail.error);
+        }
         const container = document.getElementById('toolSelector');
         if (container) {
             container.innerHTML = '<div class="text-red-400 text-center py-8">데이터베이스 연결에 실패했습니다.</div>';
@@ -2236,7 +2089,11 @@ async function saveRecipe() {
         updateSaveButton();
         
     } catch (error) {
-        console.error('레시피 저장 오류:', error);
+        if (window.CommonUtils) {
+            window.CommonUtils.handleError(error, '레시피 저장');
+        } else {
+            console.error('레시피 저장 오류:', error);
+        }
         
         // 에러 메시지 개선
         let errorMessage = '레시피 저장 중 오류가 발생했습니다.';
@@ -2248,7 +2105,11 @@ async function saveRecipe() {
             errorMessage = `저장 오류: ${error.message}`;
         }
         
-        alert(errorMessage);
+        if (window.CommonUtils) {
+            window.CommonUtils.showError(errorMessage);
+        } else {
+            alert(errorMessage);
+        }
     } finally {
         // 저장 버튼 재활성화
         const saveBtn = document.getElementById('saveRecipe');

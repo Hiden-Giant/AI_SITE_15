@@ -17,8 +17,6 @@
     
     <!-- 초기 테마 적용을 위한 인라인 스타일 (가장 먼저 로드) -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-        
         /* 초기 로딩 시 깜빡임 방지를 위한 기본 다크 모드 적용 */
         html {
             background-color: #0F1217 !important;
@@ -26,7 +24,6 @@
         }
         
         body {
-            font-family: 'Noto Sans KR', sans-serif;
             background-color: #0F1217 !important;
             color: #ffffff !important;
             margin: 0;
@@ -38,36 +35,17 @@
         * {
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
-
-        .gradient-text {
-            background: linear-gradient(90deg, #7C3AED, #DB2777);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .gradient-bg {
-            background: linear-gradient(90deg, #7C3AED, #DB2777);
-        }
-
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .glass-effect {
-            background: #1a1f2e;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
     </style>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="assets/css/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/optimized.css">
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <script src="js/bootstrap.js"></script>
     
     <!-- 테마 매니저 스크립트를 먼저 로드 -->
     <script type="module" src="js/theme-manager.js"></script>
+    <script src="js/common.js"></script>
 
     <!-- 다국어 관련 스크립트 -->
     <script src="lang/en.js"></script>
@@ -294,125 +272,27 @@
 </head>
 <body>
     <div id="header-container"></div>
+    <script src="js/bootstrap.js"></script>
+
+    <!-- Firebase 초기화는 AuthManager에서 통합. 이벤트만 구독 -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.body.setAttribute('data-theme', savedTheme);
-        });
-
-        fetch('header.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('header-container').innerHTML = data;
-                const script = document.createElement('script');
-                script.src = 'js/header-menu.js';
-                script.onload = function() {
-                    if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
-                    if (window.initMobileMenuToggle) window.initMobileMenuToggle();
-                    if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
-
-                    // === 폼 이벤트 연결 추가 ===
-                    // 로그인 폼
-                    const loginForm = document.getElementById('loginForm');
-                    if (loginForm) {
-                        loginForm.addEventListener('submit', async (e) => {
-                            e.preventDefault();
-                            const email = document.getElementById('loginEmail').value;
-                            const password = document.getElementById('loginPassword').value;
-                            if (window.handleEmailLogin) {
-                                await window.handleEmailLogin(email, password);
-                            }
-                        });
-                    }
-                    // 회원가입 폼
-                    const signupForm = document.getElementById('signupForm');
-                    if (signupForm) {
-                        signupForm.addEventListener('submit', async (e) => {
-                            e.preventDefault();
-                            const fullName = document.getElementById('fullName').value;
-                            const email = document.getElementById('signupEmail').value;
-                            const password = document.getElementById('signupPassword').value;
-                            if (window.handleEmailSignup) {
-                                await window.handleEmailSignup(fullName, email, password);
-                            }
-                        });
-                    }
-                    // 소셜 로그인 버튼
-                    const googleBtns = document.querySelectorAll('button[data-provider="google"]');
-                    googleBtns.forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            if (window.handleSocialLogin) {
-                                window.handleSocialLogin('google');
-                            }
-                        });
-                    });
-                    // === 폼 이벤트 연결 끝 ===
-                };
-                document.body.appendChild(script);
-            });
-    </script>
-
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { firebaseConfig } from './js/config.js';
-
-        // DOMContentLoaded 이벤트를 기다림
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Firebase 초기화
-                const app = initializeApp(firebaseConfig);
-                const db = getFirestore(app);
-                const auth = getAuth(app);
-
-                // 전역 객체에 할당
-                window.app = app;
-                window.db = db;
-                window.auth = auth;
-
-                // 초기화 완료 이벤트 발생
-                window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
-                    detail: { app, db, auth } 
-                }));
-            } catch (error) {
-                console.error('Firebase 초기화 오류:', error);
-            }
-        });
+      (function() {
+        function onReady() {
+          if (window.__homeAuthReady__) return;
+          if (window.auth && window.db) {
+            window.__homeAuthReady__ = true;
+          }
+        }
+        window.addEventListener('authManagerReady', onReady);
+        window.addEventListener('firebaseInitialized', onReady);
+      })();
     </script>
 
     <!-- 공통 모듈 -->
     <script type="module" src="js/auth-manager.js"></script>
     <script type="module" src="js/db-manager.js"></script>
 
-    <!-- 다국어 초기화 -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 저장된 언어 설정 불러오기
-            const savedLang = localStorage.getItem('language') || 'ko';
-            
-            // 언어 전환기 초기화
-            const languageSwitcher = document.getElementById('languageSwitcher');
-            if (languageSwitcher) {
-                languageSwitcher.value = savedLang;
-                languageSwitcher.addEventListener('change', function(e) {
-                    const lang = e.target.value;
-                    localStorage.setItem('language', lang);
-                    if (window.translate) {
-                        window.translate(lang);
-                    }
-                });
-            }
-            
-            // 초기 번역 실행
-            if (window.translate) {
-                window.translate(savedLang);
-            }
-        });
-    </script>
+    <!-- 다국어 초기화는 bootstrap.js에서 처리 -->
 
     <script type="module">
         // 전역 변수 초기화
@@ -432,7 +312,11 @@
                 // 인기 도구 로드
                 loadPopularTools();
             } catch (error) {
-                console.error('인기 AI 도구 데이터 로드 실패:', error);
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, '인기 AI 도구 데이터 로드');
+                } else {
+                    console.error('인기 AI 도구 데이터 로드 실패:', error);
+                }
             }
         });
         
@@ -501,7 +385,11 @@
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('인기 도구 로드 중 오류:', error);
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, '인기 도구 로드');
+                } else {
+                    console.error('인기 도구 로드 중 오류:', error);
+                }
             }
         }
 

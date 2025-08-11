@@ -7,8 +7,11 @@
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="assets/css/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/optimized.css">
+    <link rel="stylesheet" href="assets/css/common.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <script src="js/bootstrap.js"></script>
     <script src="js/theme-manager.js"></script>
+    <script src="js/common.js"></script>
 
     <!-- 다국어 관련 스크립트 -->
     <script src="lang/en.js"></script>
@@ -25,45 +28,11 @@
     <script src="lang/hi.js"></script>
     <script src="js/translate.js"></script>
 
-    <!-- 테마 관련 CSS 변수 -->
+    <!-- 페이지별 고유 스타일 -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-        
-        :root {
-            /* 다크 모드 기본값 */
-            --bg-primary: #0F1217;
-            --bg-secondary: #1a1f2e;
-            --text-primary: #ffffff;
-            --text-secondary: #a0aec0;
-            --border-color: #2d3748;
-            --card-bg: #1a1f2e;
-            --hover-bg: #2d3748;
-            --input-bg: #2d3748;
-            --modal-bg: #1a1f2e;
-            --gradient-start: #7C3AED;
-            --gradient-end: #DB2777;
-            --primary: #4a35e8;
-            --dark-bg: #121620;
-            --card-hover: #232939;
-        }
-        
-        [data-theme="light"] {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f7fafc;
-            --text-primary: #1a202c;
-            --text-secondary: #4a5568;
-            --border-color: #e2e8f0;
-            --card-bg: #ffffff;
-            --hover-bg: #edf2f7;
-            --input-bg: #f7fafc;
-            --modal-bg: #ffffff;
-        }
-        
+        /* 이 페이지에서만 사용되는 고유한 스타일 */
         body {
-            font-family: 'Noto Sans KR', sans-serif;
             background-color: #0B1120;
-            color: #f8fafc;
-            transition: background-color 0.3s, color 0.3s;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -75,13 +44,6 @@
 
         footer {
             margin-top: auto;
-        }
-
-        .gradient-text {
-            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
         }
         
         .btn-primary {
@@ -707,99 +669,14 @@
         }
     </style>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { firebaseConfig } from './js/config.js';
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                const app = initializeApp(firebaseConfig);
-                const db = getFirestore(app);
-                const auth = getAuth(app);
-
-                window.app = app;
-                window.db = db;
-                window.auth = auth;
-                window.doc = doc;
-                window.getDoc = getDoc;
-
-                window.dispatchEvent(new CustomEvent('firebaseInitialized', { 
-                    detail: { app, db, auth } 
-                }));
-            } catch (error) {
-                console.error('Firebase 초기화 오류:', error);
-            }
-        });
-    </script>
+    <!-- Firebase 초기화는 auth-manager에서 수행 -->
+    <script type="module" src="js/auth-manager.js"></script>
 
     <!-- 공통 모듈 -->
-    <script type="module" src="js/auth-manager.js"></script>
     <script type="module" src="js/db-manager.js"></script>
 </head>
 <body>
     <div id="header-container"></div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.body.setAttribute('data-theme', savedTheme);
-        });
-
-        fetch('header.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('header-container').innerHTML = data;
-                const script = document.createElement('script');
-                script.src = 'js/header-menu.js';
-                script.onload = function() {
-                    if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
-                    if (window.initMobileMenuToggle) window.initMobileMenuToggle();
-                    if (window.SimpleThemeToggle) new window.SimpleThemeToggle();
-
-                    // === 폼 이벤트 연결 추가 ===
-                    // 로그인 폼
-                    const loginForm = document.getElementById('loginForm');
-                    if (loginForm) {
-                        loginForm.addEventListener('submit', async (e) => {
-                            e.preventDefault();
-                            const email = document.getElementById('loginEmail').value;
-                            const password = document.getElementById('loginPassword').value;
-                            if (window.handleEmailLogin) {
-                                await window.handleEmailLogin(email, password);
-                            }
-                        });
-                    }
-                    // 회원가입 폼
-                    const signupForm = document.getElementById('signupForm');
-                    if (signupForm) {
-                        signupForm.addEventListener('submit', async (e) => {
-                            e.preventDefault();
-                            const fullName = document.getElementById('fullName').value;
-                            const email = document.getElementById('signupEmail').value;
-                            const password = document.getElementById('signupPassword').value;
-                            if (window.handleEmailSignup) {
-                                await window.handleEmailSignup(fullName, email, password);
-                            }
-                        });
-                    }
-                    // 소셜 로그인 버튼
-                    const googleBtns = document.querySelectorAll('button[data-provider=\"google\"]');
-                    googleBtns.forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            if (window.handleSocialLogin) {
-                                window.handleSocialLogin('google');
-                            }
-                        });
-                    });
-                    // === 폼 이벤트 연결 끝 ===
-                };
-                document.body.appendChild(script);
-            });
-    </script>
 
     <script type="module">
         // ====== 새 필터 로직 시작 ======
@@ -808,9 +685,8 @@
         // 전체 AI 도구 데이터 (초기 로드)
         let allTools = [];
 
-        // 카테고리 클릭 이벤트 등록
+        // 카테고리 클릭 이벤트 등록 (UI만 먼저 준비)
         document.addEventListener('DOMContentLoaded', () => {
-            // 카테고리 카드 클릭 이벤트
             document.querySelectorAll('.filter-card').forEach(card => {
                 card.addEventListener('click', function() {
                     const category = this.dataset.category;
@@ -824,8 +700,6 @@
                     applyCategoryFilter();
                 });
             });
-            // AI 도구 데이터 로드 후 필터 적용
-            loadAllTools();
         });
 
         // 전체 AI 도구 데이터 로드 (최초 1회)
@@ -834,8 +708,44 @@
                 allTools = await window.dbManager.loadAITools();
                 applyCategoryFilter();
             } catch (e) {
-                console.error('AI 도구 데이터 로드 실패:', e);
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(e, 'AI 도구 데이터 로드');
+                } else {
+                    console.error('AI 도구 데이터 로드 실패:', e);
+                }
             }
+        }
+
+        // DB 준비 이벤트 후 로드
+        window.addEventListener('dbManagerReady', async (e) => {
+            if (e.detail && e.detail.success) {
+                try { 
+                    await loadAllTools(); 
+                } catch (err) { 
+                    if (window.CommonUtils) {
+                        window.CommonUtils.handleError(err, 'AI 도구 데이터 로드');
+                    } else {
+                        console.error(err);
+                    }
+                }
+            } else {
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(new Error(e.detail && e.detail.error || 'DBManager 초기화 실패'), 'DBManager 초기화');
+                } else {
+                    console.error('AI 도구 Firestore 로드 중 오류:', e.detail && e.detail.error);
+                }
+            }
+        });
+
+        // 이미 초기화된 경우 즉시 로드
+        if (window.dbManager && window.dbManager.isInitialized) {
+            loadAllTools().catch(err => {
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(err, 'AI 도구 로드');
+                } else {
+                    console.error('AI 도구 로드 중 오류:', err);
+                }
+            });
         }
 
         // 카테고리 AND 조건 필터링 및 결과 표시
@@ -973,7 +883,7 @@
                             </div>
                         `).join('')
                         : '<p class="text-gray-400">장점 정보가 없습니다.</p>';
-
+                    
                     consContent.innerHTML = Array.isArray(tool.summary?.cons) && tool.summary.cons.length > 0
                         ? tool.summary.cons.map(con => `
                             <div class="pros-cons-item cons">
@@ -983,62 +893,56 @@
                         `).join('')
                         : '<p class="text-gray-400">단점 정보가 없습니다.</p>';
 
-                    // 주요 기능 탭 내용 (summary.features 또는 features)
-                    const featuresContent = document.getElementById('features-content');
-                    const featuresArr = tool.summary?.features || tool.features || [];
-                    featuresContent.innerHTML = featuresArr.length > 0
-                        ? featuresArr.map(feature => `
-                            <div class="bg-opacity-10 bg-white rounded-lg p-4 mb-4">
-                                <div class="flex items-start">
-                                    <i class="fas fa-check text-blue-400 mt-1 mr-3"></i>
-                                    <div>
-                                        <h3 class="font-semibold mb-2">${feature}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')
-                        : '<p class="text-gray-400">기능 정보가 없습니다.</p>';
-
-                    // 가격 정책 탭 내용 (pricing 배열)
+                    // 가격 정보
                     const pricingContent = document.getElementById('pricing-content');
-                    if (Array.isArray(tool.pricing) && tool.pricing.length > 0) {
-                        pricingContent.innerHTML = `
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                ${tool.pricing.map(plan => `
-                                    <div class="bg-opacity-10 bg-white rounded-lg p-6">
-                                        <h3 class="text-xl font-bold mb-4">${plan.planName || ''}</h3>
-                                        <p class="text-2xl font-bold mb-4">${plan.price || ''}</p>
-                                        <p class="text-gray-400">${plan.details || ''}</p>
-                                    </div>
-                                `).join('')}
+                    if (tool.pricing && tool.pricing.length > 0) {
+                        pricingContent.innerHTML = tool.pricing.map(plan => `
+                            <div class="pricing-plan">
+                                <h4 class="font-semibold">${plan.name || '플랜'}</h4>
+                                <p class="text-lg font-bold">${plan.price || '가격 정보 없음'}</p>
+                                <p class="text-sm text-gray-400">${plan.description || ''}</p>
                             </div>
-                        `;
+                        `).join('');
                     } else {
                         pricingContent.innerHTML = '<p class="text-gray-400">가격 정보가 없습니다.</p>';
                     }
 
-                    // 리뷰 탭 내용 (reviews 배열)
+                    // 사용자 리뷰
                     const reviewsContent = document.getElementById('reviews-content');
-                    reviewsContent.innerHTML = tool.reviews?.length > 0
-                        ? tool.reviews.map(review => `
-                            <div class="bg-opacity-10 bg-white rounded-lg p-6 mb-4">
-                                <div class="flex items-center mb-4">
+                    if (tool.reviews && tool.reviews.length > 0) {
+                        reviewsContent.innerHTML = tool.reviews.map(review => `
+                            <div class="review-item">
+                                <div class="flex items-center mb-2">
                                     <div class="rating-stars mr-2">
-                                        ${getStarRating(review.rating)}
+                                        ${getStarRating(review.rating || 0)}
                                     </div>
-                                    <span class="font-bold">${review.author || '익명'}</span>
+                                    <span class="text-sm text-gray-400">${review.date || ''}</span>
                                 </div>
-                                <p class="text-gray-400">${review.comment}</p>
+                                <p class="text-sm">${review.comment || ''}</p>
                             </div>
-                        `).join('')
-                        : '<p class="text-gray-400">리뷰가 없습니다.</p>';
+                        `).join('');
+                    } else {
+                        reviewsContent.innerHTML = '<p class="text-gray-400">리뷰가 없습니다.</p>';
+                    }
 
-                    // 탭 전환 기능 보장 (detail_sp.html과 동일하게)
-                    setupTabs();
+                    // 저장 버튼 상태 확인
+                    if (window.auth && window.auth.currentUser) {
+                        checkSaveStatus(toolId);
+                    }
+                } else {
+                    if (window.CommonUtils) {
+                        window.CommonUtils.showError('도구 정보를 찾을 수 없습니다.');
+                    } else {
+                        alert('도구 정보를 찾을 수 없습니다.');
+                    }
                 }
             } catch (error) {
-                console.error('도구 상세 정보 Firestore 로드 중 오류:', error);
-                alert('상세 정보를 불러오는 중 오류가 발생했습니다.');
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, '도구 상세 정보 표시');
+                } else {
+                    console.error('도구 상세 정보 표시 오류:', error);
+                    alert('도구 정보를 불러오는 중 오류가 발생했습니다.');
+                }
             }
         };
 
@@ -1070,20 +974,44 @@
             });
         }
 
-        // 페이지 로드 시 실행
+        // 페이지 로드 시 실행: UI 탭만 먼저 준비
         document.addEventListener('DOMContentLoaded', () => {
-            // 초기화 함수 호출
             setupTabs();
-            loadAITools();
         });
 
-        // 전역 객체에 필요한 참조 할당
-        window.app = app;
-        window.auth = auth;
-        window.db = db;
-        window.googleProvider = googleProvider;
-        window.ref = ref;
-        window.set = set;
+        // DB 준비되면 데이터 로드
+        window.addEventListener('dbManagerReady', async (e) => {
+            if (e.detail && e.detail.success) {
+                try {
+                    await loadAITools();
+                } catch (err) {
+                    if (window.CommonUtils) {
+                        window.CommonUtils.handleError(err, 'AI 도구 로드');
+                    } else {
+                        console.error('AI 도구 로드 중 오류:', err);
+                    }
+                }
+            } else {
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(new Error(e.detail && e.detail.error || 'DBManager 초기화 실패'), 'DBManager 초기화');
+                } else {
+                    console.error('AI 도구 Firestore 로드 중 오류:', e.detail && e.detail.error);
+                }
+            }
+        });
+
+        // 이미 초기화된 경우 즉시 로드
+        if (window.dbManager && window.dbManager.isInitialized) {
+            loadAITools().catch(err => {
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(err, 'AI 도구 로드');
+                } else {
+                    console.error('AI 도구 로드 중 오류:', err);
+                }
+            });
+        }
+
+        // 전역 객체는 auth-manager에서 설정됨
 
        
         // 전체 도구 수 업데이트 함수
@@ -1202,8 +1130,12 @@
                 });
 
             } catch (error) {
-                console.error("AI 도구 로드 중 오류 발생:", error);
-                handleError(container, error);
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, 'AI 도구 로드');
+                } else {
+                    console.error("AI 도구 로드 중 오류 발생:", error);
+                    handleError(container, error);
+                }
             }
         }
 
@@ -1784,13 +1716,6 @@
     <!-- Footer -->
    <!-- Footer Container -->
    <div id="footer-container"></div>
-   <script>
-     fetch('footer.html')
-       .then(response => response.text())
-       .then(data => {
-         document.getElementById('footer-container').innerHTML = data;
-       });
-   </script>
 
 
 

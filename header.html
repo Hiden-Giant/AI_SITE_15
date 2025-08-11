@@ -23,6 +23,7 @@
     <script src="lang/fr.js"></script>
     <script src="lang/hi.js"></script>
     <script src="js/translate.js"></script>
+    <script src="js/common.js"></script>
 
     
     <style>
@@ -1102,15 +1103,25 @@
             console.log('설정 페이지로 이동');
         }
 
-        function handleLogout() {
-            // 로그아웃 로직
-            if (window.firebase && window.firebase.auth) {
-                window.firebase.auth().signOut().then(() => {
-                    console.log('로그아웃 성공');
+        async function handleLogout() {
+            try {
+                if (window.authManager && window.authManager.handleLogout) {
+                    await window.authManager.handleLogout();
                     window.location.reload();
-                }).catch((error) => {
+                    return;
+                }
+                // 하위 호환: v10 모듈 API 동적 import 시도
+                const { getAuth, signOut } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+                const auth = window.auth || (window.app ? getAuth(window.app) : getAuth());
+                await signOut(auth);
+                window.location.reload();
+            } catch (error) {
+                if (window.CommonUtils) {
+                    window.CommonUtils.handleError(error, '로그아웃');
+                } else {
                     console.error('로그아웃 오류:', error);
-                });
+                    alert('로그아웃 중 오류가 발생했습니다.');
+                }
             }
         }
 
@@ -1156,8 +1167,7 @@
     <!-- 외부 스크립트 파일들 -->
     <script src="js/header-menu.js"></script>
     <script src="js/theme-manager.js"></script>
-    <script src="js/auth-manager.js"></script>
-    <script src="js/firebase-init.js"></script>
+    <script type="module" src="js/auth-manager.js"></script>
 
 </body>
 </html> 
