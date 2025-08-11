@@ -1,4 +1,4 @@
-import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js';
 import { memberDbConfig } from '../config.js';
 
 // 별도 app 인스턴스 생성 (중복 방지)

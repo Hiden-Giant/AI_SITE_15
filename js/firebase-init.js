@@ -1,5 +1,5 @@
 // Firebase 초기화 및 인증 관리를 위한 중앙화된 모듈
-import { initializeApp, getApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { initializeApp, getApp } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js';
 import { 
     getAuth, 
     signInWithPopup,
@@ -11,8 +11,8 @@ import {
     onAuthStateChanged,
     signOut,
     getRedirectResult
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+} from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js';
+import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js';
 import { firebaseConfig } from './config.js';
 import { ensureMemberDbEntry } from './member-db-helper.js';
 

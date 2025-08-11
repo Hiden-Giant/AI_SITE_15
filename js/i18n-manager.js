@@ -45,7 +45,7 @@ class I18nManager {
     }
 
     async init() {
-        // 기본 언어 로드
+        // 기본 언어만 우선 로드 (성능 최적화)
         await this.loadLanguage(this.fallbackLanguage);
         
         // 저장된 언어 또는 브라우저 언어 감지
@@ -57,6 +57,65 @@ class I18nManager {
         
         // 동적 콘텐츠 번역을 위한 MutationObserver 설정
         this.setupMutationObserver();
+        
+        // 백그라운드에서 다른 언어들 지연 로딩 시작
+        this.startLazyLanguageLoading();
+    }
+
+    // 백그라운드에서 다른 언어들 지연 로딩
+    startLazyLanguageLoading() {
+        // 사용자 인터랙션이 없을 때 백그라운드에서 로드
+        setTimeout(() => {
+            this.loadLanguagesInBackground();
+        }, 5000); // 5초 후 시작
+    }
+
+    // 백그라운드에서 언어 파일들 로드
+    async loadLanguagesInBackground() {
+        try {
+            console.log('백그라운드에서 추가 언어 파일들 로딩 시작');
+            
+            // 현재 언어가 아닌 다른 언어들을 우선순위에 따라 로드
+            const priorityLanguages = this.getPriorityLanguages();
+            
+            for (const lang of priorityLanguages) {
+                if (!this.loadedLanguages.has(lang)) {
+                    try {
+                        await this.loadLanguage(lang);
+                        console.log(`백그라운드에서 ${lang} 언어 로드 완료`);
+                    } catch (error) {
+                        console.warn(`백그라운드에서 ${lang} 언어 로드 실패:`, error);
+                    }
+                }
+            }
+            
+            console.log('백그라운드 언어 로딩 완료');
+            
+        } catch (error) {
+            console.warn('백그라운드 언어 로딩 중 오류:', error);
+        }
+    }
+
+    // 우선순위 언어 목록 반환
+    getPriorityLanguages() {
+        const currentLang = this.currentLanguage;
+        const priorityOrder = [
+            'en', // 영어는 글로벌 사용자에게 중요
+            'ja', // 일본어 (한국과 가까운 지역)
+            'zh', // 중국어 (글로벌 사용자 수가 많음)
+            'es', // 스페인어 (남미 사용자)
+            'fr', // 프랑스어
+            'de', // 독일어
+            'pt', // 포르투갈어
+            'ru', // 러시아어
+            'ar', // 아랍어
+            'vi', // 베트남어
+            'id', // 인도네시아어
+            'hi'  // 힌디어
+        ];
+        
+        // 현재 언어를 제외하고 우선순위 순서대로 반환
+        return priorityLanguages.filter(lang => lang !== currentLang);
     }
 
     // 브라우저 언어 감지
@@ -76,7 +135,7 @@ class I18nManager {
         return this.fallbackLanguage;
     }
 
-    // 언어 설정
+    // 언어 설정 - 최적화된 버전
     async setLanguage(lang) {
         if (!this.supportedLanguages.includes(lang)) {
             console.warn(`Unsupported language: ${lang}, falling back to ${this.fallbackLanguage}`);
@@ -100,59 +159,65 @@ class I18nManager {
             // 페이지 번역 적용
             this.translatePage();
             
-            // 성능 측정
+            // 언어 변경 이벤트 발생
+            this.dispatchTranslationEvent('languageChanged', { language: lang });
+            
             const loadTime = performance.now() - startTime;
-            this.performanceMetrics.loadTimes.set(lang, loadTime);
-            
-            // 번역 완료 이벤트 발생
-            this.dispatchTranslationEvent('languageChanged', { language: lang, loadTime });
-            
-            console.log(`Language changed to ${lang} in ${loadTime.toFixed(2)}ms`);
+            console.log(`언어 변경 완료: ${lang} (${loadTime.toFixed(2)}ms)`);
             
         } catch (error) {
-            console.error(`Failed to set language to ${lang}:`, error);
-            // 실패 시 기본 언어 사용
+            console.error(`언어 설정 실패: ${lang}`, error);
+            // 에러 발생 시 기본 언어로 폴백
             if (lang !== this.fallbackLanguage) {
                 await this.setLanguage(this.fallbackLanguage);
             }
         }
     }
 
-    // 언어 파일 로드
+    // 언어 파일 로드 - 최적화된 버전
     async loadLanguage(lang) {
         if (this.loadedLanguages.has(lang)) {
-            this.performanceMetrics.cacheHits++;
-            return;
+            return this.translations.get(lang);
         }
 
-        this.performanceMetrics.cacheMisses++;
         const startTime = performance.now();
         
         try {
-            const response = await fetch(`lang/${lang}.js`);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
+            // 동적 import로 언어 파일 로드
+            const langModule = await import(`../lang/${lang}.js`);
+            const translations = langModule.default || langModule;
             
-            const scriptContent = await response.text();
+            // 번역 데이터 검증 및 최적화
+            const optimizedTranslations = this.optimizeTranslations(translations);
             
-            // 번역 객체 추출
-            const match = scriptContent.match(/const\s+translations_\w+\s*=\s*({[\s\S]*});/);
-            if (!match) {
-                throw new Error('Invalid translation file format');
-            }
-            
-            const translationObj = eval(`(${match[1]})`);
-            this.translations.set(lang, translationObj);
+            this.translations.set(lang, optimizedTranslations);
             this.loadedLanguages.add(lang);
             
             const loadTime = performance.now() - startTime;
-            console.log(`Translation loaded for ${lang} in ${loadTime.toFixed(2)}ms`);
+            this.performanceMetrics.loadTimes.set(lang, loadTime);
+            
+            console.log(`언어 파일 로드 완료: ${lang} (${loadTime.toFixed(2)}ms)`);
+            
+            return optimizedTranslations;
             
         } catch (error) {
-            console.error(`Error loading translation for ${lang}:`, error);
+            console.error(`언어 파일 로드 실패: ${lang}`, error);
             throw error;
         }
+    }
+
+    // 번역 데이터 최적화
+    optimizeTranslations(translations) {
+        const optimized = {};
+        
+        // 빈 값이나 undefined 제거
+        for (const [key, value] of Object.entries(translations)) {
+            if (value !== null && value !== undefined && value !== '') {
+                optimized[key] = value;
+            }
+        }
+        
+        return optimized;
     }
 
     // 페이지 번역

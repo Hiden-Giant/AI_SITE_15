@@ -5,13 +5,13 @@ async function initMemberAndFavoriteTracking() {
   try {
     const auth = window.auth;
     if (!auth) return;
-    const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+            const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js');
     onAuthStateChanged(auth, async (user) => {
       if (!user) return;
       // Firestore에 회원 도큐먼트 존재 보장 (users/{uid})
       try {
         const db = window.db;
-        const { doc, setDoc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+        const { doc, setDoc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js');
         const userDocRef = doc(db, 'users', user.uid);
         const snap = await getDoc(userDocRef);
         if (!snap.exists()) {
@@ -34,7 +34,7 @@ async function saveFavoriteTool(toolId) {
       alert('로그인이 필요합니다.');
       return;
     }
-    const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+            const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js');
     const favRef = doc(db, 'users', auth.currentUser.uid, 'favorites', toolId);
     await setDoc(favRef, { savedAt: new Date().toISOString() }, { merge: true });
     console.log('즐겨찾기 저장 완료:', toolId);

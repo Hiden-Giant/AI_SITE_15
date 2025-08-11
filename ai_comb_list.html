@@ -22,20 +22,7 @@
     </script>
 
     
-    <!-- 다국어 관련 스크립트 -->
-    <script src="lang/en.js"></script>
-    <script src="lang/ko.js"></script>
-    <script src="lang/ja.js"></script>
-    <script src="lang/zh.js"></script>
-    <script src="lang/ru.js"></script>
-    <script src="lang/es.js"></script>
-    <script src="lang/pt.js"></script>
-    <script src="lang/ar.js"></script>
-    <script src="lang/vi.js"></script>
-    <script src="lang/id.js"></script>
-    <script src="lang/fr.js"></script>
-    <script src="lang/hi.js"></script>
-    <script src="js/translate.js"></script>
+    <!-- 다국어 관련 스크립트는 header.html에서 이미 로드됨 -->
 
 
     
@@ -192,6 +179,18 @@
                 max-width: 35px;
             }
         }
+        
+        /* 페이지네이션 버튼 호버 효과 */
+        #prevPageBtn:hover:not(:disabled),
+        #nextPageBtn:hover:not(:disabled) {
+            background-color: var(--hover-bg) !important;
+            border-color: var(--accent-color) !important;
+        }
+        
+        /* 로딩 인디케이터 다크 테마 지원 */
+        #loadingIndicator span {
+            color: var(--text-secondary);
+        }
     </style>
     <!-- 불필요한 스타일 제거 --></head>
 <body>
@@ -234,12 +233,20 @@
                 
                 <div class="filter-dropdown">
                     <label class="block text-sm font-medium mb-1">Category</label>
-                    <select class="w-full sm:w-48 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option>All Categories</option>
-                        <option>Content Generation</option>
-                        <option>Data Processing</option>
-                        <option>Media Creation</option>
-                        <option>Writing &amp; Editing</option>
+                    <select id="categoryFilter" class="w-full sm:w-48 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" onchange="onCategoryChange(this.value)">
+                        <option value="">All Categories</option>
+                        <option value="text-generation">텍스트 생성</option>
+                        <option value="image-generation">이미지 생성</option>
+                        <option value="audio-generation">음성/오디오</option>
+                        <option value="video-generation">비디오 제작</option>
+                        <option value="coding-assistant">코드 작성</option>
+                        <option value="data-analysis">데이터 분석</option>
+                        <option value="marketing">홍보 / 마케팅</option>
+                        <option value="productivity">생산성</option>
+                        <option value="design">디자인</option>
+                        <option value="education">교육</option>
+                        <option value="business">비즈니스</option>
+                        <option value="other">기타</option>
                     </select>
                 </div>
                 
@@ -262,283 +269,32 @@
 
         <!-- Workflows Grid -->
         <div id="workflowsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-            <!-- Workflow 1: Content Generation Pipeline -->
-            <div class="workflow-card p-4 sm:p-6">
-                <div class="flex items-center mb-4">
-                    <div class="user-avatar bg-purple-500 mr-3">
-                        <span>S</span>
-                    </div>
-                    <span class="font-semibold">Sarah</span>
-                </div>
-                
-                <div class="flex items-center justify-center mb-4">
-                    <div class="tool-icon bg-green-500">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-3"></i>
-                    <div class="tool-icon bg-black">
-                        <i class="fas fa-note-sticky"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-3"></i>
-                    <div class="tool-icon bg-blue-500">
-                        <i class="fas fa-palette"></i>
-                    </div>
-                </div>
-                
-                <div class="text-center mb-4">
-                    <p class="text-sm mb-1">ChatGPT → Notion AI → Midjourney</p>
-                    <h3 class="text-lg font-semibold">Content Generation Pipeline</h3>
-                </div>
-                
-                <div class="flex items-center justify-center space-x-6 text-sm">
-                    <div class="flex items-center">
-                        <i class="fas fa-heart text-red-500 mr-1"></i>
-                        <span>85</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-comment text-blue-500 mr-1"></i>
-                        <span>12</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-eye text-gray-500 mr-1"></i>
-                        <span>30</span>
-                    </div>
-                </div>
-            </div>
+            <!-- 동적으로 로드되는 워크플로우 카드들이 여기에 표시됩니다 -->
+        </div>
 
-            <!-- Workflow 2: Data Processing Automation -->
-            <div class="workflow-card p-4 sm:p-6">
-                <div class="flex items-center mb-4">
-                    <div class="user-avatar bg-blue-500 mr-3">
-                        <span>J</span>
-                    </div>
-                    <span class="font-semibold">Jason</span>
-                </div>
-                
-                <div class="flex items-center justify-center mb-4">
-                    <div class="tool-icon bg-orange-400">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-3"></i>
-                    <div class="tool-icon bg-green-600">
-                        <i class="fas fa-table"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-3"></i>
-                    <div class="tool-icon bg-orange-500">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                </div>
-                
-                <div class="text-center mb-4">
-                    <p class="text-sm mb-1">Claude → Google Sheets → Zapier</p>
-                    <h3 class="text-lg font-semibold">Data Processing Automation</h3>
-                </div>
-                
-                <div class="flex items-center justify-center space-x-6 text-sm">
-                    <div class="flex items-center">
-                        <i class="fas fa-heart text-red-500 mr-1"></i>
-                        <span>67</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-comment text-blue-500 mr-1"></i>
-                        <span>8</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-eye text-gray-500 mr-1"></i>
-                        <span>22</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Workflow 3: Podcast Transcription Workflow -->
-            <div class="workflow-card p-4 sm:p-6">
-                <div class="flex items-center mb-4">
-                    <div class="user-avatar bg-red-500 mr-3">
-                        <span>E</span>
-                    </div>
-                    <span class="font-semibold">Emily</span>
-                </div>
-                
-                <div class="flex items-center justify-center mb-4">
-                    <div class="tool-icon bg-blue-400">
-                        <i class="fas fa-microphone-lines"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-3"></i>
-                    <div class="tool-icon bg-blue-600">
-                        <i class="fas fa-edit"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-3"></i>
-                    <div class="tool-icon bg-red-500">
-                        <i class="fas fa-podcast"></i>
-                    </div>
-                </div>
-                
-                <div class="text-center mb-4">
-                    <p class="text-sm mb-1">Whisper → Descript → Adobe Podcast</p>
-                    <h3 class="text-lg font-semibold">Podcast Transcription Workflow</h3>
-                </div>
-                
-                <div class="flex items-center justify-center space-x-6 text-sm">
-                    <div class="flex items-center">
-                        <i class="fas fa-heart text-red-500 mr-1"></i>
-                        <span>74</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-comment text-blue-500 mr-1"></i>
-                        <span>15</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-eye text-gray-500 mr-1"></i>
-                        <span>35</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Workflow 4: AI-Powered Writing Assistant -->
-            <div class="workflow-card p-4 sm:p-6">
-                <div class="flex items-center mb-4">
-                    <div class="user-avatar bg-yellow-500 mr-3">
-                        <span>A</span>
-                    </div>
-                    <span class="font-semibold">Alex</span>
-                </div>
-                
-                <div class="flex items-center justify-center mb-4">
-                    <div class="tool-icon bg-yellow-400">
-                        <i class="fas fa-face-smile"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-2"></i>
-                    <div class="tool-icon bg-green-500" style="width: 36px; height: 36px; font-size: 16px;">
-                        <i class="fas fa-check"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-2"></i>
-                    <div class="tool-icon bg-green-600" style="width: 36px; height: 36px; font-size: 16px;">
-                        <i class="fas fa-spell-check"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-2"></i>
-                    <div class="tool-icon bg-blue-500" style="width: 36px; height: 36px; font-size: 16px;">
-                        <i class="fas fa-copy"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-2"></i>
-                    <div class="tool-icon bg-purple-600" style="width: 36px; height: 36px; font-size: 16px;">
-                        <i class="fas fa-wand-magic-sparkles"></i>
-                    </div>
-                </div>
-                
-                <div class="text-center mb-4">
-                    <p class="text-sm mb-1">Hugging Face → Grammarly → Copy.ai</p>
-                    <h3 class="text-lg font-semibold">AI-Powered Writing Assistant</h3>
-                </div>
-                
-                <div class="flex items-center justify-center space-x-6 text-sm">
-                    <div class="flex items-center">
-                        <i class="fas fa-heart text-red-500 mr-1"></i>
-                        <span>92</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-comment text-blue-500 mr-1"></i>
-                        <span>18</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-eye text-gray-500 mr-1"></i>
-                        <span>45</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Workflow 5: Image Enhancement Pipeline -->
-            <div class="workflow-card p-4 sm:p-6">
-                <div class="flex items-center mb-4">
-                    <div class="user-avatar bg-pink-500 mr-3">
-                        <span>M</span>
-                    </div>
-                    <span class="font-semibold">Maria</span>
-                </div>
-                
-                <div class="flex items-center justify-center mb-4">
-                    <div class="tool-icon bg-purple-500">
-                        <i class="fas fa-image"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-3"></i>
-                    <div class="tool-icon bg-blue-500">
-                        <i class="fas fa-magic"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-3"></i>
-                    <div class="tool-icon bg-red-500">
-                        <i class="fas fa-paint-brush"></i>
-                    </div>
-                </div>
-                
-                <div class="text-center mb-4">
-                    <p class="text-sm mb-1">DALL-E → Upscayl → Photoshop</p>
-                    <h3 class="text-lg font-semibold">Image Enhancement Pipeline</h3>
-                </div>
-                
-                <div class="flex items-center justify-center space-x-6 text-sm">
-                    <div class="flex items-center">
-                        <i class="fas fa-heart text-red-500 mr-1"></i>
-                        <span>58</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-comment text-blue-500 mr-1"></i>
-                        <span>9</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-eye text-gray-500 mr-1"></i>
-                        <span>28</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Workflow 6: Code Documentation Generator -->
-            <div class="workflow-card p-4 sm:p-6">
-                <div class="flex items-center mb-4">
-                    <div class="user-avatar bg-green-500 mr-3">
-                        <span>D</span>
-                    </div>
-                    <span class="font-semibold">David</span>
-                </div>
-                
-                <div class="flex items-center justify-center mb-4">
-                    <div class="tool-icon bg-gray-800">
-                        <i class="fas fa-code"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-3"></i>
-                    <div class="tool-icon bg-green-500">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <i class="fas fa-arrow-right arrow mx-3"></i>
-                    <div class="tool-icon bg-blue-600">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                </div>
-                
-                <div class="text-center mb-4">
-                    <p class="text-sm mb-1">GitHub Copilot → Claude → Notion</p>
-                    <h3 class="text-lg font-semibold">Code Documentation Generator</h3>
-                </div>
-                
-                <div class="flex items-center justify-center space-x-6 text-sm">
-                    <div class="flex items-center">
-                        <i class="fas fa-heart text-red-500 mr-1"></i>
-                        <span>43</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-comment text-blue-500 mr-1"></i>
-                        <span>6</span>
-                    </div>
-                    <div class="flex items-center">
-                        <i class="fas fa-eye text-gray-500 mr-1"></i>
-                        <span>19</span>
-                    </div>
-                </div>
+        <!-- 로딩 인디케이터 -->
+        <div id="loadingIndicator" class="text-center py-8 hidden">
+            <div class="inline-flex items-center space-x-2">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <span class="text-gray-600 dark:text-gray-400">로딩 중...</span>
             </div>
         </div>
 
+        <!-- 페이지네이션 -->
+        <div id="paginationContainer" class="flex justify-center items-center space-x-2 mt-8 mb-4">
+            <button id="prevPageBtn" class="px-3 py-2 text-sm font-medium rounded-md border disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200" style="color: var(--text-primary); background-color: var(--card-bg); border-color: var(--border-color);" disabled>
+                이전
+            </button>
+            <span id="pageInfo" class="px-3 py-2 text-sm" style="color: var(--text-primary);">1 / 1</span>
+            <button id="nextPageBtn" class="px-3 py-2 text-sm font-medium rounded-md border transition-colors duration-200" style="color: var(--text-primary); background-color: var(--card-bg); border-color: var(--border-color);">
+                다음
+            </button>
+        </div>
+
         <!-- Load More Button -->
-        <div class="text-center mt-8 sm:mt-12">
-            <button class="btn-primary px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
-                Load More Workflows
+        <div id="loadMoreContainer" class="text-center mt-8 sm:mt-12">
+            <button id="loadMoreBtn" class="btn-primary px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-base">
+                더 많은 워크플로우 로드
             </button>
         </div>
     </main>
@@ -570,24 +326,86 @@
 
     <!-- Firebase 초기화 통합: AuthManager 준비 시 동작 시작 -->
     <script>
-        let db = null;
-        let auth = null;
+        let localDb = null;
+        let localAuth = null;
+        
         function __acl_onReady() {
-            if (!db && window.db) {
-                db = window.db;
-                auth = window.auth;
+            console.log('Firebase 초기화 확인 중...');
+            console.log('window.db:', window.db);
+            console.log('window.auth:', window.auth);
+            
+            if (window.db && window.auth) {
+                console.log('Firebase 연결 성공, 레시피 데이터 로드 시작');
+                
+                // 이벤트 리스너 제거 (무한 루프 방지)
+                window.removeEventListener('authManagerReady', __acl_onReady);
+                window.removeEventListener('firebaseInitialized', __acl_onReady);
+                
                 // 레시피 데이터 로드
                 if (window.loadRecipeData) {
                     window.loadRecipeData();
+                } else {
+                    console.error('loadRecipeData 함수를 찾을 수 없습니다.');
                 }
+            } else {
+                console.log('Firebase 아직 준비되지 않음, 재시도 예정');
+                // 1초 후 재시도
+                setTimeout(__acl_onReady, 1000);
             }
         }
+        
+        // 페이지 로드 완료 시 즉시 확인
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', __acl_onReady);
+        } else {
+            __acl_onReady();
+        }
+        
         window.addEventListener('authManagerReady', __acl_onReady);
         window.addEventListener('firebaseInitialized', __acl_onReady);
+        
+        // 추가 이벤트 리스너
+        window.addEventListener('load', function() {
+            console.log('페이지 로드 완료, Firebase 상태 재확인');
+            setTimeout(__acl_onReady, 500);
+        });
     </script>
 
     <script type="module">
-        import { collection, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy, limit, where, startAfter } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js';
+        
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyDXx5T26Q_nXeIthajrVYAa0iznbUwFcUs",
+            authDomain: "ai-tools-data-b2b7b.firebaseapp.com",
+            projectId: "ai-tools-data-b2b7b",
+            storageBucket: "ai-tools-data-b2b7b.appspot.com",
+            messagingSenderId: "689918528645",
+            appId: "1:689918528645:web:ab332602ff388cfac52dec",
+            databaseURL: "https://ai-tools-data-b2b7b-default-rtdb.firebaseio.com"
+        };
+        
+        // Firebase 초기화
+        let app;
+        try {
+            app = initializeApp(firebaseConfig);
+            console.log('Firebase 앱 초기화 성공');
+        } catch (error) {
+            if (error.code !== 'app/duplicate-app') {
+                console.error('Firebase 앱 초기화 오류:', error);
+                throw error;
+            }
+            console.log('이미 초기화된 Firebase 앱 사용');
+        }
+        
+        // Firestore 인스턴스 생성
+        const db = getFirestore(app);
+        console.log('Firestore 인스턴스 생성 완료');
+        
+        // 전역 변수로 설정
+        window.db = db;
+        window.firebaseApp = app;
 
         // AI 도구 정보 캐시
         let toolImagesCache = {};
@@ -597,12 +415,36 @@
         let allRecipes = [];
         let filteredRecipes = [];
         window.__recipesById = {};
+        
+        // 페이지네이션 관련 변수
+        let currentPage = 1;
+        let itemsPerPage = 20;
+        let totalPages = 1;
+        let isLoading = false;
+        let hasMoreData = true;
+        
+        // 카테고리별 지연 로딩을 위한 변수
+        let categoryLoadQueue = [];
+        let isCategoryLoading = false;
+        
+        // Firebase 초기화 완료 이벤트 발생
+        window.dispatchEvent(new CustomEvent('firebaseInitialized'));
 
         // AI 도구 정보 로드 함수
         async function loadToolImages() {
             try {
+                console.log('AI 도구 정보 로드 시작...');
+                
+                if (!window.db) {
+                    console.error('Firebase DB가 초기화되지 않았습니다.');
+                    return;
+                }
+                
                 const toolsRef = collection(window.db, 'ai-tools');
+                console.log('ai-tools 컬렉션에 접근 중...');
+                
                 const toolsSnapshot = await getDocs(toolsRef);
+                console.log('AI 도구 문서 수:', toolsSnapshot.size);
                 
                 toolsSnapshot.forEach((doc) => {
                     const data = doc.data();
@@ -624,7 +466,10 @@
                 });
                 
                 console.log(`${Object.keys(toolInfoCache).length}개의 AI 도구 정보를 로드했습니다.`);
+                console.log('로드된 도구들:', Object.keys(toolInfoCache));
+                
             } catch (error) {
+                console.error('AI 도구 정보 로드 중 오류 발생:', error);
                 if (window.CommonUtils) {
                     window.CommonUtils.handleError(error, 'AI 도구 정보 로드');
                 } else {
@@ -633,15 +478,81 @@
             }
         }
 
-        // 레시피 데이터 로드 함수
-        async function loadRecipeData() {
+        // 레시피 데이터 로드 함수 (페이지네이션 지원)
+        async function loadRecipeData(page = 1, category = null, searchTerm = '') {
+            console.log('loadRecipeData 함수 호출됨:', { page, category, searchTerm });
+            
+            if (isLoading) {
+                console.log('이미 로딩 중입니다.');
+                return;
+            }
+            
+            // Firebase 연결 상태 확인
+            if (!window.db) {
+                console.error('Firebase DB가 초기화되지 않았습니다.');
+                showLoading(false);
+                return;
+            }
+            
             try {
-                // 먼저 AI 도구 이미지들을 로드
-                await loadToolImages();
+                isLoading = true;
+                showLoading(true);
+                console.log('레시피 데이터 로드 시작...');
                 
+                // 먼저 AI 도구 이미지들을 로드 (첫 페이지에서만)
+                if (page === 1) {
+                    console.log('AI 도구 이미지 로드 시작...');
+                    await loadToolImages();
+                }
+                
+                console.log('Firestore 컬렉션에 접근 중...');
                 const recipesRef = collection(window.db, 'public_recipe_collection');
-                const q = query(recipesRef, orderBy('created_at', 'desc'), limit(20));
+                
+                // 먼저 단순한 쿼리로 테스트 (정렬 없이)
+                let q = query(recipesRef, limit(itemsPerPage));
+                console.log('기본 쿼리 생성:', q);
+                
+                // 카테고리 필터 적용
+                if (category && category !== 'All Categories') {
+                    console.log('카테고리 필터 적용:', category);
+                    q = query(q, where('my_recipe_category', '==', category));
+                }
+                
+                // 검색어가 있는 경우 필터링
+                if (searchTerm) {
+                    console.log('검색어 필터 적용:', searchTerm);
+                    // 검색은 클라이언트 사이드에서 처리 (Firestore 제한 때문)
+                    q = query(q, limit(itemsPerPage));
+                }
+                
+                // 페이지네이션 적용 (startAfter는 나중에 구현)
+                console.log('최종 쿼리:', q);
+                
+                console.log('Firestore 쿼리 실행 중...');
                 const querySnapshot = await getDocs(q);
+                console.log('쿼리 결과:', querySnapshot.size, '개의 문서');
+                
+                // 쿼리 결과 상세 분석
+                if (querySnapshot.empty) {
+                    console.log('쿼리 결과가 비어있습니다. 컬렉션 존재 여부 확인 중...');
+                    
+                    // 컬렉션 자체가 존재하는지 확인
+                    try {
+                        const testQuery = query(collection(window.db, 'public_recipe_collection'), limit(1));
+                        const testSnapshot = await getDocs(testQuery);
+                        console.log('테스트 쿼리 결과:', testSnapshot.size, '개의 문서');
+                        
+                        if (testSnapshot.empty) {
+                            console.error('public_recipe_collection 컬렉션이 비어있거나 접근할 수 없습니다.');
+                        } else {
+                            console.log('컬렉션은 존재하지만 쿼리 조건에 맞는 문서가 없습니다.');
+                        }
+                    } catch (testError) {
+                        console.error('테스트 쿼리 오류:', testError);
+                    }
+                } else {
+                    console.log('쿼리 성공! 문서 ID들:', querySnapshot.docs.map(doc => doc.id));
+                }
                 
                 const workflowsContainer = document.getElementById('workflowsGrid');
                 if (!workflowsContainer) {
@@ -649,36 +560,259 @@
                     return;
                 }
 
-                // 기존 정적 카드들 제거
-                workflowsContainer.innerHTML = '';
+                // 첫 페이지인 경우에만 기존 카드들 제거
+                if (page === 1) {
+                    workflowsContainer.innerHTML = '';
+                    allRecipes = [];
+                }
 
-                // 모든 레시피 데이터 저장
-                allRecipes = [];
+                // 새로 로드된 레시피 데이터 저장
+                const newRecipes = [];
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    data.docId = doc.id; // 문서 ID 추가
+                    data.docId = doc.id;
+                    newRecipes.push(data);
                     allRecipes.push(data);
+                    console.log('레시피 데이터:', {
+                        id: doc.id,
+                        title: data.my_recipe_title || '제목 없음',
+                        category: data.my_recipe_category || '카테고리 없음',
+                        description: data.my_recipe_basic_description || '설명 없음'
+                    });
                 });
 
-                // 초기 카드들 렌더링
-                filteredRecipes = [...allRecipes];
-                renderRecipes(filteredRecipes);
+                // 검색어가 있는 경우 필터링
+                if (searchTerm) {
+                    filteredRecipes = allRecipes.filter(recipe => {
+                        const title = (recipe.my_recipe_title || '').toLowerCase();
+                        const description = (recipe.my_recipe_basic_description || '').toLowerCase();
+                        const tools = (recipe.my_recipe_tool || []).join(' ').toLowerCase();
+                        const category = (recipe.my_recipe_category || '').toLowerCase();
+                        const difficulty = (recipe.my_recipe_difficulty || '').toLowerCase();
+                        const recommendedGroups = (recipe.my_recipe_recommended_groups || []).join(' ').toLowerCase();
 
-                console.log(`${querySnapshot.size}개의 레시피를 로드했습니다.`);
+                        return title.includes(searchTerm) ||
+                               description.includes(searchTerm) ||
+                               tools.includes(searchTerm) ||
+                               category.includes(searchTerm) ||
+                               difficulty.includes(searchTerm) ||
+                               recommendedGroups.includes(searchTerm);
+                    });
+                } else {
+                    filteredRecipes = [...allRecipes];
+                }
+
+                // 페이지네이션 정보 업데이트
+                currentPage = page;
+                totalPages = Math.ceil(filteredRecipes.length / itemsPerPage);
+                hasMoreData = newRecipes.length === itemsPerPage;
                 
-                // 검색 이벤트 리스너 설정
-                setupSearchListener();
+                console.log('필터링된 레시피 수:', filteredRecipes.length);
+                console.log('현재 페이지:', currentPage, '/', totalPages);
+                
+                // 카드들 렌더링
+                if (page === 1) {
+                    renderRecipes(filteredRecipes.slice(0, itemsPerPage));
+                } else {
+                    appendRecipes(newRecipes);
+                }
+                
+                // 페이지네이션 UI 업데이트
+                updatePaginationUI();
+                
+                console.log(`페이지 ${page}: ${newRecipes.length}개의 레시피를 로드했습니다.`);
+                
+                // 첫 페이지에서만 검색 이벤트 리스너 설정
+                if (page === 1) {
+                    setupSearchListener();
+                    setupPaginationListeners();
+                    setupInfiniteScroll();
+                }
+                
             } catch (error) {
+                console.error('레시피 데이터 로드 중 오류 발생:', error);
                 if (window.CommonUtils) {
                     window.CommonUtils.handleError(error, '레시피 데이터 로드');
                 } else {
                     console.error('레시피 데이터 로드 오류:', error);
                 }
+                
+                // 오류 발생 시 사용자에게 알림
+                const workflowsContainer = document.getElementById('workflowsGrid');
+                if (workflowsContainer) {
+                    workflowsContainer.innerHTML = `
+                        <div class="col-span-full text-center py-8" style="color: var(--text-secondary);">
+                            <i class="fas fa-exclamation-triangle text-4xl mb-4 text-red-500"></i>
+                            <p class="text-lg">데이터 로드 중 오류가 발생했습니다.</p>
+                            <p class="text-sm mt-2">페이지를 새로고침하거나 잠시 후 다시 시도해주세요.</p>
+                            <button onclick="window.location.reload()" class="btn-primary mt-4 px-4 py-2">
+                                페이지 새로고침
+                            </button>
+                        </div>
+                    `;
+                }
+            } finally {
+                isLoading = false;
+                showLoading(false);
             }
         }
 
         // 전역에서 호출할 수 있도록 노출
         window.loadRecipeData = loadRecipeData;
+        
+        // 페이지 로드 완료 후 자동으로 데이터 로드 시도
+        function attemptAutoLoad() {
+            console.log('자동 데이터 로드 시도...');
+            if (window.db && window.loadRecipeData) {
+                console.log('자동으로 레시피 데이터 로드 시작');
+                window.loadRecipeData();
+            } else {
+                console.log('Firebase 또는 loadRecipeData 함수가 준비되지 않음, 2초 후 재시도');
+                setTimeout(attemptAutoLoad, 2000);
+            }
+        }
+        
+        // 페이지 로드 완료 후 자동 로드 시도
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(attemptAutoLoad, 1000);
+            });
+        } else {
+            setTimeout(attemptAutoLoad, 1000);
+        }
+        
+        // 로딩 상태 표시/숨김 함수
+        function showLoading(show) {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            if (loadingIndicator) {
+                if (show) {
+                    loadingIndicator.classList.remove('hidden');
+                } else {
+                    loadingIndicator.classList.add('hidden');
+                }
+            }
+        }
+        
+        // 페이지네이션 UI 업데이트 함수
+        function updatePaginationUI() {
+            const prevBtn = document.getElementById('prevPageBtn');
+            const nextBtn = document.getElementById('nextPageBtn');
+            const pageInfo = document.getElementById('pageInfo');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            
+            if (prevBtn) prevBtn.disabled = currentPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+            if (pageInfo) pageInfo.textContent = `${currentPage} / ${totalPages}`;
+            if (loadMoreBtn) loadMoreBtn.style.display = hasMoreData ? 'inline-block' : 'none';
+        }
+        
+        // 페이지네이션 이벤트 리스너 설정
+        function setupPaginationListeners() {
+            const prevBtn = document.getElementById('prevPageBtn');
+            const nextBtn = document.getElementById('nextPageBtn');
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        loadRecipeData(currentPage - 1);
+                    }
+                });
+            }
+            
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    if (currentPage < totalPages) {
+                        loadRecipeData(currentPage + 1);
+                    }
+                });
+            }
+            
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', () => {
+                    loadMoreRecipes();
+                });
+            }
+        }
+        
+        // 무한 스크롤 설정
+        function setupInfiniteScroll() {
+            let scrollTimeout;
+            
+            window.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    if (isNearBottom() && hasMoreData && !isLoading) {
+                        loadMoreRecipes();
+                    }
+                }, 100);
+            });
+        }
+        
+        // 페이지 하단 근처인지 확인
+        function isNearBottom() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            
+            return scrollTop + windowHeight >= documentHeight - 100;
+        }
+        
+        // 더 많은 레시피 로드
+        async function loadMoreRecipes() {
+            if (isLoading || !hasMoreData) return;
+            
+            try {
+                isLoading = true;
+                showLoading(true);
+                
+                const recipesRef = collection(window.db, 'public_recipe_collection');
+                const startIndex = allRecipes.length;
+                const q = query(recipesRef, orderBy('created_at', 'desc'), limit(itemsPerPage), startAfter(startIndex));
+                
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    hasMoreData = false;
+                    return;
+                }
+                
+                const newRecipes = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    data.docId = doc.id;
+                    newRecipes.push(data);
+                    allRecipes.push(data);
+                });
+                
+                // 새 레시피들을 기존 그리드에 추가
+                appendRecipes(newRecipes);
+                
+                // 페이지네이션 정보 업데이트
+                hasMoreData = newRecipes.length === itemsPerPage;
+                updatePaginationUI();
+                
+                console.log(`추가 로드: ${newRecipes.length}개의 레시피`);
+                
+            } catch (error) {
+                console.error('추가 레시피 로드 오류:', error);
+            } finally {
+                isLoading = false;
+                showLoading(false);
+            }
+        }
+        
+        // 레시피들을 기존 그리드에 추가
+        function appendRecipes(newRecipes) {
+            const workflowsContainer = document.getElementById('workflowsGrid');
+            if (!workflowsContainer) return;
+            
+            newRecipes.forEach((recipeData) => {
+                window.__recipesById[recipeData.docId] = recipeData;
+                const workflowCard = createWorkflowCard(recipeData, recipeData.docId);
+                workflowsContainer.appendChild(workflowCard);
+            });
+        }
 
         // 레시피 렌더링 함수
         function renderRecipes(recipes) {
@@ -738,7 +872,7 @@
             });
         }
 
-        // 검색 실행 함수
+        // 검색 실행 함수 (페이지네이션 지원)
         function performSearch(searchTerm) {
             const searchResultsCount = document.getElementById('searchResultsCount');
             const resultsCount = document.getElementById('resultsCount');
@@ -747,6 +881,8 @@
                 // 검색어가 없으면 모든 레시피 표시
                 filteredRecipes = [...allRecipes];
                 searchResultsCount.style.display = 'none';
+                currentPage = 1;
+                totalPages = Math.ceil(filteredRecipes.length / itemsPerPage);
             } else {
                 // 검색어가 있으면 필터링
                 filteredRecipes = allRecipes.filter(recipe => {
@@ -768,10 +904,18 @@
                 // 검색 결과 카운트 표시
                 searchResultsCount.style.display = 'block';
                 resultsCount.textContent = filteredRecipes.length;
+                
+                // 검색 시 첫 페이지로 리셋
+                currentPage = 1;
+                totalPages = Math.ceil(filteredRecipes.length / itemsPerPage);
             }
 
-            // 필터링된 레시피 렌더링
-            renderRecipes(filteredRecipes);
+            // 필터링된 레시피 렌더링 (첫 페이지만)
+            const firstPageRecipes = filteredRecipes.slice(0, itemsPerPage);
+            renderRecipes(firstPageRecipes);
+            
+            // 페이지네이션 UI 업데이트
+            updatePaginationUI();
         }
 
         // 검색 초기화 함수
@@ -795,8 +939,60 @@
             
             // 모든 레시피 표시
             filteredRecipes = [...allRecipes];
-            renderRecipes(filteredRecipes);
+            const firstPageRecipes = filteredRecipes.slice(0, itemsPerPage);
+            renderRecipes(firstPageRecipes);
+            
+            // 페이지네이션 리셋
+            currentPage = 1;
+            totalPages = Math.ceil(filteredRecipes.length / itemsPerPage);
+            updatePaginationUI();
         };
+        
+        // 카테고리 변경 이벤트 핸들러
+        window.onCategoryChange = function(category) {
+            // 검색어 초기화
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            
+            // 카테고리별 지연 로딩 큐에 추가
+            categoryLoadQueue.push(category);
+            
+            // 이미 로딩 중이 아니라면 큐 처리 시작
+            if (!isCategoryLoading) {
+                processCategoryQueue();
+            }
+        };
+        
+        // 카테고리 로딩 큐 처리
+        async function processCategoryQueue() {
+            if (isCategoryLoading || categoryLoadQueue.length === 0) return;
+            
+            isCategoryLoading = true;
+            
+            while (categoryLoadQueue.length > 0) {
+                const category = categoryLoadQueue.shift();
+                
+                // 현재 페이지를 1로 리셋하고 새 카테고리로 데이터 로드
+                currentPage = 1;
+                allRecipes = [];
+                filteredRecipes = [];
+                
+                try {
+                    await loadRecipeData(1, category);
+                } catch (error) {
+                    console.error('카테고리 변경 오류:', error);
+                }
+                
+                // 카테고리 간 전환 시 약간의 지연 (사용자 경험 개선)
+                if (categoryLoadQueue.length > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+            }
+            
+            isCategoryLoading = false;
+        }
 
         // 워크플로우 카드 생성 함수
         function createWorkflowCard(recipeData, docId) {

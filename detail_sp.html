@@ -19,20 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     
-    <!-- 다국어 관련 스크립트 -->
-    <script src="lang/en.js"></script>
-    <script src="lang/ko.js"></script>
-    <script src="lang/ja.js"></script>
-    <script src="lang/zh.js"></script>
-    <script src="lang/ru.js"></script>
-    <script src="lang/es.js"></script>
-    <script src="lang/pt.js"></script>
-    <script src="lang/ar.js"></script>
-    <script src="lang/vi.js"></script>
-    <script src="lang/id.js"></script>
-    <script src="lang/fr.js"></script>
-    <script src="lang/hi.js"></script>
-    <script src="js/translate.js"></script>
+    <!-- 다국어 관련 스크립트는 header.html에서 이미 로드됨 -->
 
 
 
@@ -278,6 +265,53 @@
             box-shadow: 0 2px 12px 0 rgba(0,0,0,0.10);
             border: 1px solid rgba(59,130,246,0.10);
         }
+
+        /* 지연 로딩 관련 스타일 */
+        .lazy {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .lazy.loaded {
+            opacity: 1;
+        }
+
+        /* 성능 최적화를 위한 애니메이션 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 로딩 상태 표시 */
+        .loading-placeholder {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* 모바일 최적화 */
+        @media (max-width: 768px) {
+            .tab-content {
+                padding: 1rem;
+            }
+            
+            .glass-effect {
+                padding: 1rem !important;
+            }
+            
+            .pros-cons-item {
+                padding: 0.75rem;
+            }
+        }
     </style>
 <!-- Firebase SDK: 페이지별 직접 초기화 제거, AuthManager 이벤트만 구독 -->
 <script>
@@ -362,12 +396,161 @@
     // 기본 이미지 URL 설정
     window.DEFAULT_IMAGE = 'assets/icons/code-icon1.png';
     
+    // detail_sp.html 전용 성능 최적화 클래스
+    class DetailPageOptimizer {
+        constructor() {
+            this.toolCache = new Map();
+            this.imageCache = new Map();
+            this.cacheExpiry = 5 * 60 * 1000; // 5분 캐시 만료
+            this.isLoading = false;
+            this.loadingQueue = new Map(); // 중복 요청 방지
+        }
+
+        // 캐시된 도구 정보 반환
+        async getCachedToolDetails(toolId) {
+            const cached = this.toolCache.get(toolId);
+            if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
+                console.log('캐시된 도구 정보 사용:', toolId);
+                return cached.data;
+            }
+            return null;
+        }
+
+        // 도구 정보 캐시에 저장
+        setCachedToolDetails(toolId, data) {
+            this.toolCache.set(toolId, {
+                data,
+                timestamp: Date.now()
+            });
+            console.log('도구 정보 캐시에 저장:', toolId);
+        }
+
+        // 중복 요청 방지를 위한 로딩 상태 관리
+        isToolLoading(toolId) {
+            return this.loadingQueue.has(toolId);
+        }
+
+        setToolLoading(toolId, loading) {
+            if (loading) {
+                this.loadingQueue.set(toolId, Date.now());
+            } else {
+                this.loadingQueue.delete(toolId);
+            }
+        }
+
+        // 병렬 데이터 로딩 (기존 db-manager.js 수정 없이)
+        async loadToolDetailsParallel(toolId) {
+            try {
+                // 중복 요청 방지
+                if (this.isToolLoading(toolId)) {
+                    console.log('이미 로딩 중인 도구:', toolId);
+                    // 로딩 완료까지 대기
+                    while (this.isToolLoading(toolId)) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                    // 캐시에서 결과 반환
+                    return await this.getCachedToolDetails(toolId);
+                }
+
+                this.setToolLoading(toolId, true);
+
+                // 캐시 확인
+                const cached = await this.getCachedToolDetails(toolId);
+                if (cached) {
+                    this.setToolLoading(toolId, false);
+                    return cached;
+                }
+
+                console.log('병렬 데이터 로딩 시작:', toolId);
+                const startTime = performance.now();
+
+                // 기존 db-manager.js의 getToolDetails 사용
+                const toolData = await window.dbManager.getToolDetails(toolId);
+                
+                if (toolData) {
+                    // 추가 최적화: 이미지 URL 캐싱
+                    if (!this.imageCache.has(toolId)) {
+                        this.imageCache.set(toolId, this.getOptimizedImageUrl(toolData));
+                    }
+                    
+                    // 캐시에 저장
+                    this.setCachedToolDetails(toolId, toolData);
+                    
+                    const endTime = performance.now();
+                    console.log(`도구 정보 로딩 완료: ${toolId}, 소요시간: ${(endTime - startTime).toFixed(2)}ms`);
+                }
+
+                this.setToolLoading(toolId, false);
+                return toolData;
+            } catch (error) {
+                this.setToolLoading(toolId, false);
+                console.error('병렬 로딩 실패:', error);
+                throw error;
+            }
+        }
+
+        // 이미지 URL 최적화
+        getOptimizedImageUrl(tool) {
+            if (tool.logoUrl && tool.logoUrl.startsWith('http')) {
+                return tool.logoUrl;
+            }
+            if (tool.logoFileName) {
+                return `https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebasestorage.app/o/ai_logos%2F${encodeURIComponent(tool.logoFileName)}?alt=media&token=4b780bb4-d39d-4195-8c73-4766eda6ad6b`;
+            }
+            if (tool.imageUrl && tool.imageUrl.startsWith('http')) {
+                return tool.imageUrl;
+            }
+            return window.DEFAULT_IMAGE || 'assets/icons/code-icon1.png';
+        }
+
+        // 캐시 정리 (메모리 관리)
+        clearExpiredCache() {
+            const now = Date.now();
+            let clearedCount = 0;
+            
+            for (const [key, value] of this.toolCache.entries()) {
+                if (now - value.timestamp > this.cacheExpiry) {
+                    this.toolCache.delete(key);
+                    clearedCount++;
+                }
+            }
+            
+            if (clearedCount > 0) {
+                console.log(`만료된 캐시 ${clearedCount}개 정리됨`);
+            }
+        }
+
+        // 캐시 통계
+        getCacheStats() {
+            return {
+                toolCacheSize: this.toolCache.size,
+                imageCacheSize: this.imageCache.size,
+                loadingQueueSize: this.loadingQueue.size
+            };
+        }
+    }
+
+    // 페이지 로드 시 최적화기 초기화
+    let detailOptimizer;
+    
     // DBManager 초기화 완료 이벤트 리스너
     window.addEventListener('dbManagerReady', async () => {
       try {
+        // 최적화기 초기화
+        detailOptimizer = new DetailPageOptimizer();
+        console.log('DetailPageOptimizer 초기화 완료');
+        
         // 초기화 완료 후 필요한 함수들 실행
-        allTools = await window.dbManager.loadAITools();
+        allTools = await window.dbManager.loadAITools(20, 4.0);
         console.log('AI 도구 데이터 로드 완료:', allTools.length);
+        
+        // 주기적 캐시 정리 (5분마다)
+        setInterval(() => {
+            if (detailOptimizer) {
+                detailOptimizer.clearExpiredCache();
+            }
+        }, 5 * 60 * 1000);
+        
       } catch (error) {
         if (window.CommonUtils) {
             window.CommonUtils.handleError(error, 'AI 도구 데이터 로드');
@@ -382,11 +565,83 @@
         img.onerror = null; // 무한 루프 방지
         img.src = window.DEFAULT_IMAGE;
     };
+
+    // 이미지 지연 로딩 설정
+    function setupImageLazyLoading() {
+        const images = document.querySelectorAll('img[data-src]');
+        if (images.length === 0) return;
+
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.onload = () => {
+                        img.classList.remove('lazy');
+                        img.classList.add('loaded');
+                    };
+                    observer.unobserve(img);
+                }
+            });
+        });
+        
+        images.forEach(img => imageObserver.observe(img));
+    }
+
+    // 성능 모니터링
+    function setupPerformanceMonitoring() {
+        // 페이지 로드 시간 측정
+        window.addEventListener('load', () => {
+            if (performance.timing) {
+                const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+                console.log(`페이지 전체 로드 시간: ${loadTime}ms`);
+            } else if (performance.getEntriesByType) {
+                const navigationEntry = performance.getEntriesByType('navigation')[0];
+                if (navigationEntry) {
+                    console.log(`페이지 전체 로드 시간: ${navigationEntry.loadEventEnd - navigationEntry.startTime}ms`);
+                }
+            }
+            
+            // 성능 지표를 Analytics에 전송 (선택사항)
+            if (window.gtag) {
+                window.gtag('event', 'timing_complete', {
+                    name: 'load',
+                    value: Math.round(performance.now())
+                });
+            }
+        });
+
+        // 메모리 사용량 모니터링
+        if ('memory' in performance) {
+            setInterval(() => {
+                const memory = performance.memory;
+                console.log('메모리 사용량:', {
+                    used: Math.round(memory.usedJSHeapSize / 1024 / 1024) + 'MB',
+                    total: Math.round(memory.totalJSHeapSize / 1024 / 1024) + 'MB',
+                    limit: Math.round(memory.jsHeapSizeLimit / 1024 / 1024) + 'MB'
+                });
+            }, 30000); // 30초마다
+        }
+
+        // 네트워크 상태 모니터링
+        if ('connection' in navigator) {
+            const connection = navigator.connection;
+            console.log('네트워크 상태:', {
+                effectiveType: connection.effectiveType,
+                downlink: connection.downlink + 'Mbps',
+                rtt: connection.rtt + 'ms'
+            });
+        }
+    }
   
     // 페이지 로드 시 실행
     document.addEventListener('DOMContentLoaded', () => {
         // 초기화 함수 호출
         setupTabs();
+        
+        // 성능 최적화 설정
+        setupImageLazyLoading();
+        setupPerformanceMonitoring();
     });
   
     // 전역 객체에 필요한 참조 할당 (Firebase 초기화 후에만)
@@ -413,7 +668,7 @@
                 }
 
                 const run = async () => {
-                    await loadToolDetails(toolId);
+                    await loadToolDetailsOptimized(toolId);
                     setupTabs();
                 };
 
@@ -455,15 +710,32 @@
             }
         });
 
-        // 도구 상세 정보 로드
-        async function loadToolDetails(toolId) {
+        // 최적화된 도구 상세 정보 로드 함수
+        async function loadToolDetailsOptimized(toolId) {
             try {
                 showLoading();
-                console.log('도구 ID:', toolId);
-                // db-manager 모듈의 메서드 사용
-                const toolData = await window.dbManager.getToolDetails(toolId);
+                console.log('최적화된 도구 상세 정보 로드 시작:', toolId);
+                
+                let toolData;
+                
+                // 최적화기가 준비되었는지 확인
+                if (detailOptimizer) {
+                    // 최적화된 로딩 사용
+                    toolData = await detailOptimizer.loadToolDetailsParallel(toolId);
+                } else {
+                    // 기존 방식 사용 (폴백)
+                    console.log('최적화기 미준비, 기존 방식 사용');
+                    toolData = await window.dbManager.getToolDetails(toolId);
+                }
+                
                 if (toolData) {
                     displayToolDetails(toolData, toolId);
+                    
+                    // 성능 통계 출력
+                    if (detailOptimizer) {
+                        const stats = detailOptimizer.getCacheStats();
+                        console.log('캐시 통계:', stats);
+                    }
                 } else {
                     if (window.CommonUtils) {
                         window.CommonUtils.showError('해당 AI 도구를 찾을 수 없습니다.');
@@ -480,6 +752,11 @@
             } finally {
                 hideLoading();
             }
+        }
+
+        // 기존 loadToolDetails 함수는 최적화된 함수로 대체
+        async function loadToolDetails(toolId) {
+            return await loadToolDetailsOptimized(toolId);
         }
 
         // 로그인 상태 감지 및 UI 업데이트
@@ -541,9 +818,21 @@
             document.getElementById('tool-name').textContent = toolData.name || '이름 없음';
             document.getElementById('tool-description').textContent = toolData.description || '설명 없음';
             
-            // 이미지 업데이트 (기본 이미지 대체)
+            // 이미지 업데이트 (지연 로딩 적용)
             const toolImage = document.getElementById('tool-image');
-            toolImage.innerHTML = `<img src="${getValidImageUrl(toolData)}" alt="${toolData.name}" class="w-full aspect-square bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden" onerror="window.handleImageError(this)">`;
+            const optimizedImageUrl = detailOptimizer ? detailOptimizer.getOptimizedImageUrl(toolData) : getValidImageUrl(toolData);
+            
+            toolImage.innerHTML = `
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" 
+                     data-src="${optimizedImageUrl}" 
+                     alt="${toolData.name}" 
+                     class="w-full aspect-square bg-gray-700 rounded-lg flex items-center justify-center overflow-hidden lazy" 
+                     onerror="window.handleImageError(this)"
+                     loading="lazy">
+            `;
+            
+            // 이미지 지연 로딩 재설정
+            setupImageLazyLoading();
             
             // 평점 표시
             const ratingSection = document.getElementById('rating-section');
@@ -674,6 +963,13 @@
                 // 3. 전역 변수 사용
                 handleSave(window.currentToolId);
             });
+
+            // 성능 최적화 완료 로그
+            console.log('도구 상세 정보 표시 완료:', toolId);
+            if (detailOptimizer) {
+                const stats = detailOptimizer.getCacheStats();
+                console.log('최적화 통계:', stats);
+            }
         }
 
         // 탭 전환 기능

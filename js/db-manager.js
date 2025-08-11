@@ -1,10 +1,11 @@
 // Firebase 데이터베이스 관리 클래스
-import { getFirestore, collection, getDocs, doc, getDoc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, onSnapshot, query, orderBy, limit, where } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js';
 
 class DBManager {
     constructor() {
         this.db = null;
         this.allTools = [];
+        this.popularTools = []; // 인기 도구만 별도 저장
         this.currentToolId = null;
         this.selectedCategories = new Set();
         this.currentSearchQuery = '';
@@ -12,9 +13,11 @@ class DBManager {
         this.isLoading = false;
         this.error = null;
         this.realtimeListener = null;
+        this.lazyLoadQueue = []; // 지연 로딩 큐
+        this.isLazyLoading = false;
     }
 
-    // 초기화 함수
+    // 초기화 함수 - 최적화된 버전
     async init(app) {
         try {
             if (this.isInitialized) {
@@ -26,18 +29,20 @@ class DBManager {
             }
             this.isLoading = true;
             this.error = null;
-            this.db = getFirestore(app); // Firestore 객체로 변경
+            this.db = getFirestore(app);
             console.log('DBManager Firestore 초기화 완료');
-            await this.loadAITools();
+            
+            // 인기 도구만 우선 로드 (전체 도구는 지연 로딩)
+            await this.loadPopularAITools(8, 4.5);
+            
             this.isInitialized = true;
             window.dispatchEvent(new CustomEvent('dbManagerReady', { detail: { success: true } }));
+            
+            // 백그라운드에서 전체 도구 지연 로딩 시작
+            this.startLazyLoading();
         } catch (error) {
             this.error = error;
-            if (window.CommonUtils) {
-                window.CommonUtils.handleError(error, 'DBManager 초기화', false);
-            } else {
-                console.error('DBManager 초기화 실패:', error);
-            }
+            console.error('DBManager 초기화 실패:', error);
             window.dispatchEvent(new CustomEvent('dbManagerReady', { detail: { success: false, error: error.message } }));
             throw error;
         } finally {
@@ -45,97 +50,160 @@ class DBManager {
         }
     }
 
-    // AI 도구 로드 함수
-    async loadAITools() {
+    // 최적화된 인기 AI 도구 로딩 함수
+    async loadPopularAITools(limitParam = 8, minRating = 4.5) {
         try {
-            if (!this.db) {
-                throw new Error('Firestore가 초기화되지 않았습니다.');
-            }
+            if (!this.db) throw new Error('Firestore가 초기화되지 않았습니다.');
             this.isLoading = true;
             this.error = null;
-            console.log("AI 도구 Firestore에서 로드 시작");
-
+            
+            // 파라미터 안전성 검사 강화
+            const safeLimit = typeof limitParam === 'number' && limitParam > 0 ? limitParam : 8;
+            const safeMinRating = typeof minRating === 'number' && minRating >= 0 ? minRating : 4.5;
+            
+            console.log(`인기 AI 도구 로딩 시작 (최대 ${safeLimit}개, 최소 평점 ${safeMinRating})`);
+            
             const toolsCol = collection(this.db, 'ai-tools');
-            const querySnapshot = await getDocs(toolsCol);
-
-            this.allTools = [];
-            const FIREBASE_LOGO_BASE =
-  "https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebasestorage.app/o/ai_logos%2F";
-            // 각 도구별 summary/summary, pricing 서브컬렉션을 병렬로 불러오기
-            const toolPromises = [];
-            querySnapshot.forEach((docSnap) => {
-                const tool = docSnap.data();
-                tool.id = docSnap.id;
-                // logoFileName 우선 적용 (Storage URL 변환)
-                if (tool.logoFileName && typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
-                    tool.logoUrl = FIREBASE_LOGO_BASE + encodeURIComponent(tool.logoFileName) + "?alt=media";
-                } else if (tool.imageUrl && typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') {
-                    tool.logoUrl = tool.imageUrl;
-                } else {
-                    tool.logoUrl = null;
-                }
-                // summary/summary와 pricing 서브컬렉션을 비동기로 읽어 tool에 추가
-                toolPromises.push((async () => {
-                    // summary/summary 문서 읽기
-                    try {
-                        const summaryRef = doc(this.db, 'ai-tools', tool.id, 'overview', 'summary');
-                        const summarySnap = await getDoc(summaryRef);
-                        if (summarySnap.exists()) {
-                            const summaryData = summarySnap.data();
-                            tool.longDescription = summaryData.longDescription || '';
-                            // tool.tagsKr = summaryData.tagsKr || []; // 제거: 도구 루트의 tagsKr만 사용
-                        } else {
-                            tool.longDescription = '';
-                        }
-                    } catch (e) {
-                        tool.longDescription = '';
-                    }
-                    // pricing 서브컬렉션 읽기
-                    try {
-                        const pricingCol = collection(this.db, 'ai-tools', tool.id, 'pricing');
-                        const pricingSnap = await getDocs(pricingCol);
-                        tool.pricing = [];
-                        pricingSnap.forEach((planDoc) => {
-                            tool.pricing.push(planDoc.data());
-                        });
-                    } catch (e) {
-                        tool.pricing = [];
-                    }
-                    return tool;
-                })());
-            });
-            this.allTools = await Promise.all(toolPromises);
-            console.log("로드된 도구 수:", this.allTools.length);
-            return this.allTools;
-        } catch (error) {
-            this.error = error;
-            if (window.CommonUtils) {
-                window.CommonUtils.handleError(error, 'AI 도구 로드');
-            } else {
-                console.error("AI 도구 Firestore 로드 중 오류:", error);
+            
+            // 평점이 높은 도구들을 우선적으로 가져오기 위한 쿼리 최적화
+            const highRatedQuery = query(
+                toolsCol,
+                where('rating', '>=', safeMinRating),
+                orderBy('rating', 'desc'),
+                limit(safeLimit * 2) // 필터링 후 충분한 수를 가져오기 위해 2배로
+            );
+            
+            const querySnapshot = await getDocs(highRatedQuery);
+            
+            if (querySnapshot.empty) {
+                console.log('평점이 높은 도구가 없습니다. 기본 쿼리로 대체합니다.');
+                // 평점 필터가 실패하면 기본 쿼리로 대체
+                const basicQuery = query(toolsCol, limit(safeLimit * 2));
+                const basicSnapshot = await getDocs(basicQuery);
+                return await this.processToolsFromSnapshot(basicSnapshot, safeLimit);
             }
-            throw error;
+            
+            return await this.processToolsFromSnapshot(querySnapshot, safeLimit);
+            
+        } catch (error) {
+            console.warn('인기 도구 쿼리 실패, 기본 쿼리로 대체:', error);
+            // 에러 발생 시 기본 쿼리로 대체
+            try {
+                const toolsCol = collection(this.db, 'ai-tools');
+                // limit 함수가 제대로 작동하지 않을 경우를 대비한 안전장치
+                const safeLimit = typeof limitParam === 'number' && limitParam > 0 ? limitParam : 8;
+                const basicQuery = query(toolsCol, limit(safeLimit));
+                const basicSnapshot = await getDocs(basicQuery);
+                return await this.processToolsFromSnapshot(basicSnapshot, safeLimit);
+            } catch (fallbackError) {
+                this.error = fallbackError;
+                throw fallbackError;
+            }
         } finally {
             this.isLoading = false;
         }
     }
 
-    // 인기 AI 도구만 불러오는 함수
-    async loadPopularAITools(limit = 6, minRating = 4.7) {
+    // 호환성을 위한 loadAITools 메서드 추가
+    async loadAITools(limitParam = 50, minRating = 0) {
         try {
-            if (!this.db) throw new Error('Firestore가 초기화되지 않았습니다.');
-            this.isLoading = true;
-            this.error = null;
+            console.log('loadAITools 호출됨 - loadPopularAITools로 대체');
+            // 기존 코드와의 호환성을 위해 loadPopularAITools 사용
+            return await this.loadPopularAITools(limitParam, minRating);
+        } catch (error) {
+            console.error('loadAITools 실행 실패:', error);
+            throw error;
+        }
+    }
+
+    // 스냅샷에서 도구 데이터 처리하는 헬퍼 함수
+    async processToolsFromSnapshot(querySnapshot, limitParam) {
+        const tools = [];
+        const FIREBASE_LOGO_BASE = "https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebaseapp.com/o/ai_logos%2F";
+        
+        // 병렬 처리를 위한 도구 데이터 수집
+        const toolPromises = [];
+        
+        querySnapshot.forEach((docSnap) => {
+            const tool = docSnap.data();
+            tool.id = docSnap.id;
+            
+            // 기본 로고 URL 설정
+            if (tool.logoFileName && typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
+                tool.logoUrl = FIREBASE_LOGO_BASE + encodeURIComponent(tool.logoFileName) + "?alt=media";
+            } else if (tool.imageUrl && typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') {
+                tool.logoUrl = tool.imageUrl;
+            } else {
+                tool.logoUrl = null;
+            }
+            
+            // 필수 데이터만 우선 설정, 상세 데이터는 지연 로딩
+            toolPromises.push(this.processToolBasicData(tool));
+        });
+        
+        // 병렬로 기본 데이터 처리
+        const processedTools = await Promise.all(toolPromises);
+        
+        // 평점 순으로 정렬하고 limitParam만큼 반환
+        const safeLimit = typeof limitParam === 'number' && limitParam > 0 ? limitParam : 8;
+        const sortedTools = processedTools
+            .sort((a, b) => (b.rating || 0) - (a.rating || 0))
+            .slice(0, safeLimit);
+        
+        this.popularTools = sortedTools;
+        console.log(`인기 AI 도구 ${sortedTools.length}개 로딩 완료`);
+        
+        return sortedTools;
+    }
+
+    // 도구의 기본 데이터만 처리하는 함수 (성능 최적화)
+    async processToolBasicData(tool) {
+        // 기본 필드만 설정, 상세 데이터는 지연 로딩
+        return {
+            id: tool.id,
+            name: tool.name || '',
+            description: tool.description || tool.shortDescription || '',
+            rating: tool.rating || 0,
+            logoUrl: tool.logoUrl,
+            logoFileName: tool.logoFileName,
+            imageUrl: tool.imageUrl,
+            category: tool.category || '',
+            tags: tool.tags || [],
+            pricing: tool.pricing || [],
+            // 상세 데이터는 나중에 필요할 때 로드
+            longDescription: null,
+            detailedPricing: null
+        };
+    }
+
+    // 지연 로딩 시작
+    startLazyLoading() {
+        if (this.isLazyLoading) return;
+        
+        this.isLazyLoading = true;
+        console.log('백그라운드 지연 로딩 시작');
+        
+        // 사용자 인터랙션이 없을 때 백그라운드에서 전체 도구 로드
+        setTimeout(() => {
+            this.loadAllToolsInBackground();
+        }, 3000); // 3초 후 시작
+    }
+
+    // 백그라운드에서 전체 도구 로드
+    async loadAllToolsInBackground() {
+        try {
+            console.log('백그라운드에서 전체 AI 도구 로딩 시작');
             const toolsCol = collection(this.db, 'ai-tools');
             const querySnapshot = await getDocs(toolsCol);
-
-            let tools = [];
-            const FIREBASE_LOGO_BASE = "https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebasestorage.app/o/ai_logos%2F";
-            const toolPromises = [];
+            
+            const allTools = [];
+            const FIREBASE_LOGO_BASE = "https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebaseapp.com/o/ai_logos%2F";
+            
+            // 기본 데이터만 우선 처리
             querySnapshot.forEach((docSnap) => {
                 const tool = docSnap.data();
                 tool.id = docSnap.id;
-                // logoFileName 우선 적용 (Storage URL 변환)
+                
                 if (tool.logoFileName && typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
                     tool.logoUrl = FIREBASE_LOGO_BASE + encodeURIComponent(tool.logoFileName) + "?alt=media";
                 } else if (tool.imageUrl && typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') {
@@ -143,49 +211,90 @@ class DBManager {
                 } else {
                     tool.logoUrl = null;
                 }
-                toolPromises.push((async () => {
-                    // summary/summary 문서 읽기
-                    try {
-                        const summaryRef = doc(this.db, 'ai-tools', tool.id, 'overview', 'summary');
-                        const summarySnap = await getDoc(summaryRef);
-                        if (summarySnap.exists()) {
-                            const summaryData = summarySnap.data();
-                            tool.longDescription = summaryData.longDescription || '';
-                        } else {
-                            tool.longDescription = '';
-                        }
-                    } catch (e) {
-                        tool.longDescription = '';
-                    }
-                    // pricing 서브컬렉션 읽기
-                    try {
-                        const pricingCol = collection(this.db, 'ai-tools', tool.id, 'pricing');
-                        const pricingSnap = await getDocs(pricingCol);
-                        tool.pricing = [];
-                        pricingSnap.forEach((planDoc) => {
-                            tool.pricing.push(planDoc.data());
-                        });
-                    } catch (e) {
-                        tool.pricing = [];
-                    }
-                    return tool;
-                })());
+                
+                allTools.push(this.processToolBasicData(tool));
             });
-            tools = await Promise.all(toolPromises);
-            // 평점 필터 및 랜덤 6개 추출
-            const highRated = tools.filter(t => (t.rating || 0) >= minRating);
-            // 랜덤 섞기
-            for (let i = highRated.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [highRated[i], highRated[j]] = [highRated[j], highRated[i]];
+            
+            this.allTools = allTools;
+            console.log(`백그라운드에서 전체 AI 도구 ${allTools.length}개 로딩 완료`);
+            
+            // 전체 도구 로드 완료 이벤트 발생
+            window.dispatchEvent(new CustomEvent('allToolsLoaded', { detail: { count: allTools.length } }));
+            
+        } catch (error) {
+            console.warn('백그라운드 전체 도구 로딩 실패:', error);
+        } finally {
+            this.isLazyLoading = false;
+        }
+    }
+
+    // 필요할 때 도구 상세 정보 로드 (지연 로딩)
+    async loadToolDetails(toolId) {
+        try {
+            if (!this.db) throw new Error('Firestore가 초기화되지 않았습니다.');
+            
+            const toolRef = doc(this.db, 'ai-tools', toolId);
+            const toolSnap = await getDoc(toolRef);
+            
+            if (!toolSnap.exists()) {
+                throw new Error('도구를 찾을 수 없습니다.');
             }
-            this.allTools = highRated.slice(0, limit);
-            return this.allTools;
+            
+            const tool = toolSnap.data();
+            tool.id = toolSnap.id;
+            
+            // 로고 URL 설정
+            const FIREBASE_LOGO_BASE = "https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebaseapp.com/o/ai_logos%2F";
+            if (tool.logoFileName && typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
+                tool.logoUrl = FIREBASE_LOGO_BASE + encodeURIComponent(tool.logoFileName) + "?alt=media";
+            } else if (tool.imageUrl && typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') {
+                tool.logoUrl = tool.imageUrl;
+            } else {
+                tool.logoUrl = null;
+            }
+            
+            // 상세 정보 병렬 로드
+            const [summaryData, pricingData] = await Promise.all([
+                this.loadToolSummary(toolId),
+                this.loadToolPricing(toolId)
+            ]);
+            
+            tool.longDescription = summaryData.longDescription || '';
+            tool.detailedPricing = pricingData;
+            
+            return tool;
+            
         } catch (error) {
             this.error = error;
             throw error;
-        } finally {
-            this.isLoading = false;
+        }
+    }
+
+    // 도구 요약 정보 로드
+    async loadToolSummary(toolId) {
+        try {
+            const summaryRef = doc(this.db, 'ai-tools', toolId, 'overview', 'summary');
+            const summarySnap = await getDoc(summaryRef);
+            return summarySnap.exists() ? summarySnap.data() : { longDescription: '' };
+        } catch (error) {
+            console.warn(`도구 ${toolId} 요약 정보 로드 실패:`, error);
+            return { longDescription: '' };
+        }
+    }
+
+    // 도구 가격 정보 로드
+    async loadToolPricing(toolId) {
+        try {
+            const pricingCol = collection(this.db, 'ai-tools', toolId, 'pricing');
+            const pricingSnap = await getDocs(pricingCol);
+            const pricing = [];
+            pricingSnap.forEach((planDoc) => {
+                pricing.push(planDoc.data());
+            });
+            return pricing;
+        } catch (error) {
+            console.warn(`도구 ${toolId} 가격 정보 로드 실패:`, error);
+            return [];
         }
     }
 
@@ -445,6 +554,16 @@ class DBManager {
 // 전역 인스턴스 생성
 const dbManager = new DBManager();
 window.dbManager = dbManager; // 이 줄 다시 추가!
+
+// 하위 호환성을 위한 전역 함수 등록
+window.loadPopularAITools = (limitParam = 8, minRating = 4.5) => {
+    if (window.dbManager && window.dbManager.isInitialized) {
+        return window.dbManager.loadPopularAITools(limitParam, minRating);
+    } else {
+        throw new Error('DBManager가 아직 초기화되지 않았습니다.');
+    }
+};
+
 export { dbManager };
 
 // Firebase 초기화 완료 이벤트 리스너 (app 객체 사용)

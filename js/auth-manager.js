@@ -1,5 +1,5 @@
 // 공통 인증 관리 모듈
-import { initializeApp, getApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { initializeApp, getApp } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js';
 import { 
     getAuth, 
     signInWithPopup,
@@ -11,8 +11,8 @@ import {
     onAuthStateChanged,
     setPersistence,
     browserLocalPersistence
-} from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+} from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js';
 import { firebaseConfig } from './config.js';
 
 class AuthManager {
