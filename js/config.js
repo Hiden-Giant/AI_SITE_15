@@ -1,7 +1,7 @@
 // Firebase 구성
 export const firebaseConfig = {
   apiKey: "AIzaSyDXx5T26Q_nXeIthajrVYAa0iznbUwFcUs",
-  authDomain: "ai-tools-data-b2b7b.firebaseapp.com",
+  authDomain: "ai-site-15.vercel.app",
   projectId: "ai-tools-data-b2b7b",
   storageBucket: "ai-tools-data-b2b7b.appspot.com",
   messagingSenderId: "689918528645",
