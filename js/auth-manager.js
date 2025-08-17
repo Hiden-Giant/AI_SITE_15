@@ -26,10 +26,14 @@ class AuthManager {
 
     async init() {
         try {
+            console.log('AuthManager 초기화 시작...');
+            
             // Firebase 앱이 이미 초기화되었는지 확인
             try {
                 this.app = getApp();
+                console.log('기존 Firebase 앱 사용');
             } catch {
+                console.log('새로운 Firebase 앱 초기화');
                 this.app = initializeApp(firebaseConfig);
             }
 
@@ -38,6 +42,7 @@ class AuthManager {
 
             // 세션 지속성 설정
             await setPersistence(this.auth, browserLocalPersistence);
+            console.log('세션 지속성 설정 완료');
 
             // 전역 변수로 등록
             window.auth = this.auth;
@@ -46,13 +51,19 @@ class AuthManager {
 
             // 인증 상태 감지
             onAuthStateChanged(this.auth, async (user) => {
+                console.log('인증 상태 변경:', user ? '로그인됨' : '로그아웃됨');
                 if (window.updateHeaderAuthUI) {
                     window.updateHeaderAuthUI(user);
                 }
             });
 
             this.isInitialized = true;
-            console.log('AuthManager 초기화 완료');
+            console.log('AuthManager 초기화 완료 - Firebase 상태:', {
+                app: !!this.app,
+                auth: !!this.auth,
+                db: !!this.db,
+                isInitialized: this.isInitialized
+            });
 
             // 초기화 완료 이벤트 발생 (단일 진입점 이벤트)
             window.dispatchEvent(new CustomEvent('authManagerReady'));
@@ -67,6 +78,7 @@ class AuthManager {
             }
 
         } catch (error) {
+            console.error('AuthManager 초기화 실패:', error);
             if (window.CommonUtils) {
                 window.CommonUtils.handleError(error, 'AuthManager 초기화', false);
             } else {
@@ -76,6 +88,15 @@ class AuthManager {
     }
 
     // Google 소셜 로그인
+    // 
+    // 🔧 Firebase 도메인 인증 문제 해결 방법:
+    // 1. Firebase 콘솔 (https://console.firebase.google.com) 접속
+    // 2. 프로젝트 선택 → Authentication → Settings
+    // 3. "Authorized domains" 탭에서 현재 도메인 추가:
+    //    - ai-site-15.vercel.app
+    //    - localhost (개발용)
+    // 4. 변경사항 저장 후 몇 분 대기
+    //
     async handleSocialLogin(providerName) {
         if (providerName !== 'google') return;
 
@@ -108,8 +129,13 @@ class AuthManager {
             console.error('Google 로그인 실패:', error);
             
             let errorMessage = 'Google 로그인에 실패했습니다.';
+            let showAlternative = false;
             
-            if (error.code === 'auth/popup-closed-by-user') {
+            if (error.code === 'auth/unauthorized-domain') {
+                errorMessage = '현재 도메인에서 Google 로그인이 허용되지 않습니다.\n\n' +
+                             '관리자에게 문의하거나 이메일/비밀번호로 로그인해주세요.';
+                showAlternative = true;
+            } else if (error.code === 'auth/popup-closed-by-user') {
                 errorMessage = '로그인 창이 닫혔습니다. 다시 시도해주세요.';
             } else if (error.code === 'auth/popup-blocked') {
                 errorMessage = '팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.';
@@ -119,10 +145,16 @@ class AuthManager {
                 errorMessage = '이미 다른 방법으로 가입된 계정입니다.';
             }
             
+            // 오류 메시지 표시
+            alert(errorMessage);
+            
+            // 대안 로그인 방법 안내
+            if (showAlternative) {
+                console.log('Google 로그인 대신 이메일 로그인을 사용하세요.');
+            }
+            
             if (window.CommonUtils) {
                 window.CommonUtils.handleError(error, 'Google 소셜 로그인');
-            } else {
-                alert(errorMessage);
             }
             
             throw error;
@@ -201,28 +233,28 @@ class AuthManager {
         console.log("로그인 성공 처리 시작", user.uid);
         
         try {
+            // 성공 메시지 먼저 표시
+            alert('로그인에 성공했습니다!');
+            
             // UI 업데이트
             if (window.updateHeaderAuthUI) {
                 window.updateHeaderAuthUI(user);
             }
             
-            // 모달 완전히 닫기
+            // 즉시 모달 닫기
             const loginModal = document.getElementById('loginModal');
             const signupModal = document.getElementById('signupModal');
             
             if (loginModal) {
                 loginModal.classList.remove('show');
                 loginModal.style.display = 'none';
+                console.log('로그인 모달 닫기 완료');
             }
             if (signupModal) {
                 signupModal.classList.remove('show');
                 signupModal.style.display = 'none';
+                console.log('회원가입 모달 닫기 완료');
             }
-            
-            // 성공 메시지 표시
-            setTimeout(() => {
-                alert('로그인에 성공했습니다!');
-            }, 100);
             
             console.log('인증 성공 처리 완료');
             
