@@ -63,22 +63,66 @@
     </style>
     <script>
     window.DEFAULT_IMAGE = 'assets/icons/code-icon1.png';
+    
+    // getStorageUrl 함수 추가 - Firebase Storage URL 생성
     function getStorageUrl(fileName) {
-        return `https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebasestorage.app/o/ai_logos%2F${encodeURIComponent(fileName)}?alt=media&token=4b780bb4-d39d-4195-8c73-4766eda6ad6b`;
+        if (!fileName || typeof fileName !== 'string' || fileName.trim() === '') {
+            console.warn('getStorageUrl: 유효하지 않은 fileName:', fileName);
+            return window.DEFAULT_IMAGE;
+        }
+        
+        try {
+            // Firebase Storage URL 생성
+            const baseUrl = 'https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebaseapp.com/o/ai_logos%2F';
+            const encodedFileName = encodeURIComponent(fileName.trim());
+            const token = '4b780bb4-d39d-4195-8c73-4766eda6ad6b';
+            
+            const fullUrl = `${baseUrl}${encodedFileName}?alt=media&token=${token}`;
+            console.log(`Firebase Storage URL 생성: ${fullUrl}`);
+            
+            return fullUrl;
+        } catch (error) {
+            console.error('getStorageUrl 오류:', error);
+            return window.DEFAULT_IMAGE;
+        }
     }
+    
+    // getValidImageUrl 함수 추가 - 이미지 표시 문제 해결
     function getValidImageUrl(tool) {
-        if (typeof tool.logoUrl === 'string' && tool.logoUrl.trim() !== '') return tool.logoUrl;
-        if (typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
+        // 1. logoUrl이 있으면 우선 사용
+        if (tool.logoUrl && typeof tool.logoUrl === 'string' && tool.logoUrl.trim() !== '') {
+            return tool.logoUrl;
+        }
+        
+        // 2. logoFileName이 있으면 Firebase Storage URL 생성
+        if (tool.logoFileName && typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
             return getStorageUrl(tool.logoFileName);
         }
-        if (typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') return tool.imageUrl;
-        if (typeof tool.image === 'string' && tool.image.trim() !== '') return tool.image;
+        
+        // 3. imageUrl이 있으면 사용
+        if (tool.imageUrl && typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') {
+            return tool.imageUrl;
+        }
+        
+        // 4. image가 있으면 사용
+        if (tool.image && typeof tool.image === 'string' && tool.image.trim() !== '') {
+            return tool.image;
+        }
+        
+        // 5. 모든 이미지가 없으면 기본 이미지 사용
+        console.log(`도구 "${tool.name}"의 이미지를 찾을 수 없어 기본 이미지를 사용합니다.`, tool);
         return window.DEFAULT_IMAGE;
     }
-    // 이미지 로드 실패 시 기본 이미지로 대체
+    
+    // 이미지 로드 실패 시 처리하는 함수 - 개선된 버전
     window.handleImageError = function(img) {
-        img.onerror = null;
-        img.src = window.DEFAULT_IMAGE;
+        img.onerror = null; // 무한 루프 방지
+        
+        // 기본 이미지로 대체
+        if (img.src !== window.DEFAULT_IMAGE) {
+            console.log(`이미지 로드 실패, 기본 이미지로 대체: ${img.src}`);
+            img.src = window.DEFAULT_IMAGE;
+        }
     };
     </script>
 </head>
@@ -120,7 +164,7 @@
 
                     <div class="mt-6" role="region" aria-label="계정 설정">
                         <h2 class="profile-settings-title text-lg font-semibold mb-4">계정 설정</h2>
-                        <form class="space-y-4" role="form" aria-label="프로필 수정 폼">
+                        <form class="space-y-4" role="form" aria-label="프로필 수정 폼" id="profileForm">
                             <div>
                                 <label for="displayName" class="block text-sm font-medium text-gray-400 mb-1">이름</label>
                                 <input type="text" id="displayName" name="displayName" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" aria-describedby="displayNameHelp">
@@ -132,7 +176,7 @@
                                 <div id="emailHelp" class="sr-only">이메일은 변경할 수 없습니다</div>
                             </div>
                             <button type="submit" id="saveChanges" class="w-full bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors" aria-label="변경사항 저장">
-                                변경사항 저장
+                                <i class="fas fa-save mr-2"></i>변경사항 저장
                             </button>
                         </form>
                     </div>
@@ -280,18 +324,34 @@
 
     <!-- Firebase SDK 스크립트 -->
     <script type="module">
-        // Firebase SDK 임포트
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        // Firebase SDK 임포트 - 버전 통일
         import { 
             getAuth, 
             signOut,
-            onAuthStateChanged 
-        } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, collection, getDocs, doc, deleteDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+            onAuthStateChanged,
+            updateProfile
+        } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js';
+        import { getFirestore, collection, getDocs, doc, deleteDoc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js';
 
-        // AuthManager를 통한 통합 초기화 사용
-        const auth = window.auth;
-        const db = window.db;
+        // AuthManager 초기화 대기 및 안전한 접근
+        let auth = null;
+        let db = null;
+        
+        function waitForAuthManager() {
+            return new Promise((resolve) => {
+                if (window.authManager && window.authManager.isInitialized && window.auth && window.db) {
+                    auth = window.auth;
+                    db = window.db;
+                    resolve();
+                } else {
+                    window.addEventListener('authManagerReady', () => {
+                        auth = window.auth;
+                        db = window.db;
+                        resolve();
+                    }, { once: true });
+                }
+            });
+        }
 
         // 탭 전환 함수
         function switchTab(tabName) {
@@ -332,9 +392,17 @@
         }
 
         // 로그인 상태 감지: AuthManager 준비 후 리스너 부착
-        function attachAuthListener() {
+        async function attachAuthListener() {
             try {
-                onAuthStateChanged(getAuth(), (user) => {
+                // AuthManager 초기화 대기
+                await waitForAuthManager();
+                
+                if (!auth || !db) {
+                    console.error('Firebase 인스턴스가 초기화되지 않았습니다.');
+                    return;
+                }
+                
+                onAuthStateChanged(auth, (user) => {
                     const authButtons = document.getElementById('authButtons');
                     const profileMenu = document.getElementById('profileMenu');
                     if (user) {
@@ -386,6 +454,7 @@
                         if (authButtons) authButtons.style.display = 'flex';
                         if (profileMenu) profileMenu.style.display = 'none';
                         // 로그인되지 않은 경우 홈페이지로 리다이렉트
+                        console.log('사용자가 로그인되지 않았습니다. 홈페이지로 리다이렉트합니다.');
                         window.location.href = 'index.html';
                     }
                 });
@@ -530,32 +599,100 @@
 
         // 변경사항 저장 리스너 설정
         function setupSaveChangesListener(user) {
+            const profileForm = document.getElementById('profileForm');
             const saveChangesBtn = document.getElementById('saveChanges');
-            if (saveChangesBtn) {
-                saveChangesBtn.addEventListener('click', async () => {
+            
+            if (profileForm) {
+                profileForm.addEventListener('submit', async (e) => {
+                    e.preventDefault(); // 폼 기본 제출 동작 방지
+                    
+                    // 버튼 비활성화 및 로딩 상태 표시
+                    if (saveChangesBtn) {
+                        saveChangesBtn.disabled = true;
+                        saveChangesBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>저장 중...';
+                    }
+                    
                     try {
                         const displayNameInput = document.getElementById('displayName');
-                        const newDisplayName = displayNameInput ? displayNameInput.value : '';
-                        // Firestore에 이름만 업데이트하려면 users/{uid} 문서에 setDoc 사용 가능
-                        // 여기서는 RTDB 예시이므로 필요시 Firestore로 변경
-                        // await setDoc(doc(db, 'users', user.uid), { displayName: newDisplayName }, { merge: true });
-                        if (window.CommonUtils) {
-                            window.CommonUtils.showSuccess('프로필이 업데이트되었습니다.');
-                        } else {
-                            alert('프로필이 업데이트되었습니다.');
+                        const newDisplayName = displayNameInput ? displayNameInput.value.trim() : '';
+                        
+                        if (!newDisplayName) {
+                            if (window.CommonUtils) {
+                                window.CommonUtils.showError('이름을 입력해주세요.');
+                            } else {
+                                alert('이름을 입력해주세요.');
+                            }
+                            return;
                         }
+                        
+                        // Firebase Authentication 프로필 업데이트
+                        await updateProfile(user, {
+                            displayName: newDisplayName
+                        });
+                        
+                        // Firestore 사용자 문서도 업데이트
+                        await setDoc(doc(db, 'users', user.uid), { 
+                            name: newDisplayName,
+                            displayName: newDisplayName,
+                            updatedAt: new Date()
+                        }, { merge: true });
+                        
+                        // UI 업데이트
+                        const profileNameDisplay = document.getElementById('profileNameDisplay');
+                        const profileInitialLarge = document.getElementById('profileInitialLarge');
+                        
+                        if (profileNameDisplay) {
+                            profileNameDisplay.textContent = newDisplayName;
+                        }
+                        if (profileInitialLarge) {
+                            profileInitialLarge.textContent = newDisplayName[0].toUpperCase();
+                        }
+                        
+                        // 헤더의 프로필 정보도 업데이트
+                        const headerProfileName = document.getElementById('profileName');
+                        const headerProfileInitial = document.getElementById('profileInitial');
+                        if (headerProfileName) {
+                            headerProfileName.textContent = newDisplayName;
+                        }
+                        if (headerProfileInitial) {
+                            headerProfileInitial.textContent = newDisplayName[0].toUpperCase();
+                        }
+                        
+                        if (window.CommonUtils) {
+                            window.CommonUtils.showSuccess('프로필이 성공적으로 업데이트되었습니다.');
+                        } else {
+                            alert('프로필이 성공적으로 업데이트되었습니다.');
+                        }
+                        
                     } catch (error) {
+                        console.error('프로필 업데이트 오류:', error);
+                        
+                        let errorMessage = '프로필 업데이트 중 오류가 발생했습니다.';
+                        if (error.code === 'auth/requires-recent-login') {
+                            errorMessage = '보안을 위해 다시 로그인한 후 시도해주세요.';
+                        } else if (error.code === 'permission-denied') {
+                            errorMessage = '프로필 업데이트 권한이 없습니다.';
+                        } else if (error.code === 'unavailable') {
+                            errorMessage = '네트워크 연결을 확인해주세요.';
+                        }
+                        
                         if (window.CommonUtils) {
                             window.CommonUtils.handleError(error, '프로필 업데이트');
                         } else {
-                            console.error('프로필 업데이트 실패:', error);
-                            alert('프로필 업데이트 중 오류가 발생했습니다.');
+                            alert(errorMessage);
+                        }
+                    } finally {
+                        // 버튼 재활성화
+                        if (saveChangesBtn) {
+                            saveChangesBtn.disabled = false;
+                            saveChangesBtn.innerHTML = '<i class="fas fa-save mr-2"></i>변경사항 저장';
                         }
                     }
                 });
             }
         }
 
+        // AuthManager 준비 후 인증 리스너 부착
         if (window.authManager && window.authManager.isInitialized) {
             attachAuthListener();
         } else {
@@ -565,6 +702,10 @@
         // 로그아웃 함수
         window.handleLogout = async function() {
             try {
+                if (!auth) {
+                    console.error('Firebase auth가 초기화되지 않았습니다.');
+                    return;
+                }
                 await signOut(auth);
                 window.location.href = 'index.html';
             } catch (error) {
@@ -967,9 +1108,15 @@
         // 즐겨찾기 삭제 함수 (Firestore용)
         window.removeFavoriteTool = async function(toolId) {
             if (!confirm('정말로 이 도구를 즐겨찾기에서 삭제하시겠습니까?')) return;
+            
+            if (!auth || !db) {
+                console.error('Firebase가 초기화되지 않았습니다.');
+                return;
+            }
+            
             const user = auth.currentUser;
             if (!user) return;
-            const db = getFirestore(app);
+            
             const favDocRef = doc(db, `users/${user.uid}/favorites/${toolId}`);
             try {
                 await deleteDoc(favDocRef);
@@ -986,11 +1133,16 @@
         // 즐겨찾기 레시피 삭제 함수
         window.removeFavoriteRecipe = async function(recipeId) {
             if (!confirm('정말로 이 레시피를 즐겨찾기에서 삭제하시겠습니까?')) return;
+            
+            if (!auth || !db) {
+                console.error('Firebase가 초기화되지 않았습니다.');
+                return;
+            }
+            
             const user = auth.currentUser;
             if (!user) return;
             
             try {
-                const db = getFirestore(app);
                 const favDocRef = doc(db, `users/${user.uid}/favorited_recipe/${recipeId}`);
                 await deleteDoc(favDocRef);
                 window.location.reload();
@@ -1136,34 +1288,11 @@
     </script>
 
     <script>
-        // 테마1 전환 관련 코드
+        // 테마 전환 관련 코드 - profile.html에는 themeToggle이 없으므로 안전하게 처리
         document.addEventListener('DOMContentLoaded', () => {
-            const themeToggle = document.getElementById('themeToggle');
-            const themeIcon = themeToggle.querySelector('i');
-            
-            // 저장된 테마 불러오기
+            // 저장된 테마 불러오기 (기본값: dark)
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeIcon(savedTheme);
-            
-            // 테마 토글 이벤트
-            themeToggle.addEventListener('click', () => {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                
-                document.documentElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                updateThemeIcon(newTheme);
-            });
-            
-            // 테마 아이콘 업데이트
-            function updateThemeIcon(theme) {
-                if (theme === 'dark') {
-                    themeIcon.className = 'fas fa-sun';
-                } else {
-                    themeIcon.className = 'fas fa-moon';
-                }
-            }
         });
     </script>
 
@@ -1184,31 +1313,17 @@
             // 로그아웃 이벤트 연결
             document.getElementById('profileHeaderLogout').onclick = async function() {
                 try {
-                    // Firebase auth 인스턴스 가져오기
-                    const { getAuth, signOut } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
-                    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
-                    import('./js/config.js').then(({ firebaseConfig }) => {
-                        const app = initializeApp(firebaseConfig);
-                        const auth = getAuth(app);
-                        signOut(auth).then(() => {
-                            if (window.CommonUtils) {
-                                window.CommonUtils.showSuccess('로그아웃되었습니다.');
-                            } else {
-                                alert('로그아웃되었습니다.');
-                            }
-                            window.location.href = 'index.html';
-                        }).catch((error) => {
-                            if (window.CommonUtils) {
-                                window.CommonUtils.handleError(error, '로그아웃');
-                            } else {
-                                alert('로그아웃 중 오류가 발생했습니다.');
-                            }
-                        });
-                    });
+                    if (window.handleLogout) {
+                        await window.handleLogout();
+                    } else {
+                        console.error('handleLogout 함수를 찾을 수 없습니다.');
+                        alert('로그아웃 기능을 사용할 수 없습니다.');
+                    }
                 } catch (error) {
                     if (window.CommonUtils) {
                         window.CommonUtils.handleError(error, '로그아웃');
                     } else {
+                        console.error('로그아웃 오류:', error);
                         alert('로그아웃 중 오류가 발생했습니다.');
                     }
                 }

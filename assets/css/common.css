@@ -134,7 +134,7 @@ footer {
 }
 
 .card:hover {
-    transform: translateY(-2px);
+    transform: none;
     box-shadow: var(--card-shadow);
     border-color: var(--border-hover);
 }
@@ -154,7 +154,7 @@ footer {
 
 .btn-primary:hover {
     opacity: 0.9;
-    transform: translateY(-1px);
+    transform: none;
 }
 
 .btn-secondary {
@@ -171,7 +171,7 @@ footer {
 
 .btn-secondary:hover {
     background: var(--button-secondary-hover);
-    transform: translateY(-1px);
+    transform: none;
 }
 
 /* 그라디언트 텍스트 및 배경 */
@@ -433,8 +433,8 @@ footer {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% { transform: none; }
+    100% { transform: none; }
 }
 
 /* 메시지 컴포넌트 */
@@ -472,11 +472,11 @@ footer {
 
 @keyframes slideInDown {
     from {
-        transform: translateY(-100%);
+        transform: none;
         opacity: 0;
     }
     to {
-        transform: translateY(0);
+        transform: none;
         opacity: 1;
     }
 }
@@ -600,11 +600,11 @@ footer {
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: none;
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: none;
     }
 }
 
@@ -639,11 +639,11 @@ footer {
 
 @keyframes slideInRight {
     from {
-        transform: translateX(100%);
+        transform: none;
         opacity: 0;
     }
     to {
-        transform: translateX(0);
+        transform: none;
         opacity: 1;
     }
 }

@@ -12,7 +12,7 @@
 }
 
 .card-component:hover {
-    transform: translateY(-2px);
+    transform: none;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
     border-color: var(--border-hover);
 }
@@ -49,7 +49,7 @@
 
 .btn-component.primary:hover {
     opacity: 0.9;
-    transform: translateY(-1px);
+    transform: none;
 }
 
 .btn-component.secondary {
@@ -472,42 +472,42 @@
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: none;
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: none;
     }
 }
 
 @keyframes slideInDown {
     from {
-        transform: translateY(-100%);
+        transform: none;
         opacity: 0;
     }
     to {
-        transform: translateY(0);
+        transform: none;
         opacity: 1;
     }
 }
 
 @keyframes slideInRight {
     from {
-        transform: translateX(100%);
+        transform: none;
         opacity: 0;
     }
     to {
-        transform: translateX(0);
+        transform: none;
         opacity: 1;
     }
 }
 
 @keyframes spin {
     from {
-        transform: rotate(0deg);
+        transform: none;
     }
     to {
-        transform: rotate(360deg);
+        transform: none;
     }
 }
 

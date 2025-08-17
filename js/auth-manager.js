@@ -79,18 +79,52 @@ class AuthManager {
     async handleSocialLogin(providerName) {
         if (providerName !== 'google') return;
 
+        // Firebase가 초기화되었는지 확인
+        if (!this.auth || !this.isInitialized) {
+            console.error('Firebase가 아직 초기화되지 않았습니다.');
+            alert('로그인 시스템을 초기화하는 중입니다. 잠시 후 다시 시도해주세요.');
+            return;
+        }
+
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
 
         try {
-            const result = await signInWithPopup(this.auth, provider);
-            await this.handleSuccessfulAuth(result.user);
-        } catch (error) {
-            if (window.CommonUtils) {
-                window.CommonUtils.handleError(error, '소셜 로그인');
-            } else {
-                console.error('소셜 로그인 실패:', error);
+            console.log('Google 로그인 시작...');
+            
+            // 팝업 차단 확인
+            const popup = window.open('', '_blank', 'width=500,height=600');
+            if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+                alert('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.');
+                return;
             }
+            popup.close();
+
+            const result = await signInWithPopup(this.auth, provider);
+            console.log('Google 로그인 성공:', result.user);
+            await this.handleSuccessfulAuth(result.user);
+            
+        } catch (error) {
+            console.error('Google 로그인 실패:', error);
+            
+            let errorMessage = 'Google 로그인에 실패했습니다.';
+            
+            if (error.code === 'auth/popup-closed-by-user') {
+                errorMessage = '로그인 창이 닫혔습니다. 다시 시도해주세요.';
+            } else if (error.code === 'auth/popup-blocked') {
+                errorMessage = '팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.';
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                errorMessage = '로그인이 취소되었습니다.';
+            } else if (error.code === 'auth/account-exists-with-different-credential') {
+                errorMessage = '이미 다른 방법으로 가입된 계정입니다.';
+            }
+            
+            if (window.CommonUtils) {
+                window.CommonUtils.handleError(error, 'Google 소셜 로그인');
+            } else {
+                alert(errorMessage);
+            }
+            
             throw error;
         }
     }
@@ -172,13 +206,26 @@ class AuthManager {
                 window.updateHeaderAuthUI(user);
             }
             
-            // 모달 닫기
+            // 모달 완전히 닫기
             const loginModal = document.getElementById('loginModal');
             const signupModal = document.getElementById('signupModal');
-            if (loginModal) loginModal.classList.remove('show');
-            if (signupModal) signupModal.classList.remove('show');
             
-            // Firestore 저장 로직만 유지 (필요시)
+            if (loginModal) {
+                loginModal.classList.remove('show');
+                loginModal.style.display = 'none';
+            }
+            if (signupModal) {
+                signupModal.classList.remove('show');
+                signupModal.style.display = 'none';
+            }
+            
+            // 성공 메시지 표시
+            setTimeout(() => {
+                alert('로그인에 성공했습니다!');
+            }, 100);
+            
+            console.log('인증 성공 처리 완료');
+            
         } catch (error) {
             console.error('인증 성공 처리 중 오류:', error);
         }

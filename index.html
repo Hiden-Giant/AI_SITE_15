@@ -380,8 +380,8 @@
                 
                 console.log('DBManager 상태 확인:', window.dbManager.getState());
                 
-                // 인기 도구만 불러오기 (6-8개)
-                popularTools = await window.dbManager.loadPopularAITools(8, 4.5);
+                // 인기 도구만 불러오기 (6개)
+                popularTools = await window.dbManager.loadPopularAITools(6, 4.5);
                 console.log('인기 AI 도구 데이터 로드 완료:', popularTools.length);
                 
                 // 인기 도구 즉시 표시
@@ -439,25 +439,64 @@
             }
         }
         
-        // 이미지 로드 실패 시 처리하는 함수
+        // 이미지 로드 실패 시 처리하는 함수 - 개선된 버전
         window.handleImageError = function(img) {
             img.onerror = null; // 무한 루프 방지
-            img.src = window.DEFAULT_IMAGE;
+            
+            // 기본 이미지로 대체
+            if (img.src !== window.DEFAULT_IMAGE) {
+                console.log(`이미지 로드 실패, 기본 이미지로 대체: ${img.src}`);
+                img.src = window.DEFAULT_IMAGE;
+            }
         };
 
-        // getStorageUrl 함수 추가
+        // getStorageUrl 함수 추가 - Firebase Storage URL 생성
         function getStorageUrl(fileName) {
-            return `https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebaseapp.com/o/ai_logos%2F${encodeURIComponent(fileName)}?alt=media&token=4b780bb4-d39d-4195-8c73-4766eda6ad6b`;
+            if (!fileName || typeof fileName !== 'string' || fileName.trim() === '') {
+                console.warn('getStorageUrl: 유효하지 않은 fileName:', fileName);
+                return window.DEFAULT_IMAGE;
+            }
+            
+            try {
+                // Firebase Storage URL 생성
+                const baseUrl = 'https://firebasestorage.googleapis.com/v0/b/ai-tools-data-b2b7b.firebaseapp.com/o/ai_logos%2F';
+                const encodedFileName = encodeURIComponent(fileName.trim());
+                const token = '4b780bb4-d39d-4195-8c73-4766eda6ad6b';
+                
+                const fullUrl = `${baseUrl}${encodedFileName}?alt=media&token=${token}`;
+                console.log(`Firebase Storage URL 생성: ${fullUrl}`);
+                
+                return fullUrl;
+            } catch (error) {
+                console.error('getStorageUrl 오류:', error);
+                return window.DEFAULT_IMAGE;
+            }
         }
         
-        // getValidImageUrl 함수 추가
+        // getValidImageUrl 함수 추가 - 이미지 표시 문제 해결
         function getValidImageUrl(tool) {
-            if (typeof tool.logoUrl === 'string' && tool.logoUrl.trim() !== '') return tool.logoUrl;
-            if (typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
+            // 1. logoUrl이 있으면 우선 사용
+            if (tool.logoUrl && typeof tool.logoUrl === 'string' && tool.logoUrl.trim() !== '') {
+                return tool.logoUrl;
+            }
+            
+            // 2. logoFileName이 있으면 Firebase Storage URL 생성
+            if (tool.logoFileName && typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
                 return getStorageUrl(tool.logoFileName);
             }
-            if (typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') return tool.imageUrl;
-            if (typeof tool.image === 'string' && tool.image.trim() !== '') return tool.image;
+            
+            // 3. imageUrl이 있으면 사용
+            if (tool.imageUrl && typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') {
+                return tool.imageUrl;
+            }
+            
+            // 4. image가 있으면 사용
+            if (tool.image && typeof tool.image === 'string' && tool.image.trim() !== '') {
+                return tool.image;
+            }
+            
+            // 5. 모든 이미지가 없으면 기본 이미지 사용
+            console.log(`도구 "${tool.name}"의 이미지를 찾을 수 없어 기본 이미지를 사용합니다.`, tool);
             return window.DEFAULT_IMAGE;
         }
 
@@ -478,8 +517,8 @@
                     return;
                 }
 
-                // 인기 도구 표시 (최대 8개)
-                const displayTools = popularTools.slice(0, 8);
+                // 인기 도구 표시 (최대 6개)
+                const displayTools = popularTools.slice(0, 6);
                 
                 popularToolsContainer.innerHTML = displayTools.map(tool => `
                     <div class="bg-gray-800/50 rounded-lg p-4 flex items-start gap-4 cursor-pointer hover:bg-gray-700/50 transition-all duration-300" onclick="window.goToToolDetail('${tool.id}')">
@@ -924,7 +963,7 @@
                 </a>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="popularToolsContainer">
-              <!-- 로딩 중일 때 보여줄 skeleton -->
+              <!-- 로딩 중일 때 보여줄 skeleton (6개) -->
               <div class="animate-pulse bg-gray-800/50 rounded-lg p-4 h-40"></div>
               <div class="animate-pulse bg-gray-800/50 rounded-lg p-4 h-40"></div>
               <div class="animate-pulse bg-gray-800/50 rounded-lg p-4 h-40"></div>

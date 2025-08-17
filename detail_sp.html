@@ -203,30 +203,116 @@
         .loading-spinner {
             display: none;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.3s ease-in-out;
         }
 
         .loading-spinner.active {
-            display: block;
+            display: flex;
         }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid var(--border-color, #2d3748);
-            border-top: 5px solid var(--highlight, #3b82f6);
+        /* 완전히 정적인 로딩 인디케이터 */
+        .static-loading-indicator {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-dots {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: #3b82f6;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            /* 애니메이션 완전 제거 - 정적 상태 */
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .loading-text {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-align: center;
+            margin-top: 0.5rem;
         }
 
+        /* 로딩 인디케이터 페이드 인/아웃 효과 */
+        .loading-spinner:not(.active) {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner.active {
+            opacity: 1;
+        }
+        
+        /* 부드러운 트랜지션 효과 */
+        .loading-spinner {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        /* 모든 애니메이션 및 transform 강제 비활성화 */
+        #loadingSpinner .spinner,
+        #loadingSpinner .static-loading-indicator,
+        #loadingSpinner .loading-dots,
+        #loadingSpinner .dot,
+        .loading-spinner .spinner,
+        .loading-spinner .static-loading-indicator,
+        .loading-spinner .loading-dots,
+        .loading-spinner .dot,
+        .spinner,
+        .loading-spinner,
+        .loading-component .loading-spinner {
+            animation: none !important;
+            transform: none !important;
+            -webkit-animation: none !important;
+            -moz-animation: none !important;
+            -ms-animation: none !important;
+            -o-animation: none !important;
+            -webkit-transform: none !important;
+            -moz-transform: none !important;
+            -ms-transform: none !important;
+            -o-transform: none !important;
+        }
+        
+        /* common.css 스피너 스타일 완전 재정의 */
+        #loadingSpinner .spinner {
+            border: none !important;
+            border-radius: 0 !important;
+            width: auto !important;
+            height: auto !important;
+        }
+
+        /* 전역 애니메이션 및 transform 비활성화 */
+        * {
+            animation: none !important;
+            -webkit-animation: none !important;
+            -moz-animation: none !important;
+            -ms-animation: none !important;
+            -o-animation: none !important;
+        }
+        
+        /* 로딩 스피너만 예외적으로 허용 (정적 상태) */
+        .loading-spinner:not(.active) {
+            animation: none !important;
+            -webkit-animation: none !important;
+            -moz-animation: none !important;
+            -ms-animation: none !important;
+            -o-animation: none !important;
+        }
+        
         /* 스크린 리더 전용 클래스 */
         .sr-only {
             position: absolute;
@@ -276,14 +362,14 @@
             opacity: 1;
         }
 
-        /* 성능 최적화를 위한 애니메이션 */
+        /* 성능 최적화를 위한 애니메이션 - transform 제거 */
         .fade-in {
             animation: fadeIn 0.5s ease-in-out;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: none; }
+            to { opacity: 1; transform: none; }
         }
 
         /* 로딩 상태 표시 */
@@ -335,11 +421,17 @@
   <script src="js/common.js"></script>
   </head>
   <body>
-  <!-- 로딩 스피너 -->
-  <div id="loadingSpinner" class="loading-spinner" role="status" aria-label="페이지 로딩 중">
-      <div class="spinner" aria-hidden="true"></div>
-      <div class="loading-text">로딩 중...</div>
-      <span class="sr-only">로딩 중...</span>
+  <!-- 로딩 인디케이터 -->
+  <div id="loadingSpinner" class="loading-spinner active" role="status" aria-label="페이지 로딩 중">
+      <div class="static-loading-indicator" aria-hidden="true">
+          <div class="loading-dots">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+          </div>
+      </div>
+      <div class="loading-text">데이터를 불러오는 중...</div>
+      <span class="sr-only">페이지 로딩 중...</span>
   </div>
 
   <!-- 에러 메시지 -->
@@ -347,44 +439,89 @@
 
   <div id="header-container"></div>
   <script>
-    // 로딩 상태 관리
+    // 로딩 상태 관리 - 전역 변수로 관리
+    let isLoading = true;
+    let loadingTimeout = null;
+
     function showLoading() {
-        document.getElementById('loadingSpinner').classList.add('active');
+        isLoading = true;
+        const spinner = document.getElementById('loadingSpinner');
+        if (spinner) {
+            spinner.classList.add('active');
+        }
+        
+        // 로딩이 너무 오래 걸릴 경우를 대비한 타임아웃 설정
+        if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+        }
+        loadingTimeout = setTimeout(() => {
+            console.warn('로딩 타임아웃 발생, 강제로 로딩 숨김');
+            hideLoading();
+        }, 30000); // 30초 타임아웃
     }
 
     function hideLoading() {
-        document.getElementById('loadingSpinner').classList.remove('active');
+        isLoading = false;
+        const spinner = document.getElementById('loadingSpinner');
+        if (spinner) {
+            // 부드러운 페이드 아웃 효과
+            spinner.style.opacity = '0';
+            setTimeout(() => {
+                spinner.classList.remove('active');
+                spinner.style.opacity = ''; // 스타일 초기화
+            }, 300);
+        }
+        
+        if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+            loadingTimeout = null;
+        }
+        
+        console.log('로딩 인디케이터 숨김 완료');
     }
 
     // 에러 메시지 표시
     function showError(message) {
         const errorElement = document.getElementById('errorMessage');
-        errorElement.textContent = message;
-        errorElement.classList.add('active');
-        
-        // 5초 후 자동으로 사라짐
-        setTimeout(() => {
-            errorElement.classList.remove('active');
-        }, 5000);
-    }
-
-    // DBManager 이벤트 리스너
-    window.addEventListener('dbManagerReady', (event) => {
-        hideLoading();
-        if (!event.detail.success) {
-            showError(event.detail.error || '데이터베이스 초기화 실패');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.classList.add('active');
+            
+            // 5초 후 자동으로 사라짐
+            setTimeout(() => {
+                errorElement.classList.remove('active');
+            }, 5000);
         }
-    });
-
-    window.addEventListener('dbManagerError', (event) => {
-        hideLoading();
-        showError(event.detail.error || '오류가 발생했습니다');
-    });
+    }
 
     // 페이지 로드 시 로딩 표시
     document.addEventListener('DOMContentLoaded', function() {
         showLoading();
+        console.log('페이지 로드 시 로딩 시작');
     });
+
+    // DBManager 이벤트 리스너 - 중복 방지
+    let dbManagerReadyHandled = false;
+    
+    window.addEventListener('dbManagerReady', (event) => {
+        if (dbManagerReadyHandled) return;
+        dbManagerReadyHandled = true;
+        
+        console.log('DBManager 준비 완료:', event.detail);
+        
+        if (event.detail && event.detail.success) {
+            hideLoading();
+        } else {
+            showError(event.detail?.error || '데이터베이스 초기화 실패');
+            hideLoading();
+        }
+    }, { once: true });
+
+    window.addEventListener('dbManagerError', (event) => {
+        console.error('DBManager 오류:', event.detail);
+        showError(event.detail?.error || '오류가 발생했습니다');
+        hideLoading();
+    }, { once: true });
   </script>
   
   <script type="module">
@@ -536,6 +673,8 @@
     // DBManager 초기화 완료 이벤트 리스너
     window.addEventListener('dbManagerReady', async () => {
       try {
+        console.log('DBManager 준비 완료, 최적화기 초기화 시작');
+        
         // 최적화기 초기화
         detailOptimizer = new DetailPageOptimizer();
         console.log('DetailPageOptimizer 초기화 완료');
@@ -551,11 +690,26 @@
             }
         }, 5 * 60 * 1000);
         
+        // 초기화 완료 후 로딩 상태 확인 및 정리
+        if (isLoading) {
+            console.log('DBManager 초기화 완료, 로딩 상태 정리');
+            // 즉시 로딩 완료 처리 (지연 시간 단축)
+            setTimeout(() => {
+                hideLoading();
+            }, 300);
+        }
+        
       } catch (error) {
+        console.error('AI 도구 데이터 로드 실패:', error);
         if (window.CommonUtils) {
             window.CommonUtils.handleError(error, 'AI 도구 데이터 로드');
         } else {
-            console.error('AI 도구 데이터 로드 실패:', error);
+            showError('AI 도구 데이터 로드 중 오류가 발생했습니다.');
+        }
+        
+        // 오류 발생 시에도 로딩 상태 정리
+        if (isLoading) {
+            hideLoading();
         }
       }
     });
@@ -655,6 +809,8 @@
         // Firebase 초기화 완료 후 실행될 코드
         document.addEventListener('DOMContentLoaded', async () => {
             try {
+                console.log('페이지 초기화 시작');
+                
                 // URL에서 도구 ID 가져오기
                 const urlParams = new URLSearchParams(window.location.search);
                 const toolId = urlParams.get('id');
@@ -664,25 +820,36 @@
                     console.error('도구 ID가 없습니다.');
                     const loginModal = document.getElementById('loginModal');
                     if (loginModal) loginModal.classList.remove('show');
+                    hideLoading(); // 로딩 상태 정리
                     return;
                 }
 
                 const run = async () => {
-                    await loadToolDetailsOptimized(toolId);
-                    setupTabs();
+                    try {
+                        await loadToolDetailsOptimized(toolId);
+                        setupTabs();
+                        console.log('도구 상세 정보 로드 및 탭 설정 완료');
+                    } catch (error) {
+                        console.error('도구 상세 정보 로드 실패:', error);
+                        showError('도구 정보를 불러오는 중 오류가 발생했습니다.');
+                    }
                 };
 
                 if (window.dbManager && window.dbManager.isInitialized) {
+                    console.log('DBManager 이미 초기화됨, 즉시 실행');
                     await run();
                 } else {
+                    console.log('DBManager 초기화 대기 중...');
                     window.addEventListener('dbManagerReady', async (e) => {
                         if (e.detail && e.detail.success) {
+                            console.log('DBManager 초기화 성공, 도구 정보 로드 시작');
                             await run();
                         } else {
+                            console.error('DBManager 초기화 실패:', e.detail && e.detail.error);
                             if (window.CommonUtils) {
                                 window.CommonUtils.handleError(new Error(e.detail && e.detail.error || 'DBManager 초기화 실패'), 'DBManager 초기화');
                             } else {
-                                console.error('DBManager 초기화 실패:', e.detail && e.detail.error);
+                                showError('데이터베이스 초기화에 실패했습니다.');
                             }
                         }
                     }, { once: true });
@@ -701,18 +868,27 @@
                     }
                 }
             } catch (error) {
+                console.error('페이지 초기화 중 오류 발생:', error);
                 if (window.CommonUtils) {
                     window.CommonUtils.handleError(error, '페이지 초기화');
                 } else {
-                    console.error('초기화 중 오류 발생:', error);
-                    alert('페이지 로드 중 오류가 발생했습니다.');
+                    showError('페이지 로드 중 오류가 발생했습니다.');
                 }
+                
+                // 오류 발생 시 로딩 상태 정리
+                hideLoading();
             }
         });
 
         // 최적화된 도구 상세 정보 로드 함수
         async function loadToolDetailsOptimized(toolId) {
             try {
+                // 이미 로딩 중이면 중복 호출 방지
+                if (isLoading) {
+                    console.log('이미 로딩 중입니다. 중복 호출 방지');
+                    return;
+                }
+                
                 showLoading();
                 console.log('최적화된 도구 상세 정보 로드 시작:', toolId);
                 
@@ -736,6 +912,8 @@
                         const stats = detailOptimizer.getCacheStats();
                         console.log('캐시 통계:', stats);
                     }
+                    
+                    console.log('도구 상세 정보 로드 및 표시 완료');
                 } else {
                     if (window.CommonUtils) {
                         window.CommonUtils.showError('해당 AI 도구를 찾을 수 없습니다.');
@@ -744,12 +922,14 @@
                     }
                 }
             } catch (error) {
+                console.error('도구 상세 정보 로드 중 오류:', error);
                 if (window.CommonUtils) {
                     window.CommonUtils.handleError(error, '도구 상세 정보 로드');
                 } else {
                     showError('데이터를 불러오는 중 오류가 발생했습니다.');
                 }
             } finally {
+                // 로딩 완료 즉시 처리
                 hideLoading();
             }
         }

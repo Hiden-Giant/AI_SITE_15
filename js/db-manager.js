@@ -51,7 +51,7 @@ class DBManager {
     }
 
     // 최적화된 인기 AI 도구 로딩 함수
-    async loadPopularAITools(limitParam = 8, minRating = 4.5) {
+    async loadPopularAITools(limitParam = 6, minRating = 4.5) {
         try {
             if (!this.db) throw new Error('Firestore가 초기화되지 않았습니다.');
             this.isLoading = true;
@@ -128,13 +128,21 @@ class DBManager {
             const tool = docSnap.data();
             tool.id = docSnap.id;
             
-            // 기본 로고 URL 설정
+            // 기본 로고 URL 설정 - 개선된 버전
             if (tool.logoFileName && typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
-                tool.logoUrl = FIREBASE_LOGO_BASE + encodeURIComponent(tool.logoFileName) + "?alt=media";
+                try {
+                    tool.logoUrl = FIREBASE_LOGO_BASE + encodeURIComponent(tool.logoFileName.trim()) + "?alt=media";
+                    console.log(`로고 URL 생성: ${tool.logoUrl}`);
+                } catch (error) {
+                    console.warn(`로고 URL 생성 실패 (${tool.name}):`, error);
+                    tool.logoUrl = null;
+                }
             } else if (tool.imageUrl && typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') {
                 tool.logoUrl = tool.imageUrl;
+                console.log(`이미지 URL 사용: ${tool.logoUrl}`);
             } else {
                 tool.logoUrl = null;
+                console.log(`도구 "${tool.name}"에 이미지 정보가 없습니다.`);
             }
             
             // 필수 데이터만 우선 설정, 상세 데이터는 지연 로딩
@@ -205,11 +213,19 @@ class DBManager {
                 tool.id = docSnap.id;
                 
                 if (tool.logoFileName && typeof tool.logoFileName === 'string' && tool.logoFileName.trim() !== '') {
-                    tool.logoUrl = FIREBASE_LOGO_BASE + encodeURIComponent(tool.logoFileName) + "?alt=media";
+                    try {
+                        tool.logoUrl = FIREBASE_LOGO_BASE + encodeURIComponent(tool.logoFileName.trim()) + "?alt=media";
+                        console.log(`백그라운드 로고 URL 생성: ${tool.logoUrl}`);
+                    } catch (error) {
+                        console.warn(`백그라운드 로고 URL 생성 실패 (${tool.name}):`, error);
+                        tool.logoUrl = null;
+                    }
                 } else if (tool.imageUrl && typeof tool.imageUrl === 'string' && tool.imageUrl.trim() !== '') {
                     tool.logoUrl = tool.imageUrl;
+                    console.log(`백그라운드 이미지 URL 사용: ${tool.logoUrl}`);
                 } else {
                     tool.logoUrl = null;
+                    console.log(`백그라운드 도구 "${tool.name}"에 이미지 정보가 없습니다.`);
                 }
                 
                 allTools.push(this.processToolBasicData(tool));
