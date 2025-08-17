@@ -360,6 +360,31 @@
 
     <!-- 다국어 초기화는 bootstrap.js에서 처리 -->
 
+    <!-- 테스트용 함수들 추가 -->
+    <script>
+        // 테스트용 함수들
+        function testFunction() {
+            console.log('=== testFunction 호출됨 ===');
+            alert('테스트 함수가 정상적으로 호출되었습니다!');
+        }
+        
+        function testAuthManager() {
+            console.log('=== testAuthManager 호출됨 ===');
+            console.log('AuthManager 상태:', {
+                authManager: !!window.authManager,
+                isInitialized: window.authManager?.isInitialized,
+                auth: !!window.auth,
+                app: !!window.app
+            });
+        }
+        
+        // 전역에 등록
+        window.testFunction = testFunction;
+        window.testAuthManager = testAuthManager;
+        
+        console.log('테스트 함수들이 전역에 등록되었습니다.');
+    </script>
+
     <script type="module">
         // 전역 변수 초기화
         let selectedCategories = new Set();

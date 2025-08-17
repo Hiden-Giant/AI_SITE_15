@@ -26,47 +26,82 @@ class AuthManager {
 
     async init() {
         try {
+            console.log('AuthManager 초기화 시작...');
+            
             // Firebase 앱이 이미 초기화되었는지 확인
             try {
                 this.app = getApp();
+                console.log('기존 Firebase 앱 사용');
             } catch {
+                console.log('새로운 Firebase 앱 초기화');
                 this.app = initializeApp(firebaseConfig);
             }
 
+            console.log('Firebase 앱 초기화 완료:', this.app);
             this.auth = getAuth(this.app);
             this.db = getFirestore(this.app); // Firestore로 변경
+            console.log('Firebase Auth 및 Firestore 초기화 완료');
 
             // 세션 지속성 설정
             await setPersistence(this.auth, browserLocalPersistence);
+            console.log('세션 지속성 설정 완료');
 
             // 전역 변수로 등록
             window.auth = this.auth;
             window.app = this.app;
             window.db = this.db; // Firestore 인스턴스
+            console.log('전역 변수 등록 완료');
 
             // 인증 상태 감지
             onAuthStateChanged(this.auth, async (user) => {
+                console.log('=== 인증 상태 변경 감지 ===');
+                console.log('사용자 정보:', user ? {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    emailVerified: user.emailVerified
+                } : '로그아웃');
+                
                 if (window.updateHeaderAuthUI) {
+                    console.log('updateHeaderAuthUI 함수 호출');
                     window.updateHeaderAuthUI(user);
+                } else {
+                    console.warn('updateHeaderAuthUI 함수가 정의되지 않았습니다.');
+                }
+                
+                // 인증 상태를 localStorage에 저장
+                if (user) {
+                    localStorage.setItem('authUser', JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName
+                    }));
+                    console.log('사용자 정보를 localStorage에 저장했습니다.');
+                } else {
+                    localStorage.removeItem('authUser');
+                    console.log('localStorage에서 사용자 정보를 제거했습니다.');
                 }
             });
 
             this.isInitialized = true;
-            console.log('AuthManager 초기화 완료');
+            console.log('AuthManager 초기화 완료 - 모든 서비스 준비됨');
 
             // 초기화 완료 이벤트 발생 (단일 진입점 이벤트)
             window.dispatchEvent(new CustomEvent('authManagerReady'));
+            console.log('authManagerReady 이벤트 발생');
 
             // 하위 호환: firebaseInitialized 이벤트도 함께 디스패치
             try {
                 window.dispatchEvent(new CustomEvent('firebaseInitialized', {
                     detail: { app: this.app, db: this.db, auth: this.auth }
                 }));
+                console.log('firebaseInitialized 이벤트 발생');
             } catch (e) {
-                // no-op
+                console.log('firebaseInitialized 이벤트 발생 실패:', e);
             }
 
         } catch (error) {
+            console.error('AuthManager 초기화 실패:', error);
             if (window.CommonUtils) {
                 window.CommonUtils.handleError(error, 'AuthManager 초기화', false);
             } else {
@@ -92,14 +127,6 @@ class AuthManager {
         try {
             console.log('Google 로그인 시작...');
             
-            // 팝업 차단 확인
-            const popup = window.open('', '_blank', 'width=500,height=600');
-            if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-                alert('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.');
-                return;
-            }
-            popup.close();
-
             const result = await signInWithPopup(this.auth, provider);
             console.log('Google 로그인 성공:', result.user);
             await this.handleSuccessfulAuth(result.user);
@@ -117,6 +144,10 @@ class AuthManager {
                 errorMessage = '로그인이 취소되었습니다.';
             } else if (error.code === 'auth/account-exists-with-different-credential') {
                 errorMessage = '이미 다른 방법으로 가입된 계정입니다.';
+            } else if (error.code === 'auth/network-request-failed') {
+                errorMessage = '네트워크 연결을 확인해주세요.';
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = '너무 많은 로그인 시도가 있었습니다. 잠시 후 다시 시도해주세요.';
             }
             
             if (window.CommonUtils) {
@@ -132,13 +163,26 @@ class AuthManager {
     // 이메일 회원가입
     async handleEmailSignup(fullName, email, password) {
         try {
+            console.log('이메일 회원가입 시도:', { fullName, email, password: '***' });
+            console.log('Firebase Auth 상태:', { 
+                auth: !!this.auth, 
+                isInitialized: this.isInitialized,
+                currentUser: this.auth?.currentUser 
+            });
+            
+            if (!this.auth || !this.isInitialized) {
+                throw new Error('Firebase Auth가 초기화되지 않았습니다.');
+            }
+            
             const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
             const user = userCredential.user;
+            console.log('Firebase 사용자 생성 성공:', user.uid);
 
             // 사용자 프로필 업데이트
             await updateProfile(user, {
                 displayName: fullName
             });
+            console.log('사용자 프로필 업데이트 완료');
 
             // Firestore에 회원 정보 저장
             const firestore = getFirestore(this.app);
@@ -154,9 +198,20 @@ class AuthManager {
                 marketingConsent: true,
                 registeredDate: new Date(),
             });
+            console.log('Firestore 사용자 정보 저장 완료');
 
             await this.handleSuccessfulAuth(user);
         } catch (error) {
+            console.error('이메일 회원가입 실패 상세:', {
+                code: error.code,
+                message: error.message,
+                email: email,
+                authState: {
+                    auth: !!this.auth,
+                    isInitialized: this.isInitialized
+                }
+            });
+            
             if (window.CommonUtils) {
                 window.CommonUtils.handleError(error, '이메일 회원가입');
             } else {
@@ -169,9 +224,31 @@ class AuthManager {
     // 이메일 로그인
     async handleEmailLogin(email, password) {
         try {
+            console.log('이메일 로그인 시도:', { email, password: '***' });
+            console.log('Firebase Auth 상태:', { 
+                auth: !!this.auth, 
+                isInitialized: this.isInitialized,
+                currentUser: this.auth?.currentUser 
+            });
+            
+            if (!this.auth || !this.isInitialized) {
+                throw new Error('Firebase Auth가 초기화되지 않았습니다.');
+            }
+            
             const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
+            console.log('이메일 로그인 성공:', userCredential.user);
             await this.handleSuccessfulAuth(userCredential.user);
         } catch (error) {
+            console.error('이메일 로그인 실패 상세:', {
+                code: error.code,
+                message: error.message,
+                email: email,
+                authState: {
+                    auth: !!this.auth,
+                    isInitialized: this.isInitialized
+                }
+            });
+            
             if (window.CommonUtils) {
                 window.CommonUtils.handleError(error, '이메일 로그인');
             } else {
@@ -198,12 +275,16 @@ class AuthManager {
 
     // 인증 성공 후 공통 처리
     async handleSuccessfulAuth(user) {
-        console.log("로그인 성공 처리 시작", user.uid);
+        console.log("=== 로그인 성공 처리 시작 ===", user.uid);
         
         try {
             // UI 업데이트
             if (window.updateHeaderAuthUI) {
+                console.log('updateHeaderAuthUI 함수 호출 시작');
                 window.updateHeaderAuthUI(user);
+                console.log('updateHeaderAuthUI 함수 호출 완료');
+            } else {
+                console.warn('updateHeaderAuthUI 함수가 정의되지 않았습니다.');
             }
             
             // 모달 완전히 닫기
@@ -213,16 +294,38 @@ class AuthManager {
             if (loginModal) {
                 loginModal.classList.remove('show');
                 loginModal.style.display = 'none';
+                console.log('로그인 모달 닫기 완료');
             }
             if (signupModal) {
                 signupModal.classList.remove('show');
                 signupModal.style.display = 'none';
+                console.log('회원가입 모달 닫기 완료');
             }
             
             // 성공 메시지 표시
             setTimeout(() => {
                 alert('로그인에 성공했습니다!');
+                console.log('로그인 성공 알림 표시 완료');
             }, 100);
+            
+            // 페이지 상태 확인
+            setTimeout(() => {
+                console.log('=== 로그인 후 페이지 상태 확인 ===');
+                console.log('현재 인증 상태:', {
+                    auth: !!window.auth,
+                    currentUser: window.auth?.currentUser,
+                    authManager: !!window.authManager,
+                    isInitialized: window.authManager?.isInitialized
+                });
+                
+                // 헤더 UI 상태 확인
+                const authButtons = document.getElementById('authButtons');
+                const profileMenu = document.getElementById('profileMenu');
+                console.log('헤더 UI 상태:', {
+                    authButtons: authButtons ? authButtons.style.display : 'not found',
+                    profileMenu: profileMenu ? profileMenu.style.display : 'not found'
+                });
+            }, 500);
             
             console.log('인증 성공 처리 완료');
             
@@ -258,24 +361,65 @@ class AuthManager {
 window.handleSocialLogin = function(provider) {
     if (window.authManager) {
         return window.authManager.handleSocialLogin(provider);
+    } else {
+        // AuthManager가 아직 초기화되지 않은 경우 대기
+        return new Promise((resolve, reject) => {
+            window.addEventListener('authManagerReady', () => {
+                if (window.authManager) {
+                    resolve(window.authManager.handleSocialLogin(provider));
+                } else {
+                    reject(new Error('AuthManager 초기화 실패'));
+                }
+            }, { once: true });
+        });
     }
 };
 
 window.handleEmailLogin = function(email, password) {
     if (window.authManager) {
         return window.authManager.handleEmailLogin(email, password);
+    } else {
+        return new Promise((resolve, reject) => {
+            window.addEventListener('authManagerReady', () => {
+                if (window.authManager) {
+                    resolve(window.authManager.handleEmailLogin(email, password));
+                } else {
+                    reject(new Error('AuthManager 초기화 실패'));
+                }
+            }, { once: true });
+        });
     }
 };
 
 window.handleEmailSignup = function(fullName, email, password) {
     if (window.authManager) {
         return window.authManager.handleEmailSignup(fullName, email, password);
+    } else {
+        return new Promise((resolve, reject) => {
+            window.addEventListener('authManagerReady', () => {
+                if (window.authManager) {
+                    resolve(window.authManager.handleEmailSignup(fullName, email, password));
+                } else {
+                    reject(new Error('AuthManager 초기화 실패'));
+                }
+            }, { once: true });
+        });
     }
 };
 
 window.handleLogout = function() {
     if (window.authManager) {
         return window.authManager.handleLogout();
+    } else {
+        return new Promise((resolve, reject) => {
+            window.addEventListener('authManagerReady', () => {
+                if (window.authManager) {
+                    resolve(window.authManager.handleLogout());
+                } else {
+                    reject(new Error('AuthManager 초기화 실패'));
+                }
+            }, { once: true });
+        });
     }
 };
 
