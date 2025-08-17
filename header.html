@@ -942,7 +942,7 @@
           <span class="mx-2 text-gray-400 text-sm" data-i18n="header_or">또는</span>
           <div class="flex-grow h-px bg-gray-300"></div>
         </div>
-        <form id="loginForm" class="space-y-4">
+        <form id="loginForm" class="space-y-4" method="post" onsubmit="return handleLoginFormSubmit(event)">
           <div>
             <label for="loginEmail" class="block text-sm mb-1 text-gray-300" data-i18n="header_email_address">이메일 주소</label>
             <input id="loginEmail" type="email" data-i18n-placeholder="header_enter_email" placeholder="이메일 주소를 입력하세요" required class="input-field w-full bg-[var(--input-bg)] text-white" />
@@ -966,7 +966,9 @@
         <div class="mt-4 p-3 bg-gray-800 rounded-lg">
           <p class="text-xs text-gray-400 mb-2">디버깅용 테스트 버튼:</p>
           <button onclick="testFunction()" class="w-full py-2 bg-blue-600 text-white rounded mb-2 text-sm">테스트 함수 호출</button>
-          <button onclick="testAuthManager()" class="w-full py-2 bg-green-600 text-white rounded text-sm">AuthManager 상태 확인</button>
+          <button onclick="testAuthManager()" class="w-full py-2 bg-green-600 text-white rounded mb-2 text-sm">AuthManager 상태 확인</button>
+          <button onclick="debugLoginForm()" class="w-full py-2 bg-yellow-600 text-white rounded mb-2 text-sm">로그인 폼 디버깅</button>
+          <button onclick="debugEventHandlers()" class="w-full py-2 bg-purple-600 text-white rounded text-sm">이벤트 핸들러 디버깅</button>
         </div>
         
         <div class="mt-6 text-center text-gray-400 text-sm">
@@ -989,7 +991,7 @@
           <span class="mx-2 text-gray-400 text-sm" data-i18n="header_or">또는</span>
           <div class="flex-grow h-px bg-gray-300"></div>
         </div>
-        <form id="signupForm" class="space-y-4">
+        <form id="signupForm" class="space-y-4" onsubmit="return handleSignupSubmit(event)">
           <div>
             <label for="fullName" class="block text-sm mb-1 text-gray-300" data-i18n="header_full_name">이름</label>
             <input id="fullName" type="text" data-i18n-placeholder="header_enter_name" placeholder="이름을 입력하세요" required class="input-field w-full bg-[var(--input-bg)] text-white" />
@@ -1025,23 +1027,51 @@
             // 모달 외부 클릭 설정
             setupModalOutsideClick();
             
-            // 폼 제출 이벤트 리스너 직접 추가
-            const loginForm = document.getElementById('loginForm');
-            const signupForm = document.getElementById('signupForm');
+                    // 폼 제출 이벤트 리스너 추가 (공통 모듈 사용)
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        
+        if (loginForm) {
+            console.log('로그인 폼 이벤트 리스너 추가');
             
-            if (loginForm) {
-                console.log('로그인 폼 이벤트 리스너 추가');
-                loginForm.addEventListener('submit', handleLoginSubmit);
-            } else {
-                console.error('로그인 폼을 찾을 수 없습니다!');
-            }
+            // 폼의 action 속성 제거 및 novalidate 설정
+            loginForm.removeAttribute('action');
+            loginForm.setAttribute('novalidate', 'true');
             
-            if (signupForm) {
-                console.log('회원가입 폼 이벤트 리스너 추가');
-                signupForm.addEventListener('submit', handleSignupSubmit);
-            } else {
-                console.error('회원가입 폼을 찾을 수 없습니다!');
-            }
+        } else {
+            console.error('로그인 폼을 찾을 수 없습니다!');
+        }
+        
+        if (signupForm) {
+            console.log('회원가입 폼 이벤트 리스너 추가');
+            
+            // 폼의 action 속성 제거 및 novalidate 설정
+            signupForm.removeAttribute('action');
+            signupForm.setAttribute('novalidate', 'true');
+            
+        } else {
+            console.error('회원가입 폼을 찾을 수 없습니다!');
+        }
+            
+            // 추가 보안: 모든 폼 제출 차단
+            document.addEventListener('submit', function(event) {
+                console.log('전역 폼 제출 이벤트 감지:', event.target.id);
+                
+                // 로그인/회원가입 폼이 아닌 경우에만 기본 동작 차단
+                if (event.target.id !== 'loginForm' && event.target.id !== 'signupForm') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    console.log('알 수 없는 폼 제출 차단됨');
+                    return false;
+                }
+            });
+            
+            // 추가 보안: 모든 링크 클릭 이벤트 감지
+            document.addEventListener('click', function(event) {
+                if (event.target.tagName === 'A' && event.target.href === 'javascript:void(0)') {
+                    console.log('javascript:void(0) 링크 클릭 감지');
+                }
+            });
             
             // 저장된 인증 상태 확인 및 복원
             const savedAuthUser = localStorage.getItem('authUser');
@@ -1183,40 +1213,16 @@
         }
 
         // 모달 표시 함수들
-        function showLoginModal() {
-            const loginModal = document.getElementById('loginModal');
-            if (loginModal) {
-                loginModal.style.display = 'flex';
-                loginModal.classList.add('show');
-            }
-        }
 
-        function showSignupModal() {
-            const signupModal = document.getElementById('signupModal');
-            if (signupModal) {
-                signupModal.style.display = 'flex';
-                signupModal.classList.add('show');
-            }
-        }
+
+
         
         // 모달 닫기 함수들
-        function closeLoginModal() {
-            const loginModal = document.getElementById('loginModal');
-            if (loginModal) {
-                loginModal.classList.remove('show');
-                loginModal.style.display = 'none';
-            }
-        }
+
         
-        function closeSignupModal() {
-            const signupModal = document.getElementById('signupModal');
-            if (signupModal) {
-                signupModal.classList.remove('show');
-                signupModal.style.display = 'none';
-            }
-        }
+
         
-        // 모달 외부 클릭 시 닫기
+        // 모달 외부 클릭 시 닫기 (공통 모듈 사용)
         function setupModalOutsideClick() {
             const loginModal = document.getElementById('loginModal');
             const signupModal = document.getElementById('signupModal');
@@ -1224,7 +1230,7 @@
             if (loginModal) {
                 loginModal.addEventListener('click', (e) => {
                     if (e.target === loginModal) {
-                        closeLoginModal();
+                        window.closeLoginModal();
                     }
                 });
             }
@@ -1232,241 +1238,22 @@
             if (signupModal) {
                 signupModal.addEventListener('click', (e) => {
                     if (e.target === signupModal) {
-                        closeSignupModal();
+                        window.closeSignupModal();
                     }
                 });
             }
         }
 
-        // 비밀번호 표시/숨김 토글
-        function togglePasswordVisibility(inputId) {
-            const input = document.getElementById(inputId);
-            const icon = input.nextElementSibling.querySelector('i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = 'fas fa-eye-slash';
-            } else {
-                input.type = 'password';
-                icon.className = 'fas fa-eye';
-            }
-        }
 
-        // 로그인 폼 제출 처리
-        async function handleLoginSubmit(event) {
-            console.log('=== handleLoginSubmit 함수 시작 ===');
-            
-            // 기본 동작 완전 차단
-            event.preventDefault();
-            event.stopPropagation();
-            
-            console.log('이벤트 기본 동작 차단 완료');
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            console.log('로그인 폼 제출:', { email, password: '***' });
-            console.log('폼 요소 확인:', {
-                loginEmail: !!document.getElementById('loginEmail'),
-                loginPassword: !!document.getElementById('loginPassword'),
-                form: !!event.target
-            });
-            
-            if (!email || !password) {
-                alert('이메일과 비밀번호를 모두 입력해주세요.');
-                return;
-            }
-            
-            try {
-                // 로딩 상태 표시
-                const submitBtn = event.target.querySelector('button[type="submit"]');
-                const originalText = submitBtn.textContent;
-                submitBtn.textContent = '로그인 중...';
-                submitBtn.disabled = true;
-                
-                console.log('AuthManager 상태 확인:', {
-                    authManager: !!window.authManager,
-                    isInitialized: window.authManager?.isInitialized,
-                    auth: !!window.auth,
-                    app: !!window.app
-                });
-                
-                // AuthManager 초기화 대기
-                if (!window.authManager || !window.authManager.isInitialized) {
-                    console.log('AuthManager 초기화 대기 중...');
-                    await new Promise((resolve) => {
-                        window.addEventListener('authManagerReady', resolve, { once: true });
-                    });
-                    console.log('AuthManager 초기화 완료');
-                }
-                
-                console.log('로그인 시도 전 최종 상태:', {
-                    authManager: !!window.authManager,
-                    isInitialized: window.authManager?.isInitialized,
-                    handleEmailLogin: !!window.authManager?.handleEmailLogin
-                });
-                
-                // AuthManager를 통한 로그인 처리
-                if (window.authManager && window.authManager.handleEmailLogin) {
-                    console.log('handleEmailLogin 함수 호출 시작');
-                    await window.authManager.handleEmailLogin(email, password);
-                    console.log('로그인 성공');
-                } else {
-                    throw new Error('AuthManager가 초기화되지 않았습니다.');
-                }
-                
-            } catch (error) {
-                console.error('로그인 실패 상세:', {
-                    error: error,
-                    code: error.code,
-                    message: error.message,
-                    stack: error.stack
-                });
-                
-                let errorMessage = '로그인에 실패했습니다.';
-                
-                if (window.authManager && window.authManager.getErrorMessage) {
-                    errorMessage = window.authManager.getErrorMessage(error);
-                } else if (error.code) {
-                    switch (error.code) {
-                        case 'auth/user-not-found':
-                            errorMessage = '등록되지 않은 이메일 주소입니다.';
-                            break;
-                        case 'auth/wrong-password':
-                            errorMessage = '잘못된 비밀번호입니다.';
-                            break;
-                        case 'auth/invalid-email':
-                            errorMessage = '유효하지 않은 이메일 주소입니다.';
-                            break;
-                        case 'auth/too-many-requests':
-                            errorMessage = '너무 많은 로그인 시도가 있었습니다. 잠시 후 다시 시도해주세요.';
-                            break;
-                        case 'auth/network-request-failed':
-                            errorMessage = '네트워크 연결을 확인해주세요.';
-                            break;
-                        default:
-                            errorMessage = error.message || '로그인 중 오류가 발생했습니다.';
-                    }
-                }
-                
-                alert(errorMessage);
-                
-                // 버튼 상태 복원
-                const submitBtn = event.target.querySelector('button[type="submit"]');
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-                
-                return false; // 추가 보안
-            }
-        }
+
+
         
-        // 회원가입 폼 제출 처리
-        async function handleSignupSubmit(event) {
-            console.log('=== handleSignupSubmit 함수 시작 ===');
-            
-            // 기본 동작 완전 차단
-            event.preventDefault();
-            event.stopPropagation();
-            
-            console.log('회원가입 이벤트 기본 동작 차단 완료');
-            
-            const fullName = document.getElementById('fullName').value;
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            
-            console.log('회원가입 폼 제출:', { fullName, email, password: '***' });
-            
-            if (!fullName || !email || !password) {
-                alert('모든 필드를 입력해주세요.');
-                return;
-            }
-            
-            if (password.length < 6) {
-                alert('비밀번호는 최소 6자 이상이어야 합니다.');
-                return;
-            }
-            
-            try {
-                // 로딩 상태 표시
-                const submitBtn = event.target.querySelector('button[type="submit"]');
-                const originalText = submitBtn.textContent;
-                submitBtn.textContent = '회원가입 중...';
-                submitBtn.disabled = true;
-                
-                console.log('회원가입 시도 전 AuthManager 상태:', {
-                    authManager: !!window.authManager,
-                    isInitialized: window.authManager?.isInitialized,
-                    handleEmailSignup: !!window.authManager?.handleEmailSignup
-                });
-                
-                // AuthManager 초기화 대기
-                if (!window.authManager || !window.authManager.isInitialized) {
-                    console.log('회원가입: AuthManager 초기화 대기 중...');
-                    await new Promise((resolve) => {
-                        window.addEventListener('authManagerReady', resolve, { once: true });
-                    });
-                    console.log('회원가입: AuthManager 초기화 완료');
-                }
-                
-                // AuthManager를 통한 회원가입 처리
-                if (window.authManager && window.authManager.handleEmailSignup) {
-                    console.log('handleEmailSignup 함수 호출 시작');
-                    await window.authManager.handleEmailSignup(fullName, email, password);
-                    console.log('회원가입 성공');
-                } else {
-                    throw new Error('AuthManager가 초기화되지 않았습니다.');
-                }
-                
-            } catch (error) {
-                console.error('회원가입 실패 상세:', {
-                    error: error,
-                    code: error.code,
-                    message: error.message,
-                    stack: error.stack
-                });
-                
-                let errorMessage = '회원가입에 실패했습니다.';
-                
-                if (window.authManager && window.authManager.getErrorMessage) {
-                    errorMessage = window.authManager.getErrorMessage(error);
-                } else if (error.code) {
-                    switch (error.code) {
-                        case 'auth/email-already-in-use':
-                            errorMessage = '이미 사용 중인 이메일 주소입니다.';
-                            break;
-                        case 'auth/weak-password':
-                            errorMessage = '비밀번호가 너무 약합니다.';
-                            break;
-                        case 'auth/invalid-email':
-                            errorMessage = '유효하지 않은 이메일 주소입니다.';
-                            break;
-                        case 'auth/operation-not-allowed':
-                            errorMessage = '이메일/비밀번호 회원가입이 비활성화되어 있습니다.';
-                            break;
-                        default:
-                            errorMessage = error.message || '회원가입 중 오류가 발생했습니다.';
-                    }
-                }
-                
-                alert(errorMessage);
-                
-                // 버튼 상태 복원
-                const submitBtn = event.target.querySelector('button[type="submit"]');
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }
-        }
+
         
-        // 전역 함수로 등록
-        window.showLoginModal = showLoginModal;
-        window.showSignupModal = showSignupModal;
-        window.closeLoginModal = closeLoginModal;
-        window.closeSignupModal = closeSignupModal;
+        // 전역 함수로 등록 (공통 모듈 사용)
         window.navigateToProfile = navigateToProfile;
         window.navigateToSettings = navigateToSettings;
         window.handleLogout = handleLogout;
-        window.handleLoginSubmit = handleLoginSubmit;
-        window.handleSignupSubmit = handleSignupSubmit;
         
         // 구글 소셜 로그인 함수
         async function handleSocialLogin(provider) {
@@ -1493,12 +1280,13 @@
         
         // 테스트용 함수들
         function testFunction() {
-            console.log('테스트 함수가 호출되었습니다!');
+            console.log('=== testFunction 호출됨 ===');
             alert('테스트 함수가 정상적으로 호출되었습니다!');
         }
         
         function testAuthManager() {
-            console.log('AuthManager 테스트:', {
+            console.log('=== testAuthManager 호출됨 ===');
+            console.log('AuthManager 상태:', {
                 authManager: !!window.authManager,
                 isInitialized: window.authManager?.isInitialized,
                 auth: !!window.auth,
@@ -1506,9 +1294,71 @@
             });
         }
         
-        // 전역에 테스트 함수 등록
+
+        
+        // 추가 디버깅 함수들
+        function debugLoginForm() {
+            console.log('=== 로그인 폼 디버깅 ===');
+            const loginForm = document.getElementById('loginForm');
+            const emailInput = document.getElementById('loginEmail');
+            const passwordInput = document.getElementById('loginPassword');
+            
+            console.log('폼 요소들:', {
+                loginForm: !!loginForm,
+                emailInput: !!emailInput,
+                passwordInput: !!passwordInput
+            });
+            
+            if (loginForm) {
+                console.log('로그인 폼 속성:', {
+                    id: loginForm.id,
+                    action: loginForm.action,
+                    method: loginForm.method,
+                    onsubmit: loginForm.onsubmit
+                });
+            }
+            
+            if (emailInput) {
+                console.log('이메일 입력값:', {
+                    value: emailInput.value,
+                    type: emailInput.type,
+                    required: emailInput.required
+                });
+            }
+            
+            if (passwordInput) {
+                console.log('비밀번호 입력값:', {
+                    value: passwordInput.value ? '***' : '(비어있음)',
+                    type: passwordInput.type,
+                    required: passwordInput.required
+                });
+            }
+        }
+        
+        function debugEventHandlers() {
+            console.log('=== 이벤트 핸들러 디버깅 ===');
+            const loginForm = document.getElementById('loginForm');
+            
+            if (loginForm) {
+                // 이벤트 리스너 확인 (간접적 방법)
+                console.log('폼 이벤트 핸들러:', {
+                    onsubmit: loginForm.onsubmit,
+                    hasAttribute: loginForm.hasAttribute('onsubmit')
+                });
+                
+                // 전역 이벤트 리스너 확인
+                console.log('전역 submit 이벤트 리스너 등록됨:', true);
+            }
+        }
+        
+        // 전역에 등록
         window.testFunction = testFunction;
         window.testAuthManager = testAuthManager;
+        window.debugLoginForm = debugLoginForm;
+        window.debugEventHandlers = debugEventHandlers;
+        window.handleLoginFormSubmit = handleLoginFormSubmit;
+        
+        console.log('테스트 함수들이 전역에 등록되었습니다.');
         
         // 인증 상태에 따른 UI 업데이트 함수
         function updateHeaderAuthUI(user) {

@@ -790,6 +790,28 @@
             console.log('지연 로딩 시스템 초기화 완료');
         }
         
+        // 전역 폼 제출 차단 (새로고침 방지)
+        function setupGlobalFormProtection() {
+            document.addEventListener('submit', function(event) {
+                console.log('🔍 전역 폼 제출 이벤트 감지:', {
+                    formId: event.target.id,
+                    formAction: event.target.action,
+                    formMethod: event.target.method,
+                    formClass: event.target.className
+                });
+                
+                // 폼이 명시적으로 허용된 경우가 아니면 차단
+                if (!event.target.hasAttribute('data-allow-submit')) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    console.log('⚠️ 알 수 없는 폼 제출 차단됨 - 새로고침 방지');
+                    return false;
+                }
+            });
+            
+            console.log('전역 폼 제출 보호 설정 완료');
+        }
+        
         // 성능 모니터링
         function setupPerformanceMonitoring() {
             // 페이지 로드 시간 측정
@@ -898,6 +920,7 @@
             setupPerformanceMonitoring();
             optimizeLoadingStates();
             optimizeMemoryUsage();
+            setupGlobalFormProtection(); // 전역 폼 제출 보호 추가
             
             // 지연 로딩 시스템 초기화
             setTimeout(initializeLazyLoading, 1000);

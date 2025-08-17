@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 테스트 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-form {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>로그인 기능 테스트</h1>
+    
+    <div class="test-form">
+        <h2>로그인 테스트</h2>
+        
+        <form id="testLoginForm" onsubmit="return testLogin(event)">
+            <div class="form-group">
+                <label for="testEmail">이메일:</label>
+                <input type="email" id="testEmail" name="email" value="test@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="testPassword">비밀번호:</label>
+                <input type="password" id="testPassword" name="password" value="password123" required>
+            </div>
+            
+            <button type="submit">로그인 테스트</button>
+        </form>
+        
+        <div id="testResult"></div>
+    </div>
+    
+    <div class="debug-info">
+        <h3>디버깅 정보</h3>
+        <div id="debugInfo">
+            <p>페이지 로드 시간: <span id="loadTime"></span></p>
+            <p>AuthManager 상태: <span id="authManagerStatus">확인 중...</span></p>
+            <p>폼 이벤트 리스너: <span id="formListenerStatus">확인 중...</span></p>
+        </div>
+    </div>
+    
+    <script>
+        // 페이지 로드 시간 기록
+        document.getElementById('loadTime').textContent = new Date().toLocaleString();
+        
+        // 폼 제출 테스트 함수
+        function testLogin(event) {
+            console.log('=== testLogin 함수 호출됨 ===');
+            
+            // 이벤트 정보 로깅
+            console.log('이벤트 타입:', event.type);
+            console.log('이벤트 타겟:', event.target);
+            console.log('폼 데이터:', {
+                email: document.getElementById('testEmail').value,
+                password: document.getElementById('testPassword').value
+            });
+            
+            // 기본 동작 차단
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // 결과 표시
+            const resultDiv = document.getElementById('testResult');
+            resultDiv.innerHTML = `
+                <div class="success">
+                    ✅ 폼 제출이 성공적으로 차단되었습니다!<br>
+                    - 이벤트 타입: ${event.type}<br>
+                    - 폼 ID: ${event.target.id}<br>
+                    - 새로고침이 발생하지 않았습니다.
+                </div>
+            `;
+            
+            // 콘솔에 성공 메시지
+            console.log('✅ 폼 제출 차단 성공 - 새로고침 없음');
+            
+            return false;
+        }
+        
+        // AuthManager 상태 확인
+        function checkAuthManagerStatus() {
+            const statusSpan = document.getElementById('authManagerStatus');
+            
+            if (window.authManager) {
+                statusSpan.textContent = `초기화됨 (${window.authManager.isInitialized ? '준비됨' : '초기화 중'})`;
+                statusSpan.style.color = 'green';
+            } else {
+                statusSpan.textContent = '초기화되지 않음';
+                statusSpan.style.color = 'red';
+            }
+        }
+        
+        // 폼 이벤트 리스너 상태 확인
+        function checkFormListenerStatus() {
+            const statusSpan = document.getElementById('formListenerStatus');
+            const form = document.getElementById('testLoginForm');
+            
+            if (form) {
+                // 이벤트 리스너 확인 (간접적 방법)
+                statusSpan.textContent = '등록됨 (onsubmit 속성 포함)';
+                statusSpan.style.color = 'green';
+            } else {
+                statusSpan.textContent = '폼을 찾을 수 없음';
+                statusSpan.style.color = 'red';
+            }
+        }
+        
+        // 페이지 로드 후 상태 확인
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== 테스트 페이지 DOMContentLoaded ===');
+            
+            // 초기 상태 확인
+            checkAuthManagerStatus();
+            checkFormListenerStatus();
+            
+            // AuthManager 준비 대기
+            if (window.authManager && !window.authManager.isInitialized) {
+                window.addEventListener('authManagerReady', function() {
+                    console.log('AuthManager 준비됨 - 상태 업데이트');
+                    checkAuthManagerStatus();
+                });
+            }
+            
+            // 3초 후 재확인
+            setTimeout(function() {
+                checkAuthManagerStatus();
+                checkFormListenerStatus();
+            }, 3000);
+        });
+        
+        // 전역 폼 제출 이벤트 감지
+        document.addEventListener('submit', function(event) {
+            console.log('🔍 전역 폼 제출 이벤트 감지:', {
+                formId: event.target.id,
+                formAction: event.target.action,
+                formMethod: event.target.method
+            });
+        });
+        
+        // 페이지 언로드 방지 테스트
+        window.addEventListener('beforeunload', function(event) {
+            console.log('⚠️ 페이지 언로드 시도 감지');
+            // 테스트 목적으로는 실제로 차단하지 않음
+        });
+    </script>
+</body>
+</html>

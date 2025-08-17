@@ -18,22 +18,46 @@
   document.addEventListener('DOMContentLoaded', () => {
     const headerContainer = document.getElementById('header-container');
     if (headerContainer && !headerContainer.__loaded) {
-      fetch('header.html').then(r => r.text()).then(html => {
-        headerContainer.innerHTML = html;
-        headerContainer.__loaded = true;
-        // header-menu 스크립트 로드 후 메뉴/토글 초기화
-        const script = document.createElement('script');
-        script.src = 'js/header-menu.js';
-        script.onload = function () {
-          if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
-          if (window.initMobileMenuToggle) window.initMobileMenuToggle();
-          if (window.SimpleThemeToggle && !window.__themeToggleInitialized) {
-            new window.SimpleThemeToggle();
-            window.__themeToggleInitialized = true;
+      console.log('헤더 로딩 시작...');
+      fetch('header.html')
+        .then(r => {
+          if (!r.ok) {
+            throw new Error(`HTTP ${r.status}: ${r.statusText}`);
           }
-        };
-        document.body.appendChild(script);
-      }).catch(() => {});
+          return r.text();
+        })
+        .then(html => {
+          console.log('헤더 HTML 로딩 성공, 길이:', html.length);
+          headerContainer.innerHTML = html;
+          headerContainer.__loaded = true;
+          
+          // header-menu 스크립트 로드 후 메뉴/토글 초기화
+          const script = document.createElement('script');
+          script.src = 'js/header-menu.js';
+          script.onload = function () {
+            console.log('header-menu.js 로딩 완료');
+            if (window.initProfileMenuDropdown) window.initProfileMenuDropdown();
+            if (window.initMobileMenuToggle) window.initMobileMenuToggle();
+            if (window.SimpleThemeToggle && !window.__themeToggleInitialized) {
+              new window.SimpleThemeToggle();
+              window.__themeToggleInitialized = true;
+            }
+          };
+          script.onerror = function() {
+            console.error('header-menu.js 로딩 실패');
+          };
+          document.body.appendChild(script);
+        })
+        .catch(error => {
+          console.error('헤더 로딩 실패:', error);
+          // 헤더 로딩 실패 시 기본 헤더 표시
+          headerContainer.innerHTML = `
+            <div style="background: var(--bg-primary); padding: 1rem; text-align: center; color: var(--text-primary);">
+              <h1>AI Curator</h1>
+              <p>헤더 로딩 중 오류가 발생했습니다.</p>
+            </div>
+          `;
+        });
     }
 
     const footerContainer = document.getElementById('footer-container');

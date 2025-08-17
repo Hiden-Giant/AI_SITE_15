@@ -171,10 +171,176 @@
       img.src = window.DEFAULT_IMAGE;
   };
 
+      // 공통 모듈 로딩 상태 확인 함수
+  function checkCommonModulesStatus() {
+      return {
+          showLoginModal: typeof window.showLoginModal,
+          showSignupModal: typeof window.showSignupModal,
+          headerMenuLoaded: typeof window.showLoginModal === 'function' && typeof window.showSignupModal === 'function'
+      };
+  }
+  
+  // 공통 모듈 로딩 대기 함수
+  function waitForCommonModules() {
+      console.log('공통 모듈 로딩 상태 확인 중...');
+      
+      // header-menu.js가 로드되었는지 확인
+      if (typeof window.showLoginModal === 'function' && typeof window.showSignupModal === 'function') {
+          console.log('공통 모듈 로딩 완료!');
+          alert('공통 모듈이 로드되었습니다. 다시 시도해주세요.');
+          return;
+      }
+      
+      // header-menu.js 로딩 대기
+      const checkInterval = setInterval(() => {
+          if (typeof window.showLoginModal === 'function' && typeof window.showSignupModal === 'function') {
+              clearInterval(checkInterval);
+              console.log('공통 모듈 로딩 완료!');
+              alert('공통 모듈이 로드되었습니다. 다시 시도해주세요.');
+          } else {
+              console.log('공통 모듈 로딩 대기 중...', {
+                  showLoginModal: typeof window.showLoginModal,
+                  showSignupModal: typeof window.showSignupModal
+              });
+          }
+      }, 500);
+      
+      // 10초 후 타임아웃
+      setTimeout(() => {
+          clearInterval(checkInterval);
+          console.error('공통 모듈 로딩 타임아웃');
+          alert('공통 모듈 로딩에 실패했습니다. 페이지를 새로고침해주세요.');
+      }, 10000);
+  }
+  
   // 페이지 로드 시 실행
   document.addEventListener('DOMContentLoaded', () => {
-      // 초기화 함수 호출
-      // setupTabs(); // setupTabs 호출 부분 삭제
+      // 헤더 로딩 상태 확인
+      console.log('DOMContentLoaded 이벤트 발생');
+      console.log('헤더 컨테이너:', document.getElementById('header-container'));
+      
+      // 헤더가 로드될 때까지 대기
+      const checkHeaderLoaded = () => {
+          const headerContainer = document.getElementById('header-container');
+          if (headerContainer && headerContainer.innerHTML.trim() !== '') {
+              console.log('헤더 로딩 완료');
+              console.log('로그인 모달 확인:', document.getElementById('loginModal'));
+              console.log('회원가입 모달 확인:', document.getElementById('signupModal'));
+              
+              // 모달 함수들이 전역에 등록되었는지 확인
+              console.log('showLoginModal 함수:', typeof window.showLoginModal);
+              console.log('showSignupModal 함수:', typeof window.showSignupModal);
+              
+              // 테스트 버튼 추가
+              if (!document.getElementById('test-buttons')) {
+                  const testDiv = document.createElement('div');
+                  testDiv.id = 'test-buttons';
+                  testDiv.style.cssText = 'position: fixed; top: 100px; right: 20px; z-index: 9999; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px;';
+                  
+                  // 로그인 테스트 버튼
+                  const loginBtn = document.createElement('button');
+                  loginBtn.textContent = '로그인 모달 테스트';
+                  loginBtn.style.cssText = 'display: block; margin: 5px; padding: 8px 12px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;';
+                  loginBtn.addEventListener('click', function() {
+                      console.log('로그인 모달 테스트 버튼 클릭됨');
+                      
+                      // 방법 1: 전역 함수 사용
+                      if (typeof window.showLoginModal === 'function') {
+                          console.log('showLoginModal 함수 호출');
+                          window.showLoginModal();
+                          return;
+                      }
+                      
+                      // 방법 2: 직접 모달 표시
+                      const loginModal = document.getElementById('loginModal');
+                      if (loginModal) {
+                          console.log('로그인 모달 직접 표시');
+                          loginModal.style.display = 'flex';
+                          loginModal.classList.add('show');
+                          return;
+                      }
+                      
+                                        // 방법 3: 공통 모듈 로딩 대기
+                  console.log('공통 모듈 로딩 대기 중...');
+                  waitForCommonModules();
+                  });
+                  
+                  // 회원가입 테스트 버튼
+                  const signupBtn = document.createElement('button');
+                  signupBtn.textContent = '회원가입 모달 테스트';
+                  signupBtn.style.cssText = 'display: block; margin: 5px; padding: 8px 12px; background: #2196F3; color: white; border: none; border-radius: 3px; cursor: pointer;';
+                  signupBtn.addEventListener('click', function() {
+                      console.log('회원가입 모달 테스트 버튼 클릭됨');
+                      
+                      // 방법 1: 전역 함수 사용
+                      if (typeof window.showSignupModal === 'function') {
+                          console.log('showSignupModal 함수 호출');
+                          window.showSignupModal();
+                          return;
+                      }
+                      
+                      // 방법 2: 직접 모달 표시
+                      const signupModal = document.getElementById('signupModal');
+                      if (signupModal) {
+                          console.log('회원가입 모달 직접 표시');
+                          signupModal.style.display = 'flex';
+                          signupModal.classList.add('show');
+                          return;
+                      }
+                      
+                      // 방법 3: 공통 모듈 로딩 대기
+                      console.log('공통 모듈 로딩 대기 중...');
+                      waitForCommonModules();
+                  });
+                  
+                  // 헤더 상태 확인 버튼
+                  const statusBtn = document.createElement('button');
+                  statusBtn.textContent = '헤더 상태 확인';
+                  statusBtn.style.cssText = 'display: block; margin: 5px; padding: 8px 12px; background: #FF9800; color: white; border: none; border-radius: 3px; cursor: pointer;';
+                  statusBtn.addEventListener('click', function() {
+                      console.log('=== 헤더 상태 확인 ===');
+                      const headerContainer = document.getElementById('header-container');
+                      const commonModulesStatus = checkCommonModulesStatus();
+                      
+                      console.log('헤더 컨테이너:', headerContainer);
+                      console.log('헤더 내용 길이:', headerContainer ? headerContainer.innerHTML.length : '없음');
+                      console.log('로그인 모달:', document.getElementById('loginModal'));
+                      console.log('회원가입 모달:', document.getElementById('signupModal'));
+                      console.log('공통 모듈 상태:', commonModulesStatus);
+                      
+                      let statusMsg = '=== 헤더 상태 ===\n';
+                      statusMsg += `컨테이너: ${headerContainer ? '존재' : '없음'}\n`;
+                      statusMsg += `내용 길이: ${headerContainer ? headerContainer.innerHTML.length : 0}\n`;
+                      statusMsg += `로그인 모달: ${document.getElementById('loginModal') ? '존재' : '없음'}\n`;
+                      statusMsg += `회원가입 모달: ${document.getElementById('signupModal') ? '존재' : '없음'}\n`;
+                      statusMsg += `\n=== 공통 모듈 상태 ===\n`;
+                      statusMsg += `showLoginModal: ${commonModulesStatus.showLoginModal}\n`;
+                      statusMsg += `showSignupModal: ${commonModulesStatus.showSignupModal}\n`;
+                      statusMsg += `headerMenu.js 로드: ${commonModulesStatus.headerMenuLoaded ? '완료' : '대기 중'}`;
+                      
+                      if (!commonModulesStatus.headerMenuLoaded) {
+                          statusMsg += `\n\n⚠️ 공통 모듈이 로드되지 않았습니다.\n`;
+                          statusMsg += `bootstrap.js에서 header-menu.js 로딩을 확인해주세요.`;
+                      }
+                      
+                      alert(statusMsg);
+                  });
+                  
+                  testDiv.appendChild(loginBtn);
+                  testDiv.appendChild(signupBtn);
+                  testDiv.appendChild(statusBtn);
+                  document.body.appendChild(testDiv);
+                  
+                  console.log('테스트 버튼 추가 완료');
+              }
+          } else {
+              console.log('헤더 아직 로딩 중...');
+              setTimeout(checkHeaderLoaded, 100);
+          }
+      };
+      
+      // 헤더 로딩 확인 시작
+      setTimeout(checkHeaderLoaded, 100);
   });
 </script>
 

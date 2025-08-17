@@ -163,44 +163,81 @@ class AuthManager {
     // 이메일 회원가입
     async handleEmailSignup(fullName, email, password) {
         try {
-            console.log('이메일 회원가입 시도:', { fullName, email, password: '***' });
+            console.log('=== handleEmailSignup 함수 시작 ===');
+            console.log('회원가입 시도:', { fullName, email, password: '***' });
             console.log('Firebase Auth 상태:', { 
                 auth: !!this.auth, 
-                isInitialized: this.isInitialized,
-                currentUser: this.auth?.currentUser 
+                isInitialized: this.isInitialized 
             });
+            
+            // 입력값 검증 강화
+            if (!fullName || typeof fullName !== 'string') {
+                throw new Error('유효하지 않은 이름입니다.');
+            }
+            
+            if (!email || typeof email !== 'string') {
+                throw new Error('유효하지 않은 이메일 주소입니다.');
+            }
+            
+            if (!password || typeof password !== 'string') {
+                throw new Error('유효하지 않은 비밀번호입니다.');
+            }
+            
+            // 이름 형식 검증
+            if (fullName.trim().length < 2) {
+                throw new Error('이름은 최소 2자 이상이어야 합니다.');
+            }
+            
+            // 이메일 형식 검증
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.trim())) {
+                throw new Error('올바른 이메일 형식이 아닙니다.');
+            }
+            
+            // 이메일 길이 검증
+            if (email.trim().length > 254) {
+                throw new Error('이메일 주소가 너무 깁니다.');
+            }
+            
+            // 비밀번호 길이 검증
+            if (password.length < 6) {
+                throw new Error('비밀번호는 최소 6자 이상이어야 합니다.');
+            }
+            
+            // 값 정리
+            const cleanFullName = fullName.trim();
+            const cleanEmail = email.trim();
+            const cleanPassword = password;
+            
+            console.log('검증된 입력값:', { fullName: cleanFullName, email: cleanEmail, password: '***' });
             
             if (!this.auth || !this.isInitialized) {
                 throw new Error('Firebase Auth가 초기화되지 않았습니다.');
             }
             
-            const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-            const user = userCredential.user;
-            console.log('Firebase 사용자 생성 성공:', user.uid);
-
+            console.log('Firebase Auth 초기화 확인됨, 회원가입 시도...');
+            const userCredential = await createUserWithEmailAndPassword(this.auth, cleanEmail, cleanPassword);
+            console.log('이메일 회원가입 성공:', userCredential.user);
+            
             // 사용자 프로필 업데이트
-            await updateProfile(user, {
-                displayName: fullName
+            await updateProfile(userCredential.user, {
+                displayName: cleanFullName
             });
             console.log('사용자 프로필 업데이트 완료');
-
-            // Firestore에 회원 정보 저장
-            const firestore = getFirestore(this.app);
-            const custNo = Date.now(); // 고유번호 생성(타임스탬프)
-
-            await setDoc(doc(firestore, "users", user.uid), {
-                custNo: custNo,
-                email: email,
-                name: fullName,
-                country: "KR",
-                language: "ko",
-                memberType: "basic",
-                marketingConsent: true,
-                registeredDate: new Date(),
+            
+            // Firestore에 사용자 정보 저장
+            const userDoc = doc(this.db, 'users', userCredential.user.uid);
+            await setDoc(userDoc, {
+                uid: userCredential.user.uid,
+                email: cleanEmail,
+                displayName: cleanFullName,
+                createdAt: new Date(),
+                lastLoginAt: new Date(),
+                isActive: true
             });
             console.log('Firestore 사용자 정보 저장 완료');
 
-            await this.handleSuccessfulAuth(user);
+            await this.handleSuccessfulAuth(userCredential.user);
         } catch (error) {
             console.error('이메일 회원가입 실패 상세:', {
                 code: error.code,
@@ -224,29 +261,66 @@ class AuthManager {
     // 이메일 로그인
     async handleEmailLogin(email, password) {
         try {
+            console.log('=== handleEmailLogin 함수 시작 ===');
             console.log('이메일 로그인 시도:', { email, password: '***' });
             console.log('Firebase Auth 상태:', { 
                 auth: !!this.auth, 
                 isInitialized: this.isInitialized,
                 currentUser: this.auth?.currentUser 
             });
+            console.log('signInWithEmailAndPassword 함수 확인:', typeof signInWithEmailAndPassword);
+            
+            // 입력값 검증 강화
+            if (!email || typeof email !== 'string') {
+                throw new Error('유효하지 않은 이메일 주소입니다.');
+            }
+            
+            if (!password || typeof password !== 'string') {
+                throw new Error('유효하지 않은 비밀번호입니다.');
+            }
+            
+            // 이메일 형식 검증
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.trim())) {
+                throw new Error('올바른 이메일 형식이 아닙니다.');
+            }
+            
+            // 이메일 길이 검증
+            if (email.trim().length > 254) {
+                throw new Error('이메일 주소가 너무 깁니다.');
+            }
+            
+            // 비밀번호 길이 검증
+            if (password.length < 6) {
+                throw new Error('비밀번호는 최소 6자 이상이어야 합니다.');
+            }
+            
+            // 값 정리
+            const cleanEmail = email.trim();
+            const cleanPassword = password;
+            
+            console.log('검증된 입력값:', { email: cleanEmail, password: '***' });
             
             if (!this.auth || !this.isInitialized) {
                 throw new Error('Firebase Auth가 초기화되지 않았습니다.');
             }
             
-            const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
+            console.log('Firebase Auth 초기화 확인됨, 로그인 시도...');
+            const userCredential = await signInWithEmailAndPassword(this.auth, cleanEmail, cleanPassword);
             console.log('이메일 로그인 성공:', userCredential.user);
             await this.handleSuccessfulAuth(userCredential.user);
+            return userCredential.user;
         } catch (error) {
-            console.error('이메일 로그인 실패 상세:', {
-                code: error.code,
-                message: error.message,
-                email: email,
-                authState: {
-                    auth: !!this.auth,
-                    isInitialized: this.isInitialized
-                }
+            console.error('=== 이메일 로그인 실패 상세 ===');
+            console.error('오류 객체:', error);
+            console.error('오류 코드:', error.code);
+            console.error('오류 메시지:', error.message);
+            console.error('오류 스택:', error.stack);
+            console.error('이메일:', email);
+            console.error('Auth 상태:', {
+                auth: !!this.auth,
+                isInitialized: this.isInitialized,
+                authType: typeof this.auth
             });
             
             if (window.CommonUtils) {
@@ -420,6 +494,194 @@ window.handleLogout = function() {
                 }
             }, { once: true });
         });
+    }
+};
+
+// 폼 제출 처리 함수들 (공통 모듈)
+window.handleLoginFormSubmit = function(event) {
+    event.preventDefault();
+    console.log('=== 로그인 폼 제출 처리 시작 ===');
+    
+    const emailInput = document.getElementById('loginEmail');
+    const passwordInput = document.getElementById('loginPassword');
+    
+    if (!emailInput || !passwordInput) {
+        console.error('입력 필드를 찾을 수 없습니다.');
+        return false;
+    }
+    
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    
+    console.log('폼에서 추출한 값:', { email, password: password ? '***' : '(비어있음)' });
+    
+    if (!email) {
+        alert('이메일 주소를 입력해주세요.');
+        emailInput.focus();
+        return false;
+    }
+    
+    if (!password) {
+        alert('비밀번호를 입력해주세요.');
+        passwordInput.focus();
+        return false;
+    }
+    
+    // AuthManager를 통한 로그인 시도
+    if (window.handleEmailLogin) {
+        console.log('handleEmailLogin 함수 호출:', { email, password: '***' });
+        window.handleEmailLogin(email, password)
+            .then(user => {
+                console.log('로그인 성공:', user);
+                // 모달 닫기
+                const loginModal = document.getElementById('loginModal');
+                if (loginModal) {
+                    loginModal.classList.remove('show');
+                    loginModal.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('로그인 실패:', error);
+                alert(error.message || '로그인에 실패했습니다.');
+            });
+    } else {
+        console.error('handleEmailLogin 함수를 찾을 수 없습니다.');
+        alert('로그인 시스템을 초기화할 수 없습니다.');
+    }
+    
+    return false;
+};
+
+window.handleSignupSubmit = function(event) {
+    event.preventDefault();
+    console.log('=== 회원가입 폼 제출 처리 시작 ===');
+    
+    const fullNameInput = document.getElementById('fullName');
+    const emailInput = document.getElementById('signupEmail');
+    const passwordInput = document.getElementById('signupPassword');
+    
+    if (!fullNameInput || !emailInput || !passwordInput) {
+        console.error('회원가입 입력 필드를 찾을 수 없습니다.');
+        return false;
+    }
+    
+    const fullName = fullNameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    
+    console.log('회원가입 폼 제출:', { fullName, email, password: '***' });
+    
+    // 입력값 검증
+    if (!fullName) {
+        alert('이름을 입력해주세요.');
+        fullNameInput.focus();
+        return false;
+    }
+    
+    if (!email) {
+        alert('이메일 주소를 입력해주세요.');
+        emailInput.focus();
+        return false;
+    }
+    
+    if (!password) {
+        alert('비밀번호를 입력해주세요.');
+        passwordInput.focus();
+        return false;
+    }
+    
+    // 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        alert('올바른 이메일 형식을 입력해주세요.');
+        emailInput.focus();
+        return false;
+    }
+    
+    // 비밀번호 길이 검증
+    if (password.length < 6) {
+        alert('비밀번호는 최소 6자 이상이어야 합니다.');
+        passwordInput.focus();
+        return false;
+    }
+    
+    // 이름 길이 검증
+    if (fullName.length < 2) {
+        alert('이름은 최소 2자 이상이어야 합니다.');
+        fullNameInput.focus();
+        return false;
+    }
+    
+    // AuthManager를 통한 회원가입 시도
+    if (window.handleEmailSignup) {
+        console.log('handleEmailSignup 함수 호출:', { fullName, email, password: '***' });
+        window.handleEmailSignup(fullName, email, password)
+            .then(user => {
+                console.log('회원가입 성공:', user);
+                // 모달 닫기
+                const signupModal = document.getElementById('signupModal');
+                if (signupModal) {
+                    signupModal.classList.remove('show');
+                    signupModal.style.display = 'none';
+                }
+                alert('회원가입에 성공했습니다!');
+            })
+            .catch(error => {
+                console.error('회원가입 실패:', error);
+                alert(error.message || '회원가입에 실패했습니다.');
+            });
+    } else {
+        console.error('handleEmailSignup 함수를 찾을 수 없습니다.');
+        alert('회원가입 시스템을 초기화할 수 없습니다.');
+    }
+    
+    return false;
+};
+
+// 모달 관련 함수들 (공통 모듈)
+window.showLoginModal = function() {
+    const loginModal = document.getElementById('loginModal');
+    if (loginModal) {
+        loginModal.style.display = 'flex';
+        loginModal.classList.add('show');
+    }
+};
+
+window.showSignupModal = function() {
+    const signupModal = document.getElementById('signupModal');
+    if (signupModal) {
+        signupModal.style.display = 'flex';
+        signupModal.classList.add('show');
+    }
+};
+
+window.closeLoginModal = function() {
+    const loginModal = document.getElementById('loginModal');
+    if (loginModal) {
+        loginModal.classList.remove('show');
+        loginModal.style.display = 'none';
+    }
+};
+
+window.closeSignupModal = function() {
+    const signupModal = document.getElementById('signupModal');
+    if (signupModal) {
+        signupModal.classList.remove('show');
+        signupModal.style.display = 'none';
+    }
+};
+
+// 비밀번호 표시/숨김 토글 (공통 모듈)
+window.togglePasswordVisibility = function(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.nextElementSibling.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+    } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
     }
 };
 
