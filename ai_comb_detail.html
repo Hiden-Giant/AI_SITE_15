@@ -92,6 +92,39 @@
         .main-btn-save.saved:hover {
             background-color: #10b981;
         }
+        
+        /* 저장하기 버튼 비활성화 상태 스타일 */
+        #save-recipe-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #6b7280 !important;
+        }
+        
+        #save-recipe-btn:disabled:hover {
+            background-color: #6b7280 !important;
+        }
+        
+        #save-recipe-btn.loading {
+            position: relative;
+            pointer-events: none;
+        }
+        
+        #save-recipe-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         .tool-name {
             color: var(--text-secondary);
@@ -1258,7 +1291,7 @@
         <div class="main-btns">
             <button class="main-btn-help"><i class="fas fa-heart"></i> 도움이 되었어요!</button>
             <button class="main-btn-review"><i class="fas fa-pen"></i> 리뷰 작성하기</button>
-            <button class="main-btn-save" id="save-recipe-btn"><i class="far fa-bookmark"></i> 저장하기</button>
+            <button class="main-btn-save" id="save-recipe-btn" disabled><i class="far fa-bookmark"></i> 저장하기</button>
             <button class="main-btn-share" id="share-recipe-btn"><i class="fas fa-share-alt"></i> 공유하기</button>
         </div>
         <div class="review-section">
@@ -1338,13 +1371,47 @@
 
     <!-- Firebase SDK: auth-manager 초기화 사용, 기능 모듈만 import -->
     <script type="module">
-        import { collection, addDoc, getDocs, query, where, orderBy, doc, updateDoc, increment, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { collection, addDoc, getDocs, query, where, orderBy, doc, updateDoc, increment, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js';
+
+        // 전역 변수로 db와 auth 설정
+        let db = null;
+        let auth = null;
+
+        // auth-manager 초기화 완료 대기
+        function waitForAuthManager() {
+            return new Promise((resolve) => {
+                if (window.db && window.auth) {
+                    db = window.db;
+                    auth = window.auth;
+                    resolve();
+                } else {
+                    const checkInterval = setInterval(() => {
+                        if (window.db && window.auth) {
+                            db = window.db;
+                            auth = window.auth;
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 100);
+                    
+                    // 최대 10초 대기
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        if (!db || !auth) {
+                            throw new Error('AuthManager 초기화 타임아웃');
+                        }
+                    }, 10000);
+                }
+            });
+        }
 
         // DOMContentLoaded 이후, auth-manager가 노출한 window.app/window.db/window.auth 사용
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const db = window.db;
-                const auth = window.auth;
+                // AuthManager 초기화 완료 대기
+                await waitForAuthManager();
+                
+                console.log('AuthManager 초기화 완료, db와 auth 사용 가능');
 
                 // URL 파라미터에서 레시피 ID 가져오기
                 const urlParams = new URLSearchParams(window.location.search);
@@ -1378,20 +1445,22 @@
                     reviewBtn.addEventListener('click', showReviewModal);
                 }
             } catch (error) {
+                console.error('페이지 초기화 오류:', error);
                 if (window.CommonUtils) {
                     window.CommonUtils.handleError(error, '페이지 초기화');
                 } else {
-                    console.error('페이지 초기화 오류:', error);
+                    alert('페이지 초기화 중 오류가 발생했습니다: ' + error.message);
                 }
             }
         });
 
-        async function handleHelpfulClick() {
-            if (!auth.currentUser) {
+        // 전역 함수로 만들어 db와 auth 변수에 접근할 수 있도록 함
+        window.handleHelpfulClick = async function() {
+            if (!auth || !auth.currentUser) {
                 if (window.CommonUtils) {
-                    window.CommonUtils.showWarning('로그인해주세요');
+                    window.CommonUtils.showWarning('로그인이 필요합니다.');
                 } else {
-                    alert('로그인해주세요');
+                    alert('로그인이 필요합니다.');
                 }
                 return;
             }
@@ -1448,13 +1517,13 @@
             }
         }
 
-        // 레시피 저장하기 기능
-        async function handleSaveRecipe() {
-            if (!auth.currentUser) {
+        // 레시피 저장하기 기능 - 전역 함수로 설정
+        window.handleSaveRecipe = async function() {
+            if (!auth || !auth.currentUser) {
                 if (window.CommonUtils) {
-                    window.CommonUtils.showWarning('로그인해주세요');
+                    window.CommonUtils.showWarning('로그인이 필요합니다.');
                 } else {
-                    alert('로그인해주세요');
+                    alert('로그인이 필요합니다.');
                 }
                 return;
             }
@@ -1468,6 +1537,14 @@
                     alert('레시피 정보를 찾을 수 없습니다.');
                 }
                 return;
+            }
+
+            // 저장하기 버튼 로딩 상태 설정
+            const saveBtn = document.getElementById('save-recipe-btn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.classList.add('loading');
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 저장 중...';
             }
 
             try {
@@ -1484,6 +1561,13 @@
                     } else {
                         alert('이미 저장된 레시피입니다.');
                     }
+                    
+                    // 버튼 상태 복원
+                    if (saveBtn) {
+                        saveBtn.classList.remove('loading');
+                        saveBtn.innerHTML = '<i class="far fa-bookmark"></i> 저장하기';
+                        saveBtn.disabled = false;
+                    }
                     return;
                 }
 
@@ -1493,12 +1577,7 @@
                 const recipeSnapshot = await getDocs(recipeQuery);
                 
                 if (recipeSnapshot.empty) {
-                    if (window.CommonUtils) {
-                        window.CommonUtils.showError('레시피 정보를 찾을 수 없습니다.');
-                    } else {
-                        alert('레시피 정보를 찾을 수 없습니다.');
-                    }
-                    return;
+                    throw new Error('레시피 정보를 찾을 수 없습니다.');
                 }
 
                 const recipeData = recipeSnapshot.docs[0].data();
@@ -1521,32 +1600,42 @@
                     recommendedGroups: recipeData.my_recipe_recommended_groups || []
                 });
 
+                // 성공 시 버튼 상태 업데이트
+                if (saveBtn) {
+                    saveBtn.classList.remove('loading');
+                    saveBtn.innerHTML = '<i class="fas fa-bookmark"></i> 저장됨';
+                    saveBtn.classList.add('saved');
+                    saveBtn.disabled = true;
+                }
+
                 if (window.CommonUtils) {
                     window.CommonUtils.showSuccess('레시피가 저장되었습니다.');
                 } else {
                     alert('레시피가 저장되었습니다.');
                 }
                 
-                // 4. 버튼 상태 업데이트
-                const saveBtn = document.getElementById('save-recipe-btn');
-                if (saveBtn) {
-                    saveBtn.innerHTML = '<i class="fas fa-bookmark"></i> 저장됨';
-                    saveBtn.classList.add('saved');
-                    saveBtn.disabled = true;
-                }
             } catch (error) {
-                if (window.CommonUtils) {
-                    window.CommonUtils.handleError(error, '레시피 저장');
+                console.error('레시피 저장 오류:', error);
+                
+                // 에러 시 버튼 상태 복원
+                if (saveBtn) {
+                    saveBtn.classList.remove('loading');
+                    saveBtn.innerHTML = '<i class="far fa-bookmark"></i> 저장하기';
+                    saveBtn.disabled = false;
+                }
+                
+                // 에러 메시지 표시
+                if (error.message === '레시피 정보를 찾을 수 없습니다.') {
+                    alert(error.message);
                 } else {
-                    console.error('레시피 저장 오류:', error);
-                    alert('저장 중 오류가 발생했습니다.');
+                    alert('저장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
                 }
             }
         }
 
-        // 저장 상태 확인
-        async function checkSaveStatus(recipeId) {
-            if (!auth.currentUser) return;
+        // 저장 상태 확인 - 전역 함수로 설정
+        window.checkSaveStatus = async function(recipeId) {
+            if (!auth || !auth.currentUser) return;
             
             try {
                 const userId = auth.currentUser.uid;
@@ -1570,8 +1659,8 @@
             }
         }
 
-        // 레시피 상세 정보 로드
-        async function loadRecipeDetail(recipeId) {
+        // 레시피 상세 정보 로드 - 전역 함수로 설정
+        window.loadRecipeDetail = async function(recipeId) {
             try {
                 const recipeRef = collection(db, 'public_recipe_collection');
                 const q = query(recipeRef, where('__name__', '==', recipeId));
@@ -1982,8 +2071,8 @@
             return toolDescriptions[tool] || `${tool} AI 도구`;
         }
 
-        // 리뷰 로드
-        async function loadReviews(recipeId) {
+        // 리뷰 로드 - 전역 함수로 설정
+        window.loadReviews = async function(recipeId) {
             try {
                 if (!recipeId) return;
                 // public_recipe_collection/{recipeId}/recipe_reviews에서만 리뷰를 가져온다
@@ -1994,7 +2083,7 @@
                 if (!reviewsContainer) return;
                 // 기존 리뷰 모두 제거 (샘플/하드코딩 리뷰 포함)
                 reviewsContainer.querySelectorAll('.review-card').forEach(card => card.remove());
-                // 리뷰 타이틀이 있으면 유지
+                // 리뷰 타이틀만 유지
                 // Firestore에서 불러온 리뷰만 표시
                 querySnapshot.forEach((doc) => {
                     const reviewData = doc.data();
@@ -2277,6 +2366,47 @@
         })
         .catch(err => alert('링크 복사 실패: ' + err));
     }
+    
+    // AuthManager 초기화 상태 확인 스크립트
+    let authManagerCheckInterval;
+    
+    function startAuthManagerCheck() {
+        authManagerCheckInterval = setInterval(() => {
+            if (window.db && window.auth) {
+                console.log('AuthManager 초기화 완료 확인됨');
+                clearInterval(authManagerCheckInterval);
+                
+                // 저장하기 버튼 상태 업데이트
+                const saveBtn = document.getElementById('save-recipe-btn');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        }, 100);
+    }
+    
+    // 페이지 로드 시 AuthManager 체크 시작
+    document.addEventListener('DOMContentLoaded', function() {
+        startAuthManagerCheck();
+        
+        // 저장하기 버튼 초기 상태 설정
+        const saveBtn = document.getElementById('save-recipe-btn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    });
+    
+    // authManagerReady 이벤트 리스너
+    window.addEventListener('authManagerReady', function(event) {
+        console.log('AuthManager 이벤트 수신: 초기화 성공');
+        const saveBtn = document.getElementById('save-recipe-btn');
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    });
     </script>
 </body>
 </html> 

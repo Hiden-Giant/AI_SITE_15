@@ -1141,6 +1141,27 @@
 
             // 저장 버튼 클릭 이벤트
             document.getElementById('save-btn-detail').addEventListener('click', function() {
+                // dbManager 초기화 상태 확인
+                if (!window.dbManager || !window.dbManager.db) {
+                    console.error('DBManager가 초기화되지 않았습니다. 초기화 대기 중...');
+                    // dbManager가 준비될 때까지 대기
+                    const checkDBManager = setInterval(() => {
+                        if (window.dbManager && window.dbManager.db) {
+                            clearInterval(checkDBManager);
+                            handleSave(window.currentToolId);
+                        }
+                    }, 100);
+                    
+                    // 최대 5초 대기
+                    setTimeout(() => {
+                        clearInterval(checkDBManager);
+                        if (!window.dbManager || !window.dbManager.db) {
+                            alert('데이터베이스 연결에 실패했습니다. 페이지를 새로고침해주세요.');
+                        }
+                    }, 5000);
+                    return;
+                }
+                
                 // 3. 전역 변수 사용
                 handleSave(window.currentToolId);
             });
@@ -1177,7 +1198,8 @@
 
         // 저장하기 기능 (detail)
         async function handleSave(toolId) {
-          console.log('저장 시도 toolId:', toolId); // 추가
+          console.log('저장 시도 toolId:', toolId);
+          
           // 로그인 상태 확인
           const user = auth.currentUser;
           
@@ -1187,22 +1209,36 @@
             return;
           }
 
+          // dbManager와 Firestore 초기화 상태 확인
+          if (!window.dbManager || !window.dbManager.db) {
+            console.error('DBManager가 초기화되지 않았습니다.');
+            alert('데이터베이스 연결에 실패했습니다. 페이지를 새로고침해주세요.');
+            return;
+          }
+
+          // 저장하기 버튼 로딩 상태 설정
+          const saveBtn = document.getElementById('save-btn-detail');
+          if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.classList.add('loading');
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 저장 중...';
+          }
+
           try {
             // Firestore에서 도구 정보 가져오기
-            const firestore = window.dbManager.db;
-            const toolRef = window.dbManager ? window.dbManager.db && window.dbManager.db.constructor.name === 'Firestore' ? window.dbManager : null : null;
             let toolData = null;
-            if (window.dbManager && window.dbManager.getToolDetails) {
+            if (window.dbManager.getToolDetails) {
               toolData = await window.dbManager.getToolDetails(toolId);
             }
+            
             if (!toolData) {
-              alert('도구 정보를 찾을 수 없습니다.');
-              return;
+              throw new Error('도구 정보를 찾을 수 없습니다.');
             }
 
             // Firestore users/{userId}/favorites/{toolId}에 저장
-            const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
-            const favRef = doc(firestore, 'users', user.uid, 'favorites', toolId);
+            const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js');
+            const favRef = doc(window.dbManager.db, 'users', user.uid, 'favorites', toolId);
+            
             await setDoc(favRef, {
               savedAt: new Date().toISOString(),
               name: toolData.name || '',
@@ -1215,17 +1251,71 @@
               logoFileName: toolData.logoFileName || '',
               logoUrl: toolData.logoUrl || ''
             });
-            alert('즐겨찾기에 추가되었습니다.');
-            // 버튼 상태 업데이트
-            const saveBtn = document.getElementById('save-btn-detail');
+            
+            // 성공 시 버튼 상태 업데이트
             if (saveBtn) {
+              saveBtn.classList.remove('loading');
               saveBtn.innerHTML = '<i class="fas fa-bookmark mr-2"></i> 저장됨';
               saveBtn.classList.add('saved');
+              saveBtn.disabled = false;
             }
+            
+            // 성공 메시지 표시 (alert 대신 더 나은 UX)
+            showSuccessMessage('즐겨찾기에 추가되었습니다!');
+            
           } catch (error) {
             console.error('저장 실패:', error);
-            alert('저장 중 오류가 발생했습니다.');
+            
+            // 에러 시 버튼 상태 복원
+            if (saveBtn) {
+              saveBtn.classList.remove('loading');
+              saveBtn.innerHTML = '<i class="far fa-bookmark mr-2"></i> 저장하기';
+              saveBtn.disabled = false;
+            }
+            
+            // 에러 메시지 표시
+            if (error.message === '도구 정보를 찾을 수 없습니다.') {
+              alert(error.message);
+            } else {
+              alert('저장 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            }
           }
+        }
+        
+        // 성공 메시지 표시 함수
+        function showSuccessMessage(message) {
+          // 기존 성공 메시지가 있다면 제거
+          const existingMessage = document.querySelector('.success-message');
+          if (existingMessage) {
+            existingMessage.remove();
+          }
+          
+          // 성공 메시지 생성
+          const successMessage = document.createElement('div');
+          successMessage.className = 'success-message fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full';
+          successMessage.innerHTML = `
+            <div class="flex items-center">
+              <i class="fas fa-check-circle mr-2"></i>
+              <span>${message}</span>
+            </div>
+          `;
+          
+          document.body.appendChild(successMessage);
+          
+          // 애니메이션으로 표시
+          setTimeout(() => {
+            successMessage.classList.remove('translate-x-full');
+          }, 100);
+          
+          // 3초 후 자동으로 사라짐
+          setTimeout(() => {
+            successMessage.classList.add('translate-x-full');
+            setTimeout(() => {
+              if (successMessage.parentNode) {
+                successMessage.remove();
+              }
+            }, 300);
+          }, 3000);
         }
 
         // 공유하기 모달 detail
@@ -1422,6 +1512,39 @@
                         border: 2px solid #2563eb !important;
                         box-shadow: 0 2px 8px 0 rgba(37,99,235,0.10);
                     }
+                    
+                    /* 저장하기 버튼 비활성화 상태 스타일 */
+                    #save-btn-detail:disabled {
+                        opacity: 0.5;
+                        cursor: not-allowed;
+                        background-color: #6b7280 !important;
+                    }
+                    
+                    #save-btn-detail:disabled:hover {
+                        background-color: #6b7280 !important;
+                    }
+                    
+                    #save-btn-detail.loading {
+                        position: relative;
+                        pointer-events: none;
+                    }
+                    
+                    #save-btn-detail.loading::after {
+                        content: '';
+                        position: absolute;
+                        width: 16px;
+                        height: 16px;
+                        margin: auto;
+                        border: 2px solid transparent;
+                        border-top-color: #ffffff;
+                        border-radius: 50%;
+                        animation: spin 1s linear infinite;
+                    }
+                    
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
                 </style>
                 <div class="flex flex-wrap mb-4">
                     <button class="tab-button active" data-tab="overview">개요</button>
@@ -1538,6 +1661,54 @@
         <button onclick="submitReview()" class="btn-primary w-full">리뷰 등록</button>
       </div>
     </div>
+
+    <!-- DBManager 초기화 상태 확인 스크립트 -->
+    <script>
+        // DBManager 초기화 상태 모니터링
+        let dbManagerCheckInterval;
+        
+        function startDBManagerCheck() {
+            dbManagerCheckInterval = setInterval(() => {
+                if (window.dbManager && window.dbManager.db) {
+                    console.log('DBManager 초기화 완료 확인됨');
+                    clearInterval(dbManagerCheckInterval);
+                    
+                    // 저장하기 버튼 상태 업데이트
+                    const saveBtn = document.getElementById('save-btn-detail');
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+            }, 100);
+        }
+        
+        // 페이지 로드 시 DBManager 체크 시작
+        document.addEventListener('DOMContentLoaded', function() {
+            startDBManagerCheck();
+            
+            // 저장하기 버튼 초기 상태 설정
+            const saveBtn = document.getElementById('save-btn-detail');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        });
+        
+        // dbManagerReady 이벤트 리스너
+        window.addEventListener('dbManagerReady', function(event) {
+            if (event.detail.success) {
+                console.log('DBManager 이벤트 수신: 초기화 성공');
+                const saveBtn = document.getElementById('save-btn-detail');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            } else {
+                console.error('DBManager 이벤트 수신: 초기화 실패', event.detail.error);
+            }
+        });
+    </script>
 
 </body>
 </html>
