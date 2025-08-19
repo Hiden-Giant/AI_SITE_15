@@ -1,7 +1,7 @@
 // bootstrap.js - 공통 초기화 (헤더/푸터 주입, 테마/다국어/서비스워커 초기화, 이벤트 중복 바인딩 방지)
 
 (function () {
-  if (window.__bootstrapInitialized) return; // 중복 방지
+  if (window.__bootstrapInitialized) return; // 중복 방ㅈ지
   window.__bootstrapInitialized = true;
 
   // 1) 테마 초기화: DOMContentLoaded 전에 기본값 보장(이미 theme-manager가 즉시 다크 변수 적용)
